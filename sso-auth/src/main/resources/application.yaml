@@ -42,8 +42,9 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境开启SQL日志
   global-config:
     db-config:
-      logic-delete-field: deleted # 逻辑删除字段 (可选)
-
+      logic-delete-field: delFlag # 逻辑删除字段 (可选)
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 # Sa-Token 配置
 sa-token:
   # token 名称 (前端请求头需要带上这个名称)
