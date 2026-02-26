@@ -1,0 +1,95 @@
+server:
+  port: 8080  # 网关通常占用 80 或 8080
+  # 添加请求头缓冲区大小（避免大请求头报错）
+  max-http-request-header-size: 16KB
+
+spring:
+  application:
+    name: sso-gateway
+  data:
+    redis:
+      host: 192.168.3.130
+      port: 6379
+      database: 0
+      password: P@ssw0rd!23  # 替换为你的Redis密码（空密码则注释）
+      timeout: 5000ms          # Redis连接超时
+      # 连接池配置（必加，提升Redis连接效率）
+      lettuce:
+        pool:
+          max-active: 8        # 最大连接数
+          max-idle: 8          # 最大空闲连接
+          min-idle: 2          # 最小空闲连接
+          max-wait: 1000ms     # 连接等待超时
+  cloud:
+    # 负载均衡优化（避免服务调用超时）
+    loadbalancer:
+      # 重试配置
+      retry:
+        enabled: true                 # 开启负载均衡重试（非幂等接口慎用）
+        maxRetriesOnNextServiceInstance: 1  # 切换服务实例重试次数
+        maxRetriesOnSameServiceInstance: 0  # 同一实例重试次数（建议0，避免重复请求）
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启通过服务名动态路由
+          lower-case-service-id: true  # 服务名自动转小写
+      # 网关HTTP客户端配置（4.2.7优化了超时参数格式）
+      httpclient:
+        connect-timeout: 3000       # 网关与后端服务连接超时
+        response-timeout: 10s         # 网关读取后端响应超时（4.2.7支持s/ms单位）
+        pool:
+          max-connections: 200        # 最大连接数（4.2.7新增，控制连接池大小）
+      # 路由规则（4.2.7推荐显式指定order优先级）
+      routes:
+        # 认证服务路由配置
+        - id: sso-auth-route
+          order: 1  # 路由优先级（数字越小越优先）
+          # lb:// 代表负载均衡转发到 sso-auth 服务
+          uri: lb://sso-auth
+          predicates:
+            - Path=/auth/**
+            - Method=GET,POST,DELETE,PUT  # 限定HTTP方法，提升匹配效率
+          filters:
+            # 可选：移除路径前缀（如/auth/login → /login，根据Controller调整）
+            # - StripPrefix=1
+            # 4.2.7新增：添加请求ID，便于链路追踪
+            - AddRequestHeader=X-Request-Id, {randomUUID}
+      # ========== 跨域配置（4.2.7统一在网关层处理，避免服务重复配置） ==========
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"        # 生产环境替换为具体域名（如https://xxx.com）
+            allowed-methods: "*"        # 允许所有HTTP方法
+            allowed-headers: "*"        # 允许所有请求头
+            allow-credentials: true    # 允许携带Cookie
+            max-age: 3600             # 预检请求缓存时间（4.2.7支持s单位）
+
+# Sa-Token 配置 (必须与 sso-auth 保持一致，否则无法解析 Token)
+sa-token:
+  token-name: token
+  timeout: 2592000    # Token有效期30天（秒）
+  active-timeout: 1800    # 无操作自动续期30分钟（秒）
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-read-cookie: true
+  is-read-header: true
+  # 网关特有配置：全局过滤器
+  check-same-token: false # 是否开启 Same-Token 同源检测
+
+
+# ========== 日志配置（配合全局日志过滤器，4.2.7版本兼容） ==========
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG  # 网关核心日志（排查问题时开启）
+    com.zhanglx.sso.gateway.filter: DEBUG    # 自定义日志过滤器
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/sso-gateway.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 7

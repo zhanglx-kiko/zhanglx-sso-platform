@@ -1,0 +1,68 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: sso-auth
+  # Redis 配置 (请修改为你的实际地址)
+  data:
+    redis:
+      host: 192.168.3.130
+      port: 6379
+      database: 0
+      password: P@ssw0rd!23  # 替换为你的Redis密码（空密码则注释）
+      timeout: 5000ms          # Redis连接超时
+      # 连接池配置（必加，提升Redis连接效率）
+      lettuce:
+        pool:
+          max-active: 8        # 最大连接数
+          max-idle: 8          # 最大空闲连接
+          min-idle: 2          # 最小空闲连接
+          max-wait: 1000ms     # 连接等待超时
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.3.130:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: P@ssw0rd!23
+    # HikariCP 连接池配置优化 (JDK 25 虚拟线程下高并发优化)
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: SsoHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+# MyBatis Plus 配置
+mybatis-plus:
+  #mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.zhanglx.sso.auth.domain.po
+  configuration:
+    map-underscore-to-camel-case: true # 开启下划线转驼峰
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境开启SQL日志
+  global-config:
+    db-config:
+      logic-delete-field: deleted # 逻辑删除字段 (可选)
+
+# Sa-Token 配置
+sa-token:
+  # token 名称 (前端请求头需要带上这个名称)
+  token-name: token
+  # token 有效期 (单位: 秒) - 30天
+  timeout: 2592000
+  # token 临时有效期 (指定时间内无操作就视为过期) - 30分钟
+  active-timeout: 1800
+  # 是否允许同一账号并发登录 (为 true 时允许一起登录, 为 false 时新登录挤掉旧登录)
+  # 【注意】这里必须设为 true，具体的“挤人”逻辑我们在代码里控制，以满足你的“灵活配置”需求
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个 token (为 true 时所有登录共用一个 token, 为 false 时每次登录产生新 token)
+  is-share: false
+  # token 风格
+  token-style: uuid
+  # 是否从 cookie 中读取 token (支持 B/S)
+  is-read-cookie: true
+  # 是否从 header 中读取 token (支持 C/S)
+  is-read-header: true
+
+default:
+  password: 123456
