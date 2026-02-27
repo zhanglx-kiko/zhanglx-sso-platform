@@ -84,6 +84,6 @@ security:
     # 哈希输出长度（字节）
     output-length: 32
     # Pepper 全局密钥
-    pepper:
+    pepper: 1
     # Salt 长度（默认64字节）
     salt-length: 32
