@@ -5,8 +5,15 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.password4j.Argon2Function;
+import com.password4j.BenchmarkResult;
+import com.password4j.Password;
+import com.password4j.SystemChecker;
+import com.password4j.types.Argon2;
+import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
@@ -35,6 +42,7 @@ import org.springframework.util.StringUtils;
 public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
+    private final Argon2PasswordEncoder argon2PasswordEncoder;
 
     @Value("default.password")
     private String defaultPassword;
@@ -93,7 +101,8 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. 处理密码 (如果没有传密码，给一个默认初始密码，例如 123456)
         String rawPassword = StrUtil.isBlank(user.getPassword()) ? defaultPassword : user.getPassword();
-        userPO.setPassword(BCrypt.hashpw(rawPassword, BCrypt.gensalt()));
+//        userPO.setPassword(argon2PasswordEncoder.encodeAsync(rawPassword));
+
 
         // 3. 设置默认值 (如果前端没传)
         if (userPO.getStatus() == null) userPO.setStatus(1); // 默认启用

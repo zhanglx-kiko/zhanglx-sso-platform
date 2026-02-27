@@ -32,6 +32,10 @@ spring:
       pool-name: SsoHikariCP
       max-lifetime: 1800000
       connection-timeout: 30000
+  # 全局启用虚拟线程支持（Spring Boot4.0+ 核心配置）
+  threads:
+    virtual:
+      enabled: true
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -67,3 +71,19 @@ sa-token:
 
 default:
   password: 123456
+
+# Argon2加密配置
+security:
+  argon2:
+    # 单次哈希最大耗时（高并发建议300-500ms，平衡安全和性能）
+    max-hash-time-ms: 500
+    # 初始内存（log2值，16=65536KB，即64MB）
+    initial-memory: 16
+    # 并行度（建议等于CPU核心数）
+    parallelism: 4
+    # 哈希输出长度（字节）
+    output-length: 32
+    # Pepper 全局密钥
+    pepper:
+    # Salt 长度（默认64字节）
+    salt-length: 32

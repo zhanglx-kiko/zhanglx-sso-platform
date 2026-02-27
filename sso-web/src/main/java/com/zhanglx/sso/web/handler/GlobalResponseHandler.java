@@ -1,11 +1,12 @@
-package com.zhanglx.sso.core.handler;
+package com.zhanglx.sso.web.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhanglx.sso.common.utils.Result;
+import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
@@ -23,7 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 @RestControllerAdvice(basePackages = "com.zhanglx")
 public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
 
-    @Autowired
+    @Resource
     private ObjectMapper objectMapper; // Jackson 工具类
 
     /**
@@ -41,21 +42,32 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
      */
     @Override
     @SneakyThrows
-    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
-
-        // 1. 如果返回是 String 类型，需要特殊处理 (这是最容易踩坑的地方)
-        if (body instanceof String) {
-            // 手动序列化为 JSON 字符串，否则 Spring 会报 ClassCastException
-            return objectMapper.writeValueAsString(Result.success(body));
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
+                                  Class<? extends HttpMessageConverter<?>> selectedConverterType,
+                                  ServerHttpRequest request, ServerHttpResponse response) {
+        // 检查是否是错误响应
+        if (body instanceof Result) {
+            Result<?> result = (Result<?>) body;
+            if (result.getCode() != null && result.getCode() >= 400) {
+                log.info("检测到错误响应，设置相应状态码: {}", result.getCode());
+                response.setStatusCode(HttpStatus.valueOf(result.getCode()));
+            }
         }
 
-        // 2. 如果已经是 Result 类型，则不再重复包装
+        if (body instanceof String) {
+            String responseStr = objectMapper.writeValueAsString(Result.success(body));
+            log.info("String 类型响应处理完成: {}", responseStr);
+            return responseStr;
+        }
+
         if (body instanceof Result) {
+            log.info("Result 类型响应，直接返回: {}", body);
             return body;
         }
 
-        // 3. 这里的 body 就是 Controller 返回的实际数据，我们将它包装成 Result
-        return Result.success(body);
+        Result<?> successResult = Result.success(body);
+        log.info("普通响应包装完成: {}", successResult);
+        return successResult;
     }
 
 }

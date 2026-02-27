@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @Author: Zhang L X
@@ -32,24 +33,30 @@ public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 1. 获取请求核心信息
-        ServerHttpRequest request = exchange.getRequest();
-        String requestId = request.getHeaders().getFirst("X-Request-Id"); // 取网关生成的请求ID
+        // 1. 生成请求ID并添加到请求头
+        String requestId = UUID.randomUUID().toString();
+        ServerHttpRequest request = exchange.getRequest().mutate()
+                .header("X-Request-Id", requestId)
+                .build();
+
+        ServerWebExchange modifiedExchange = exchange.mutate().request(request).build();
+
+        // 2. 获取请求核心信息
         String method = request.getMethod().name();
         String path = request.getPath().value();
         String query = request.getQueryParams().toString();
         String ip = getClientRealIp(request);
 
-        // 2. 记录请求开始时间
+        // 3. 记录请求开始时间
         long startTime = System.currentTimeMillis();
 
-        // 3. 执行后续过滤器链，完成后记录响应日志
-        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-            ServerHttpResponse response = exchange.getResponse();
+        // 4. 执行后续过滤器链，完成后记录响应日志
+        return chain.filter(modifiedExchange).then(Mono.fromRunnable(() -> {
+            ServerHttpResponse response = modifiedExchange.getResponse();
             int statusCode = Optional.ofNullable(response.getStatusCode()).orElse(HttpStatusCode.valueOf(500)).value();
             long costTime = System.currentTimeMillis() - startTime;
 
-            // 4. 输出结构化日志（便于ELK收集分析）
+            // 5. 输出结构化日志
             log.info("Gateway Log | requestId: {}, ip: {}, method: {}, path: {}, query: {}, status: {}, cost: {}ms",
                     requestId, ip, method, path, query, statusCode, costTime);
         }));

@@ -66,7 +66,7 @@ public class AuthController {
      * 权限: user:add
      */
     @PostMapping("/user/add")
-    @SaCheckPermission("user:add")
+//    @SaCheckPermission("user:add")
     public void saveUser(@RequestBody @Validated UserDTO userDTO) {
         // 新增时 ID 应该为空
         userDTO.setId(null);

@@ -1,4 +1,4 @@
-package com.zhanglx.sso.core.handler;
+package com.zhanglx.sso.web.handler;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
@@ -21,8 +21,12 @@ import java.util.stream.Collectors;
  * @Description:
  */
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.zhanglx")
 public class GlobalExceptionHandler {
+
+    public GlobalExceptionHandler() {
+        log.info("GlobalExceptionHandler 初始化完成");
+    }
 
     /**
      * 1. 拦截自定义业务异常

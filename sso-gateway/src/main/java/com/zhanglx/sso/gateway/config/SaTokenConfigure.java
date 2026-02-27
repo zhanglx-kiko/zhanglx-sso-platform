@@ -22,12 +22,12 @@ public class SaTokenConfigure {
                 // 拦截地址
                 .addInclude("/**")
                 // 开放地址 (登录接口、静态资源等不需要鉴权)
-                .addExclude("/favicon.ico", "/auth/login", "/auth/register")
+                .addExclude("/favicon.ico", "/auth/login", "/auth/register", "/auth/isLogin")
                 // 鉴权方法：每次请求都会执行
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除 /auth/doLogin 用于开放登录
                     SaRouter.match("/**", "/auth/login", r -> StpUtil.checkLogin());
-
+                    SaRouter.match("/**", "/auth/register", r -> StpUtil.checkLogin()); // 登录校验 -- 拦截所有路由，并排除 /auth/doLogin 用于开放登录
                     // 权限认证 -- 不同模块, 校验不同权限
                     // SaRouter.match("/user/**", r -> StpUtil.checkPermission("user"));
                     // SaRouter.match("/admin/**", r -> StpUtil.checkPermission("admin"));
