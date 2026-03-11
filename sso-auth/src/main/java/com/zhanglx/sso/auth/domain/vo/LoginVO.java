@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.domain.vo;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -14,6 +15,7 @@ import java.util.Objects;
  */
 public class LoginVO implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

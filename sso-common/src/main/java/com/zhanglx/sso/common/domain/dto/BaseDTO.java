@@ -1,4 +1,4 @@
-package com.zhanglx.sso.common.base;
+package com.zhanglx.sso.common.domain.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;

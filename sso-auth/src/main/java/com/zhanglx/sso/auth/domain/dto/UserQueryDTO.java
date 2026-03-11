@@ -1,8 +1,12 @@
 package com.zhanglx.sso.auth.domain.dto;
 
-import com.zhanglx.sso.common.base.BasePageQuery;
 
-import java.util.Objects;
+import com.zhanglx.sso.core.domain.page.BasePageQuery;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
  * @Author: Zhang L X
@@ -10,61 +14,14 @@ import java.util.Objects;
  * @ClassName: UserQueryDTO
  * @Description:
  */
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class UserQueryDTO extends BasePageQuery {
 
     private String username;
     private String deptId;
 
-    public UserQueryDTO() {
-    }
-
-    public UserQueryDTO(String username, String deptId) {
-        this.username = username;
-        this.deptId = deptId;
-    }
-
-    public UserQueryDTO(Integer pageNum, Integer pageSize, String username, String deptId) {
-        super(pageNum, pageSize);
-        this.username = username;
-        this.deptId = deptId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public UserQueryDTO setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public String getDeptId() {
-        return deptId;
-    }
-
-    public UserQueryDTO setDeptId(String deptId) {
-        this.deptId = deptId;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        UserQueryDTO that = (UserQueryDTO) o;
-        return Objects.equals(username, that.username) && Objects.equals(deptId, that.deptId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), username, deptId);
-    }
-
-    @Override
-    public String toString() {
-        return "UserQueryDTO{" +
-                "username='" + username + '\'' +
-                ", deptId='" + deptId + '\'' +
-                '}';
-    }
 }

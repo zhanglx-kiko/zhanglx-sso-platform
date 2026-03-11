@@ -1,7 +1,8 @@
 package com.zhanglx.sso.auth.domain.po;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.zhanglx.sso.core.base.BasePO;
+import com.zhanglx.sso.mybatis.domain.po.BasePO;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -15,24 +16,31 @@ import java.util.Objects;
 @TableName("sys_user")
 public class UserPO extends BasePO {
 
+    @TableField(value = "username")
     private String username;
 
+    @TableField(value = "password")
     private String password;
 
+    @TableField(value = "nickname")
     private String nickname;
 
+    @TableField(value = "avatar")
     private String avatar;
 
     /**
      * 是否允许并发登录：0-禁止(会顶号)，1-允许(默认)
      */
+    @TableField(value = "allow_concurrent_login")
     private Integer allowConcurrentLogin;
 
     /**
      * 部门ID
      */
+    @TableField(value = "dept_id")
     private Long deptId;
 
+    @TableField(value = "status")
     private Integer status;
 
     public UserPO() {

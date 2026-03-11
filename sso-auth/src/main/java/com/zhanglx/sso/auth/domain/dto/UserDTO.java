@@ -3,7 +3,7 @@ package com.zhanglx.sso.auth.domain.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.zhanglx.sso.common.base.BaseDTO;
+import com.zhanglx.sso.common.domain.dto.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Objects;

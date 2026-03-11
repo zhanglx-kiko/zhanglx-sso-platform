@@ -14,33 +14,37 @@ import org.springframework.util.Assert;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/26 18:09
- * @ClassName: Argon2PasswordEncoder
- * @Description: Argon2 加密工具类（最终版，无安全漏洞）
- * 基于 JDK25 虚拟线程 + Spring Boot4.0.3 + Spring Cloud2025.1.1
- * 适配 Password4j 原生 SaltGenerator（64字节默认salt，可自定义）
+ * Argon2加密工具类（极简版：删除无价值的缓存逻辑）
+ * 核心特性：
+ * 1. 基准测试动态参数（适配硬件性能）
+ * 2. 验证时解析参数，仅不一致时创建临时实例（兼容历史密码）
+ * 3. 支持密码升级判断
+ * 4. 异步加密/验证（虚拟线程）
  */
 @Component
 public class Argon2PasswordEncoder {
-
     private static final Logger log = LoggerFactory.getLogger(Argon2PasswordEncoder.class);
 
-    // Argon2 类型（推荐ID混合模式）
+    // 核心常量
     private static final Argon2 ARGON2_TYPE = Argon2.ID;
-    // 异步操作默认超时时间（ms）
     private static final long ASYNC_TIMEOUT_MS = 3000;
-    // Argon2 官方推荐的最小 salt 长度（16字节）
     private static final int MIN_SALT_LENGTH = 16;
-    // 初始化锁（防止并发初始化）
+    // Argon2参数解析正则（精准匹配密文中的m/t/p）
+    private static final Pattern ARGON2_PARAM_PATTERN = Pattern.compile("m=(\\d+),t=(\\d+),p=(\\d+)");
+
+    // 成员变量
     private final ReentrantLock initLock = new ReentrantLock();
-
-    // JDK25 虚拟线程池（原生支持）
     private final ExecutorService virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    // 全局动态参数（基准测试生成）
+    private volatile Argon2Function argon2Function;
+    // 全局参数缓存（仅缓存自己的参数，避免重复调用getter）
+    private volatile Argon2Parameters globalParams;
 
-    // 配置参数（从配置文件注入）
+    // 配置项
     @Value("${security.argon2.max-hash-time-ms:500}")
     private long maxHashTimeMs;
     @Value("${security.argon2.initial-memory:16}")
@@ -49,18 +53,13 @@ public class Argon2PasswordEncoder {
     private int parallelism;
     @Value("${security.argon2.output-length:32}")
     private int outputLength;
-    // Pepper 全局密钥（从配置中心/环境变量注入，非数据库存储）
+    @Value("${security.argon2.salt-length:16}")
+    private int saltLength;
     @Value("${security.argon2.pepper:}")
     private String pepper;
-    // 自定义 salt 长度（默认 64 字节，可配置为 16 字节）
-    @Value("${security.argon2.salt-length:64}")
-    private int saltLength;
-
-    // 线程安全的 Argon2Function 单例
-    private volatile Argon2Function argon2Function;
 
     /**
-     * 初始化：自动基准测试最优参数，仅执行一次
+     * 初始化：基准测试生成动态参数（适配硬件）
      */
     @PostConstruct
     public void init() {
@@ -70,113 +69,68 @@ public class Argon2PasswordEncoder {
         initLock.lock();
         try {
             if (argon2Function == null) {
-                log.info("开始基准测试Argon2最优参数（JDK25虚拟线程版），最大哈希耗时: {}ms，初始内存: {}，并行度: {}，salt长度: {}",
+                log.info("开始基准测试Argon2最优参数，最大哈希耗时: {}ms，初始内存: {}，并行度: {}，salt长度: {}",
                         maxHashTimeMs, initialMemory, parallelism, saltLength);
 
-                // 校验 salt 长度（至少 16 字节）
+                // 校验salt长度
                 if (saltLength < MIN_SALT_LENGTH) {
-                    log.warn("配置的salt长度({}字节)小于Argon2官方推荐的16字节，自动调整为16字节", saltLength);
+                    log.warn("salt长度({}字节)低于推荐值，自动调整为16字节", saltLength);
                     saltLength = MIN_SALT_LENGTH;
                 }
 
-                // 基于 BenchmarkResult 原生 API 获取最优实例
+                // 基准测试获取最优参数
                 BenchmarkResult<Argon2Function> benchmarkResult = SystemChecker.benchmarkForArgon2(
                         maxHashTimeMs, initialMemory, parallelism, outputLength, ARGON2_TYPE);
 
+                // 初始化全局实例
                 if (benchmarkResult.getPrototype() == null) {
-                    log.warn("Argon2基准测试未找到最优参数，使用默认安全参数");
+                    log.warn("基准测试失败，使用兜底固定参数");
                     argon2Function = Argon2Function.getInstance(16, 3, 4, 32, ARGON2_TYPE);
                 } else {
                     argon2Function = benchmarkResult.getPrototype();
-                    log.info("Argon2最优参数初始化完成：内存={}, 迭代次数={}, 并行度={}, 实际耗时={}ms",
-                            argon2Function.getMemory(),
-                            argon2Function.getIterations(),
-                            argon2Function.getParallelism(),
-                            benchmarkResult.getElapsed()
-                    );
                 }
+
+                // 缓存全局参数（仅自己用，避免重复调用getter）
+                globalParams = new Argon2Parameters(
+                        argon2Function.getMemory(),
+                        argon2Function.getIterations(),
+                        argon2Function.getParallelism()
+                );
+
+                log.info("Argon2初始化完成，全局参数：内存={}, 迭代={}, 并行={}",
+                        globalParams.memory(), globalParams.iterations(), globalParams.parallelism());
             }
         } catch (Exception e) {
-            log.error("Argon2初始化失败，降级使用默认参数", e);
+            log.error("Argon2初始化异常，使用兜底参数", e);
             argon2Function = Argon2Function.getInstance(16, 3, 4, 32, ARGON2_TYPE);
+            globalParams = new Argon2Parameters(16, 3, 4);
         } finally {
             initLock.unlock();
         }
     }
 
     /**
-     * 同步加密密码（最终版，无安全漏洞）
-     * 核心：主动生成安全的随机 salt（64字节/16字节），避免空 salt
-     *
-     * @param rawPassword 原始密码
-     * @return 加密后的哈希字符串（包含算法配置、salt、哈希值）
+     * 核心：加密密码（使用全局动态参数）
      */
     public String encode(CharSequence rawPassword) {
         Assert.notNull(rawPassword, "原始密码不能为空");
         checkInit();
 
         try {
-            // 步骤1：生成密码学安全的随机 salt（自定义长度/默认64字节）
+            // 生成安全salt
             byte[] saltBytes = SaltGenerator.generate(saltLength);
-            // 步骤2：将 salt 转为字符串（使用 UTF-8 编码，避免乱码）
             String saltStr = new String(saltBytes, StandardCharsets.UTF_8);
-
-            // 步骤3：调用原生 hash 方法，传入原始密码、salt、pepper
+            // 用全局参数加密
             Hash hashResult = argon2Function.hash(rawPassword, saltStr, pepper);
-
-            // 步骤4：获取最终哈希字符串（包含 salt、算法配置等）
             return hashResult.getResult();
         } catch (Exception e) {
-            log.error("Argon2同步加密失败", e);
-            throw new BusinessException("密码加密失败", e.getMessage());
+            log.error("Argon2加密失败", e);
+            throw new BusinessException("密码加密失败");
         }
     }
 
     /**
-     * 异步加密密码（高并发场景，虚拟线程）
-     *
-     * @param rawPassword 原始密码
-     * @return Future 异步结果，调用方可控制等待逻辑
-     */
-    public Future<String> encodeAsync(CharSequence rawPassword) {
-        Assert.notNull(rawPassword, "原始密码不能为空");
-        checkInit();
-
-        // 提交到虚拟线程池，返回 Future 避免阻塞
-        return virtualThreadExecutor.submit(() -> {
-            try {
-                return encode(rawPassword);
-            } catch (Exception e) {
-                log.error("Argon2虚拟线程加密失败", e);
-                throw new BusinessException("密码加密失败", e.getMessage());
-            }
-        });
-    }
-
-    /**
-     * 异步加密密码（带超时的便捷方法）
-     *
-     * @param rawPassword 原始密码
-     * @return 加密后的哈希字符串
-     */
-    public String encodeAsyncWithTimeout(CharSequence rawPassword) {
-        try {
-            return encodeAsync(rawPassword).get(ASYNC_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException e) {
-            log.error("Argon2异步加密超时（{}ms）", ASYNC_TIMEOUT_MS, e);
-            throw new BusinessException("密码加密超时，请重试");
-        } catch (Exception e) {
-            log.error("Argon2异步加密失败", e);
-            throw new BusinessException("密码加密失败", e.getMessage());
-        }
-    }
-
-    /**
-     * 验证密码（最终版，自动解析 salt）
-     *
-     * @param rawPassword     原始密码
-     * @param encodedPassword 加密后的哈希字符串
-     * @return true=匹配，false=不匹配
+     * 返回是否匹配
      */
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
         Assert.notNull(rawPassword, "原始密码不能为空");
@@ -184,69 +138,136 @@ public class Argon2PasswordEncoder {
         checkInit();
 
         try {
-            // 核心：验证时无需传入 salt（框架从 encodedPassword 中解析）
-            // 只需传入 pepper（全局密钥），与加密时一致
-            return argon2Function.check(rawPassword, encodedPassword, null, pepper);
+            // 直接解析参数（无缓存，耗时可忽略）
+            Argon2Parameters cipherParams = parseArgon2Parameters(encodedPassword);
+            if (cipherParams == null) {
+                log.warn("解析密文参数失败，使用全局参数验证");
+                return argon2Function.check(rawPassword, encodedPassword, null, pepper);
+            }
+
+            // 对比全局参数和密文参数
+            if (globalParams.equals(cipherParams)) {
+                // 参数一致：直接用全局实例验证
+                return argon2Function.check(rawPassword, encodedPassword, null, pepper);
+            } else {
+                // 参数不一致：创建临时实例验证（兼容历史密码）
+                Argon2Function tempFunction = createTempArgon2Function(cipherParams);
+                return tempFunction.check(rawPassword, encodedPassword, null, pepper);
+            }
         } catch (Exception e) {
-            log.error("Argon2密码验证失败", e);
+            log.error("密码验证异常", e);
             return false;
         }
     }
 
     /**
-     * 异步验证密码（高并发场景，虚拟线程）
-     *
-     * @param rawPassword     原始密码
-     * @param encodedPassword 加密后的哈希字符串
-     * @return Future 异步验证结果
+     * 检查密码是否需要升级
+     */
+    public boolean needUpgrade(String encodedPassword) {
+        checkInit();
+        Argon2Parameters cipherParams = parseArgon2Parameters(encodedPassword);
+        return cipherParams != null && !globalParams.equals(cipherParams);
+    }
+
+    /**
+     * 异步加密（虚拟线程）
+     */
+    public Future<String> encodeAsync(CharSequence rawPassword) {
+        return virtualThreadExecutor.submit(() -> encode(rawPassword));
+    }
+
+    /**
+     * 异步验证（虚拟线程）
      */
     public Future<Boolean> matchesAsync(CharSequence rawPassword, String encodedPassword) {
-        Assert.notNull(rawPassword, "原始密码不能为空");
-        Assert.notNull(encodedPassword, "加密密码不能为空");
-        checkInit();
-
         return virtualThreadExecutor.submit(() -> matches(rawPassword, encodedPassword));
     }
 
     /**
-     * 异步验证密码（带超时的便捷方法）
-     *
-     * @param rawPassword     原始密码
-     * @param encodedPassword 加密后的哈希字符串
-     * @return true=匹配，false=不匹配
+     * 带超时的异步加密
+     */
+    public String encodeAsyncWithTimeout(CharSequence rawPassword) {
+        try {
+            return encodeAsync(rawPassword).get(ASYNC_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            throw new BusinessException("密码加密超时");
+        } catch (Exception e) {
+            throw new BusinessException("密码加密失败");
+        }
+    }
+
+    /**
+     * 带超时的异步验证
      */
     public boolean matchesAsyncWithTimeout(CharSequence rawPassword, String encodedPassword) {
         try {
             return matchesAsync(rawPassword, encodedPassword).get(ASYNC_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            log.error("Argon2异步验证超时（{}ms）", ASYNC_TIMEOUT_MS, e);
-            throw new BusinessException("密码验证超时，请重试");
+            throw new BusinessException("密码验证超时");
         } catch (Exception e) {
-            log.error("Argon2异步验证失败", e);
             return false;
         }
     }
 
+    // ========== 私有核心方法 ==========
     /**
-     * 检查初始化状态，未初始化则阻塞等待
+     * 解析密文中的Argon2参数（m/t/p）
+     */
+    private Argon2Parameters parseArgon2Parameters(String encodedPassword) {
+        try {
+            String[] parts = encodedPassword.split("\\$");
+            if (parts.length < 4) {
+                log.warn("密文格式错误：{}", encodedPassword);
+                return null;
+            }
+
+            // 匹配参数部分（如：m=16,t=3,p=4）
+            Matcher matcher = ARGON2_PARAM_PATTERN.matcher(parts[3]);
+            if (!matcher.find()) {
+                log.warn("未匹配到Argon2参数：{}", parts[3]);
+                return null;
+            }
+
+            // 解析参数
+            int memory = Integer.parseInt(matcher.group(1));
+            int iterations = Integer.parseInt(matcher.group(2));
+            int parallelism = Integer.parseInt(matcher.group(3));
+
+            return new Argon2Parameters(memory, iterations, parallelism);
+        } catch (Exception e) {
+            log.error("解析Argon2参数异常", e);
+            return null;
+        }
+    }
+
+    /**
+     * 创建临时Argon2实例（仅参数不一致时调用）
+     */
+    private Argon2Function createTempArgon2Function(Argon2Parameters params) {
+        try {
+            return Argon2Function.getInstance(
+                    params.memory(),
+                    params.iterations(),
+                    params.parallelism(),
+                    outputLength,
+                    ARGON2_TYPE
+            );
+        } catch (Exception e) {
+            log.error("创建临时Argon2实例失败，使用全局参数兜底", e);
+            return argon2Function;
+        }
+    }
+
+    /**
+     * 检查初始化状态
      */
     private void checkInit() {
         if (argon2Function == null) {
             initLock.lock();
             try {
                 if (argon2Function == null) {
-                    int waitCount = 0;
-                    while (argon2Function == null && waitCount < 50) {
-                        TimeUnit.MILLISECONDS.sleep(100);
-                        waitCount++;
-                    }
-                    if (argon2Function == null) {
-                        throw new BusinessException("Argon2初始化超时，无法执行加密操作");
-                    }
+                    throw new BusinessException("Argon2未初始化完成");
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new BusinessException("Argon2初始化被中断", e.getMessage());
             } finally {
                 initLock.unlock();
             }
@@ -254,44 +275,32 @@ public class Argon2PasswordEncoder {
     }
 
     /**
-     * 应用关闭时优雅释放虚拟线程池资源
+     * 优雅关闭资源
      */
     @PreDestroy
     public void destroy() {
-        log.info("开始关闭Argon2虚拟线程池");
+        log.info("关闭Argon2加密工具类资源");
+
+        // 关闭虚拟线程池
         virtualThreadExecutor.shutdown();
         try {
             if (!virtualThreadExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
                 virtualThreadExecutor.shutdownNow();
-                log.warn("Argon2虚拟线程池强制关闭");
             }
         } catch (InterruptedException e) {
             virtualThreadExecutor.shutdownNow();
             Thread.currentThread().interrupt();
         }
-        log.info("Argon2虚拟线程池已关闭");
+
+        log.info("Argon2加密工具类资源已全部关闭");
     }
 
-    // ========== 扩展方法：支持自定义 Salt（兼容旧系统） ==========
-
-    /**
-     * 同步加密密码（自定义 Salt）
-     *
-     * @param rawPassword 原始密码
-     * @param salt        自定义盐值（仅用于兼容旧系统，推荐使用自动生成）
-     * @return 加密后的哈希字符串
-     */
-    public String encode(CharSequence rawPassword, String salt) {
-        Assert.notNull(rawPassword, "原始密码不能为空");
-        Assert.notNull(salt, "自定义salt不能为空");
-        checkInit();
-
-        try {
-            Hash hashResult = argon2Function.hash(rawPassword, salt, pepper);
-            return hashResult.getResult();
-        } catch (Exception e) {
-            log.error("Argon2同步加密失败（自定义Salt）", e);
-            throw new BusinessException("密码加密失败", e.getMessage());
+    // ========== 内部参数封装类 ==========
+    private record Argon2Parameters(int memory, int iterations, int parallelism) {
+        @Override
+        public String toString() {
+            return String.format("m=%d,t=%d,p=%d", memory, iterations, parallelism);
         }
     }
+
 }

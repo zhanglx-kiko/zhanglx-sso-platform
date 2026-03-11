@@ -36,19 +36,32 @@ spring:
   threads:
     virtual:
       enabled: true
+  main:
+    allow-bean-definition-overriding: true
+
+logging:
+  level:
+    com.zhanglx.sso: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+    org.mybatis: DEBUG
 
 # MyBatis Plus 配置
 mybatis-plus:
-  #mapper-locations: classpath*:/mapper/**/*.xml
+  mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.zhanglx.sso.auth.domain.po
   configuration:
     map-underscore-to-camel-case: true # 开启下划线转驼峰
+    auto-mapping-behavior: FULL
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境开启SQL日志
   global-config:
     db-config:
-      logic-delete-field: delFlag # 逻辑删除字段 (可选)
+      # 使用ALWAYS策略，强制包含所有字段（包括继承字段）
+      insert-strategy: ALWAYS
+      update-strategy: ALWAYS
+      logic-delete-field: del_flag # 逻辑删除字段 (可选)
       logic-delete-value: 1
       logic-not-delete-value: 0
+
 # Sa-Token 配置
 sa-token:
   # token 名称 (前端请求头需要带上这个名称)
@@ -84,6 +97,6 @@ security:
     # 哈希输出长度（字节）
     output-length: 32
     # Pepper 全局密钥
-    pepper: 1
+    pepper: pR7$S2kF9!aG5dJ3hZ8
     # Salt 长度（默认64字节）
     salt-length: 32

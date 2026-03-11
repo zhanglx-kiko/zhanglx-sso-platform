@@ -10,6 +10,7 @@ import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.UserQueryDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -131,7 +132,7 @@ public class AuthController {
      */
     @PostMapping("/user/list")
     @SaCheckPermission("user:list")
-    public Page<UserDTO> pageList(@RequestBody UserQueryDTO query) {
+    public Page<UserDTO> pageList(@Valid @RequestBody UserQueryDTO query) {
         return authService.pageQuery(query);
     }
 

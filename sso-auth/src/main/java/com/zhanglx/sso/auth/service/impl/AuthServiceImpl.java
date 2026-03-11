@@ -1,18 +1,10 @@
 package com.zhanglx.sso.auth.service.impl;
 
-import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.password4j.Argon2Function;
-import com.password4j.BenchmarkResult;
-import com.password4j.Password;
-import com.password4j.SystemChecker;
-import com.password4j.types.Argon2;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
@@ -22,6 +14,7 @@ import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AuthService;
+import com.zhanglx.sso.auth.utils.IUserDomainMapper;
 import com.zhanglx.sso.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
 
-    @Value("default.password")
+    @Value("${default.password:123456}")
     private String defaultPassword;
 
     /**
@@ -63,13 +56,18 @@ public class AuthServiceImpl implements AuthService {
 
         if (userPO == null) {
             log.warn("登录失败，账号不存在: {}", loginDTO.getUsername());
-            throw new BusinessException("账号或密码错误");
+            throw new BusinessException("账号不存在");
         }
 
-        // 【修复】取反！如果checkpw返回false，说明密码错误
-        if (!BCrypt.checkpw(loginDTO.getPassword(), userPO.getPassword())) {
+        if (!checkpw(loginDTO.getPassword(), userPO.getPassword())) {
             log.warn("登录失败，密码错误. 用户: {}", loginDTO.getUsername());
-            throw new BusinessException("账号或密码错误");
+            throw new BusinessException("密码错误");
+        }
+
+        // 检查并升级密码（登录成功后）
+        if (argon2PasswordEncoder.needUpgrade(userPO.getPassword())) {
+            log.info("检测到用户 [{}] 密码参数需要升级", userPO.getUsername());
+            upgradeUserPassword(userPO, loginDTO.getPassword());
         }
 
         if (Integer.valueOf(0).equals(userPO.getStatus())) {
@@ -97,12 +95,11 @@ public class AuthServiceImpl implements AuthService {
         // 1. 校验用户名是否存在
         checkUsernameUnique(user.getUsername(), null);
 
-        UserPO userPO = BeanUtil.copyProperties(user, UserPO.class);
+        UserPO userPO = IUserDomainMapper.INSTANCE.toPO(user);
 
         // 2. 处理密码 (如果没有传密码，给一个默认初始密码，例如 123456)
         String rawPassword = StrUtil.isBlank(user.getPassword()) ? defaultPassword : user.getPassword();
-//        userPO.setPassword(argon2PasswordEncoder.encodeAsync(rawPassword));
-
+        userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword));
 
         // 3. 设置默认值 (如果前端没传)
         if (userPO.getStatus() == null) userPO.setStatus(1); // 默认启用
@@ -134,10 +131,10 @@ public class AuthServiceImpl implements AuthService {
             checkUsernameUnique(userinfo.getUsername(), userinfo.getId());
         }
 
-        // 强制忽略 password 字段，防止被意外修改
-        BeanUtil.copyProperties(userinfo, oldUser, "password");
+        UserPO userPO = IUserDomainMapper.INSTANCE.toPO(userinfo);
+        userPO.setPassword(oldUser.getPassword());
 
-        userMapper.updateById(oldUser);
+        userMapper.updateById(userPO);
     }
 
     /**
@@ -152,13 +149,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 1. 校验旧密码是否正确
-        if (!BCrypt.checkpw(userPasswordDTO.getOldPassword(), userPO.getPassword())) {
+        if (!checkpw(userPasswordDTO.getOldPassword(), userPO.getPassword())) {
             throw new BusinessException("旧密码错误");
         }
 
         // 2. 加密新密码
-        String newHash = BCrypt.hashpw(userPasswordDTO.getNewPassword(), BCrypt.gensalt());
-        userPO.setPassword(newHash);
+        userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(userPasswordDTO.getNewPassword()));
 
         userMapper.updateById(userPO);
 
@@ -175,8 +171,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 1. 加密新密码
-        String hashPassword = BCrypt.hashpw(defaultPassword, BCrypt.gensalt());
-        userPO.setPassword(hashPassword);
+        userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(defaultPassword));
 
         // 2. 更新数据库
         userMapper.updateById(userPO);
@@ -203,7 +198,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Page<UserDTO> pageQuery(UserQueryDTO query) {
-        Page<UserPO> page = new Page<>(query.getPageNum(), query.getPageSize());
+        Page<UserPO> page = Page.of(query.getPageNum(), query.getPageSize());
 
         LambdaQueryWrapper<UserPO> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(StrUtil.isNotBlank(query.getUsername()), UserPO::getUsername, query.getUsername())
@@ -212,10 +207,12 @@ public class AuthServiceImpl implements AuthService {
 
         userMapper.selectPage(page, wrapper);
 
-        // 使用 Convert 转换泛型
-        return (Page<UserDTO>) page.convert(po -> {
-            return BeanUtil.copyProperties(po, UserDTO.class);
-        });
+        Page<UserDTO> result = new Page<>();
+        result.setCurrent(page.getCurrent());
+        result.setSize(page.getSize());
+        result.setTotal(page.getTotal());
+        result.setRecords(IUserDomainMapper.INSTANCE.toDTOList(page.getRecords()));
+        return result;
     }
 
     /**
@@ -236,6 +233,35 @@ public class AuthServiceImpl implements AuthService {
         if (userMapper.selectCount(wrapper) > 0) {
             throw new BusinessException("用户名 [" + username + "] 已存在");
         }
+    }
+
+    /**
+     * 升级用户密码
+     */
+    private void upgradeUserPassword(UserPO userPO, String rawPassword) {
+        try {
+            // 使用新参数重新加密
+            String newEncodedPassword = argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword);
+
+            // 更新数据库
+            userPO.setPassword(newEncodedPassword);
+            userMapper.updateById(userPO);
+
+            log.info("用户 [{}] 密码升级成功", userPO.getUsername());
+        } catch (Exception e) {
+            log.error("用户 [{}] 密码升级失败", userPO.getUsername(), e);
+        }
+    }
+
+    /**
+     * 密码校验
+     *
+     * @param rawPassword     原始密码
+     * @param encodedPassword 加密后的哈希字符串
+     * @return 是否校验通过，true表示校验通过
+     */
+    private boolean checkpw(String rawPassword, String encodedPassword) {
+        return argon2PasswordEncoder.matchesAsyncWithTimeout(rawPassword, encodedPassword);
     }
 
     private LoginVO assembleLoginVO(UserPO userPO, SaTokenInfo tokenInfo) {

@@ -1,6 +1,10 @@
-package com.zhanglx.sso.core.base;
+package com.zhanglx.sso.mybatis.domain.po;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serial;
@@ -28,34 +32,33 @@ public class BasePO implements Serializable {
     /**
      * 创建人ID (自动填充)
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(value = "create_by", fill = FieldFill.INSERT)
     private Long createBy;
 
     /**
      * 创建时间 (自动填充)
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 修改人ID (自动填充)
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "update_by", fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
     /**
      * 修改时间 (自动填充)
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
     /**
      * 逻辑删除 (0-未删, 1-已删)
-     * 这里的 select=false 意味着默认查询不返回该字段给前端，保护数据结构
      */
     @TableLogic(value = "0", delval = "1")
-    @TableField(select = false)
-    @JsonIgnore // JSON序列化时忽略
+    @TableField(value = "del_flag", fill = FieldFill.INSERT, select = false)
+    @JsonIgnore
     private Integer delFlag;
 
     public BasePO() {

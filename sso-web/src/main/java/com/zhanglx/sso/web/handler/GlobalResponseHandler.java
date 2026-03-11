@@ -46,8 +46,7 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
                                   Class<? extends HttpMessageConverter<?>> selectedConverterType,
                                   ServerHttpRequest request, ServerHttpResponse response) {
         // 检查是否是错误响应
-        if (body instanceof Result) {
-            Result<?> result = (Result<?>) body;
+        if (body instanceof Result<?> result) {
             if (result.getCode() != null && result.getCode() >= 400) {
                 log.info("检测到错误响应，设置相应状态码: {}", result.getCode());
                 response.setStatusCode(HttpStatus.valueOf(result.getCode()));
