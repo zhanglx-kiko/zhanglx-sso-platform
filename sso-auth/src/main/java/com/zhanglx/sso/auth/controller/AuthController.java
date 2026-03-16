@@ -2,7 +2,11 @@ package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.oauth2.SaOAuth2Manager;
+import cn.dev33.satoken.oauth2.template.SaOAuth2Util;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
@@ -39,6 +43,15 @@ public class AuthController {
         // GlobalResponseHandler 会自动包装为 Result<LoginVO>
         return authService.login(loginDTO);
     }
+
+//    @PostMapping("/login/wechat")
+//    public LoginVO loginByWechat(@RequestBody WechatLoginDTO dto) {
+        // 1. 拿着 dto.code 去请求微信接口，获取微信 openid
+        // 2. 去数据库查：SELECT user_id FROM sys_user_bind WHERE openid = ?
+        // 3. 如果查到了关联的用户 ID (比如查到 userId = 1001)
+        // 4. 直接执行：StpUtil.login(1001, "Wechat")
+        // 5. 返回 Token 给前端
+//    }
 
     /**
      * 注销登录
@@ -100,29 +113,29 @@ public class AuthController {
 
     /**
      * 管理员重置密码
-     * 路径: POST /auth/user/reset-password/{userId}
-     * 权限: user:reset
+     * 路径：POST /auth/user/reset-password/{userId}
+     * 权限：user:reset
      */
     @PostMapping("/user/reset-password/{userId}")
     @SaCheckPermission("user:reset") // 需要管理员权限
-    public void resetPassword(@PathVariable Long userId) {
-        authService.resetPassword(userId);
+    public void resetPassword(@PathVariable String userId) {
+        authService.resetPassword(Long.parseLong(userId));
     }
 
     /**
      * 删除用户
-     * 路径: POST /auth/user/remove/{userId}
-     * 权限: user:remove
+     * 路径：POST /auth/user/remove/{userId}
+     * 权限：user:remove
      */
     @DeleteMapping("/user/remove/{userId}")
     @SaCheckPermission("user:remove")
-    public void removeUser(@PathVariable Long userId) {
+    public void removeUser(@PathVariable String userId) {
         // 防止删除自己
-        if (userId.equals(StpUtil.getLoginIdAsLong())) {
+        if (userId.equals(String.valueOf(StpUtil.getLoginIdAsLong()))) {
             throw new RuntimeException("不能删除当前登录账号");
         }
 
-        authService.removeUserById(userId);
+        authService.removeUserById(Long.parseLong(userId));
     }
 
     /**

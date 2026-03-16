@@ -1,7 +1,7 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 
-import com.zhanglx.sso.common.domain.dto.BaseDTO;
+import com.zhanglx.sso.core.domain.dto.BaseDTO;
 
 import java.util.Objects;
 

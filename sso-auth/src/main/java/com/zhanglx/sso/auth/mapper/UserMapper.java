@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.zhanglx.sso.auth.domain.po.UserPO;
+import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @Description:
  */
 @Mapper
-public interface UserMapper extends BaseMapper<UserPO> {
+public interface UserMapper extends IBaseMapperX<UserPO> {
 }

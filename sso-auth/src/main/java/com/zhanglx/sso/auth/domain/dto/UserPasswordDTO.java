@@ -1,5 +1,9 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,6 +19,8 @@ import java.util.Objects;
 public class UserPasswordDTO implements Serializable {
 
     @NotNull(message = "用户ID不能为空")
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long userId;
 
     @NotBlank(message = "旧密码不能为空")

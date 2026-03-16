@@ -1,7 +1,9 @@
 package com.zhanglx.sso.auth.domain.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -22,6 +24,7 @@ public class LoginVO implements Serializable {
      * 用户主键ID (String类型，防止前端精度丢失)
      */
     @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long id;
 
     /**
@@ -43,6 +46,7 @@ public class LoginVO implements Serializable {
      * 部门ID (String类型)
      */
     @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long deptId;
 
     /**

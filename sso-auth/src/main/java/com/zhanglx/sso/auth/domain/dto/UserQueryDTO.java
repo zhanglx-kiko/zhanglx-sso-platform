@@ -1,6 +1,10 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.domain.page.BasePageQuery;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +26,9 @@ import lombok.experimental.SuperBuilder;
 public class UserQueryDTO extends BasePageQuery {
 
     private String username;
-    private String deptId;
+
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
+    private Long deptId;
 
 }

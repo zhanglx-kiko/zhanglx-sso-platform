@@ -29,14 +29,10 @@
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-cloud.version>2025.1.1</spring-cloud.version>
-        <sa-token.version>1.44.0</sa-token.version>
+        <sa-token.version>1.45.0</sa-token.version>
         <hutool.version>5.8.43</hutool.version>
         <mybatis-plus.version>3.5.16</mybatis-plus.version>
-        <commons-pool2.version>2.12.1</commons-pool2.version>
         <spring-boot.version>4.0.3</spring-boot.version>
-        <jackson.datatype.version>2.21.1</jackson.datatype.version>
-        <jakarta.validation.version>4.0.0-M1</jakarta.validation.version>
-        <ma.glasnost.orika.version>1.5.4</ma.glasnost.orika.version>
         <mapstruct.version>1.7.0.Beta1</mapstruct.version>
         <guava.version>33.5.0-jre</guava.version>
     </properties>
@@ -55,7 +51,7 @@
             <dependency>
                 <groupId>jakarta.validation</groupId>
                 <artifactId>jakarta.validation-api</artifactId>
-                <version>${jakarta.validation.version}</version>
+                <version>${jakarta-validation.version}</version>
             </dependency>
 
             <!-- MapStruct核心依赖 -->
@@ -118,13 +114,13 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>
                 <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.datatype.version}</version>
+                <version>${jackson-2-bom.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>${jackson.datatype.version}</version>
+                <version>${jackson-2-bom.version}</version>
             </dependency>
 
             <dependency>
@@ -137,7 +133,7 @@
 
             <dependency>
                 <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <artifactId>sa-token-spring-boot4-starter</artifactId>
                 <version>${sa-token.version}</version>
             </dependency>
 
@@ -150,6 +146,12 @@
             <dependency>
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-redis-jackson</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-oauth2</artifactId>
                 <version>${sa-token.version}</version>
             </dependency>
 
@@ -181,7 +183,7 @@
 
             <dependency>
                 <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
+                <artifactId>sa-token-reactor-spring-boot4-starter</artifactId>
                 <version>${sa-token.version}</version>
             </dependency>
         </dependencies>

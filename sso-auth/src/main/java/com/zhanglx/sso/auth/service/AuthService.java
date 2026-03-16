@@ -47,14 +47,14 @@ public interface AuthService {
     /**
      * 管理员重置用户密码
      *
-     * @param userId 用户id
+     * @param userId 用户 id
      */
     void resetPassword(Long userId);
 
     /**
-     * 根据id删除用户
+     * 根据 id 删除用户
      *
-     * @param userId 用户id
+     * @param userId 用户 id
      * @return 是否成功
      */
     void removeUserById(Long userId);

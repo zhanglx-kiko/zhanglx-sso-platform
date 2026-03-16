@@ -3,7 +3,6 @@ package com.zhanglx.sso.auth.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
@@ -16,6 +15,7 @@ import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AuthService;
 import com.zhanglx.sso.auth.utils.IUserDomainMapper;
 import com.zhanglx.sso.common.exception.BusinessException;
+import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("账号或密码不能为空");
         }
 
-        LambdaQueryWrapper<UserPO> queryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapperX<UserPO> queryWrapper = new LambdaQueryWrapperX<>();
         queryWrapper.eq(UserPO::getUsername, loginDTO.getUsername());
         UserPO userPO = userMapper.selectOne(queryWrapper);
 
@@ -126,12 +126,12 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("用户不存在");
         }
 
+        UserPO userPO = IUserDomainMapper.INSTANCE.toPO(userinfo);
         // 1. 如果修改了用户名，需要校验唯一性 (排除自己)
         if (StrUtil.isNotBlank(userinfo.getUsername()) && !userinfo.getUsername().equals(oldUser.getUsername())) {
-            checkUsernameUnique(userinfo.getUsername(), userinfo.getId());
+            checkUsernameUnique(userinfo.getUsername(), userPO.getId());
         }
 
-        UserPO userPO = IUserDomainMapper.INSTANCE.toPO(userinfo);
         userPO.setPassword(oldUser.getPassword());
 
         userMapper.updateById(userPO);
@@ -200,7 +200,7 @@ public class AuthServiceImpl implements AuthService {
     public Page<UserDTO> pageQuery(UserQueryDTO query) {
         Page<UserPO> page = Page.of(query.getPageNum(), query.getPageSize());
 
-        LambdaQueryWrapper<UserPO> wrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapperX<UserPO> wrapper = new LambdaQueryWrapperX<>();
         wrapper.like(StrUtil.isNotBlank(query.getUsername()), UserPO::getUsername, query.getUsername())
                 .eq(query.getDeptId() != null, UserPO::getDeptId, query.getDeptId())
                 .orderByDesc(UserPO::getCreateTime);
@@ -224,7 +224,7 @@ public class AuthServiceImpl implements AuthService {
     private void checkUsernameUnique(String username, Long excludeId) {
         if (StrUtil.isBlank(username)) return;
 
-        LambdaQueryWrapper<UserPO> wrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapperX<UserPO> wrapper = new LambdaQueryWrapperX<>();
         wrapper.eq(UserPO::getUsername, username);
         if (excludeId != null) {
             wrapper.ne(UserPO::getId, excludeId);

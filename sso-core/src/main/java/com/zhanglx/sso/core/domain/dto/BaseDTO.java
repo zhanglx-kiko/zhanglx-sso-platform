@@ -1,7 +1,9 @@
-package com.zhanglx.sso.common.domain.dto;
+package com.zhanglx.sso.core.domain.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -19,13 +21,21 @@ public class BaseDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 主键 ID (String 类型，防止前端精度丢失，反序列化时自动转为 Long)
+     */
     @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long id;
 
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long createBy;
 
     private LocalDateTime createTime;
 
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long updateBy;
 
     private LocalDateTime updateTime;

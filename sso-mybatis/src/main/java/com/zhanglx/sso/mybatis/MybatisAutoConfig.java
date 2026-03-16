@@ -1,5 +1,6 @@
 package com.zhanglx.sso.mybatis;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,5 +12,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = "com.zhanglx.sso.mybatis")
+@MapperScan("com.baomidou.mybatisplus.samples.quickstart.mapper")
 public class MybatisAutoConfig {
 }

@@ -1,9 +1,11 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.zhanglx.sso.common.domain.dto.BaseDTO;
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
+import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.Objects;
@@ -35,6 +37,7 @@ public class UserDTO extends BaseDTO {
      * 部门ID
      */
     @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
     private Long deptId;
 
     private Integer status;

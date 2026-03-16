@@ -21,7 +21,7 @@ spring:
           max-wait: 1000ms     # 连接等待超时
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.3.130:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://192.168.3.130:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: P@ssw0rd!23
     # HikariCP 连接池配置优化 (JDK 25 虚拟线程下高并发优化)
@@ -32,6 +32,10 @@ spring:
       pool-name: SsoHikariCP
       max-lifetime: 1800000
       connection-timeout: 30000
+  #sql:
+    #init:
+      #schema-locations: classpath:db/schema-h2.sql
+      #data-locations: classpath:db/data-h2.sql
   # 全局启用虚拟线程支持（Spring Boot4.0+ 核心配置）
   threads:
     virtual:
@@ -47,7 +51,7 @@ logging:
 
 # MyBatis Plus 配置
 mybatis-plus:
-  mapper-locations: classpath*:/mapper/**/*.xml
+  #mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.zhanglx.sso.auth.domain.po
   configuration:
     map-underscore-to-camel-case: true # 开启下划线转驼峰
@@ -58,12 +62,19 @@ mybatis-plus:
       # 使用ALWAYS策略，强制包含所有字段（包括继承字段）
       insert-strategy: ALWAYS
       update-strategy: ALWAYS
-      logic-delete-field: del_flag # 逻辑删除字段 (可选)
+      logic-delete-field: delFlag # 逻辑删除字段 (可选)
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# Sa-Token 配置
+# sa-token 配置
 sa-token:
+  # OAuth2.0 配置
+  oauth2-server:
+    # 定义哪些 scope 是高级权限，多个用逗号隔开
+    higher-scope: openid,userid
+    # 定义哪些 scope 是低级权限，多个用逗号隔开
+    lower-scope: userinfo
+    not-login-view: /notLogin
   # token 名称 (前端请求头需要带上这个名称)
   token-name: token
   # token 有效期 (单位: 秒) - 30天

@@ -44,7 +44,7 @@ spring:
               # IP地址代表直连，不需要负载均衡中间件如Nacos、Eureka
               uri: http://localhost:9000
               predicates:
-                - Path=/auth/**
+                - Path=/auth/**, /oauth2/**
                 - Method=GET,POST,DELETE,PUT  # 限定HTTP方法，提升匹配效率
               filters:
                 # 保留原始响应体，不进行封装

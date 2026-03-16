@@ -28,10 +28,11 @@ public class DefaultDBFieldHandler implements MetaObjectHandler {
                 && metaObject.getOriginalObject() instanceof BasePO) {
             LocalDateTime current = LocalDateTime.now();
             Long userId = StpUtil.getLoginIdAsLong();
-            this.strictInsertFill(metaObject, "create_by", Long.class, userId);
+            this.strictInsertFill(metaObject, "createBy", Long.class, userId);
             this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, current);
             this.strictInsertFill(metaObject, "updateBy", Long.class, userId);
             this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, current);
+            this.strictInsertFill(metaObject, "delFlag", Integer.class, 0);
         }
     }
 
