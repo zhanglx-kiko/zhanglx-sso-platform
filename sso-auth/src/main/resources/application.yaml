@@ -2,6 +2,8 @@ server:
   port: 9000
 
 spring:
+  profiles:
+    active: dev
   application:
     name: sso-auth
   # Redis 配置 (请修改为你的实际地址)
@@ -21,17 +23,18 @@ spring:
           max-wait: 1000ms     # 连接等待超时
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.3.130:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    # rewriteBatchedStatements=true 批处理
+    url: jdbc:mysql://192.168.3.130:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     username: root
     password: P@ssw0rd!23
     # HikariCP 连接池配置优化 (JDK 25 虚拟线程下高并发优化)
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
-      idle-timeout: 30000
+      idle-timeout: 300000
       pool-name: SsoHikariCP
       max-lifetime: 1800000
-      connection-timeout: 30000
+      connection-timeout: 5000
   #sql:
     #init:
       #schema-locations: classpath:db/schema-h2.sql
@@ -40,14 +43,32 @@ spring:
   threads:
     virtual:
       enabled: true
+  web:
+    error:
+      include-message: always  # 显示错误信息
+      include-binding-errors: always  # 显示参数校验错误信息
   main:
     allow-bean-definition-overriding: true
 
+# Flyway 配置
+flyway:
+  enabled: false
+  baseline-on-migrate: true
+  baseline-version: 0
+  locations: classpath:db/migration
+  encoding: UTF-8
+  validate-on-migrate: true
+  clean-disabled: false
+  table: flyway_schema_history
+
 logging:
   level:
+    root: INFO
     com.zhanglx.sso: DEBUG
     com.baomidou.mybatisplus: DEBUG
     org.mybatis: DEBUG
+    org.springframework.boot: DEBUG
+    org.springframework.context: DEBUG
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -59,12 +80,12 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境开启SQL日志
   global-config:
     db-config:
-      # 使用ALWAYS策略，强制包含所有字段（包括继承字段）
-      insert-strategy: ALWAYS
-      update-strategy: ALWAYS
-      logic-delete-field: delFlag # 逻辑删除字段 (可选)
-      logic-delete-value: 1
-      logic-not-delete-value: 0
+      # 【核心修改】改为 NOT_NULL，防止 updateById 时将未赋值的字段强行覆盖为 NULL
+      insert-strategy: NOT_NULL
+      update-strategy: NOT_NULL
+      # 【核心修改】仅保留删除字段和未删除状态，彻底废弃静态的 logic-delete-value
+      logic-delete-field: delFlag
+      logic-not-delete-value: 0L
 
 # sa-token 配置
 sa-token:
@@ -92,6 +113,12 @@ sa-token:
   is-read-cookie: true
   # 是否从 header 中读取 token (支持 C/S)
   is-read-header: true
+  # Same-Token 的配置（所有微服务保持一致）
+  same-token:
+    # 秘钥，所有微服务共用这个秘钥
+    secret-key: pRZS!2k$F9aG7dJ53h8
+    # Same-Token 的有效期（秒），稍微设置长一点容忍时钟差异，如 5 分钟
+    timeout: 300
 
 default:
   password: 123456
@@ -111,3 +138,46 @@ security:
     pepper: pR7$S2kF9!aG5dJ3hZ8
     # Salt 长度（默认64字节）
     salt-length: 32
+
+
+# SpringDoc / Knife4j 配置
+springdoc:
+  # get请求多参数时不需要添加额外的@ParameterObject和@Parameter注解
+  default-flat-param-object: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    # 标签的排序方式 alpha:按照子母顺序排序（@ApiSupport注解排序不生效，因此需要设置）
+    tags-sorter: alpha
+    # 接口的排序方式 alpha:按照子母顺序排序（@ApiOperationSupport注解排序生效，因此这里不作设置）
+    operations-sorter: alpha
+  group-configs:
+    - group: "认证服务"
+      paths-to-match: "/**"
+      packages-to-scan: "com.zhanglx.sso.auth.controller"
+
+# Knife4j 增强配置
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+    enable-swagger-models: true
+    enable-dynamic-parameter: false
+    enable-document-manage: true
+    swagger-model-name: 实体类列表
+    enable-footer: true
+    enable-footer-custom: true
+    footer-custom-content: Apache 2.0 | Copyright © 2026 ZhangLX
+#  documents: #文档补充说明
+#    - name: MarkDown语法说明
+#      locations: classpath:static/markdown/grammar/*
+#      group: 01-系统接口 # 此处分组必须使用在Knife4jConfig已存在的分组名group，当存在displayName时，使用displayName名称
+#    - name: 补充文档
+#      locations: classpath:static/markdown/others/*
+#      group: 01-系统接口 # 此处分组必须使用在Knife4jConfig已存在的分组名group，当存在displayName时，使用displayName名称
+
+
+

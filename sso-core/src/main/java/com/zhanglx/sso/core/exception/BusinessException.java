@@ -1,4 +1,8 @@
-package com.zhanglx.sso.common.exception;
+package com.zhanglx.sso.core.exception;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * @Author: Zhang L X
@@ -6,6 +10,9 @@ package com.zhanglx.sso.common.exception;
  * @ClassName: BusinessException
  * @Description: 全局业务异常 所有的逻辑错误都抛出此异常，由 GlobalExceptionHandler 统一捕获
  */
+@Data
+@Getter
+@EqualsAndHashCode(callSuper = false)
 public class BusinessException extends RuntimeException {
 
     // 错误码
@@ -33,16 +40,9 @@ public class BusinessException extends RuntimeException {
         this.stack = stack;
     }
 
-    public Integer getCode() {
-        return code;
-    }
-
     @Override
-    public String getMessage() {
-        return message;
+    public Throwable fillInStackTrace() {
+        return this;
     }
 
-    public String getStack() {
-        return stack;
-    }
 }

@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zhanglx.sso.core.domain.page.BasePageQuery;
+import com.zhanglx.sso.core.domain.page.PageQuery;
 import com.zhanglx.sso.core.domain.page.SortingField;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Column;
@@ -28,11 +28,11 @@ public class MyBatisUtils {
 
     private static final String MYSQL_ESCAPE_CHARACTER = "`";
 
-    public static <T> Page<T> buildPage(BasePageQuery pageParam) {
+    public static <T> Page<T> buildPage(PageQuery pageParam) {
         return buildPage(pageParam, pageParam.getSortingFields());
     }
 
-    public static <T> Page<T> buildPage(BasePageQuery pageParam, Collection<SortingField> sortingFields) {
+    public static <T> Page<T> buildPage(PageQuery pageParam, Collection<SortingField> sortingFields) {
         // 页码 + 数量
         Page<T> page = new Page<>(pageParam.getPageNum(), pageParam.getPageSize());
         // 排序字段

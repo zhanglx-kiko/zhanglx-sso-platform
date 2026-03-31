@@ -4,6 +4,8 @@ server:
   max-http-request-header-size: 16KB
 
 spring:
+  profiles:
+    active: dev
   application:
     name: sso-gateway
   data:
@@ -55,6 +57,11 @@ spring:
                     redis-rate-limiter.replenishRate: 10
                     redis-rate-limiter burstCapacity: 20
                     key-resolver: "#{@ipKeyResolver}"  # 按IP限流（需自定义Bean）
+            - id: sso-auth-swagger
+              order: 100
+              uri: http://localhost:9000
+              predicates:
+                - Path=/swagger-ui.html,  /doc.html, /v3/api-docs/**, /webjars/**
           # 全局过滤器配置,仅对GET请求配置重试，避免非幂等请求重复提交
           default-filters:
             - name: Retry
@@ -94,8 +101,12 @@ sa-token:
   token-style: jwt
   is-read-cookie: true
   is-read-header: true
-  # 网关特有配置：全局过滤器
-  check-same-token: false # 是否开启 Same-Token 同源检测
+  # Same-Token 的配置（所有微服务保持一致）
+  same-token:
+    # 秘钥，所有微服务共用这个秘钥
+    secret-key: pRZS!2k$F9aG7dJ53h8
+    # Same-Token 的有效期（秒），稍微设置长一点容忍时钟差异，如 5 分钟
+    timeout: 300
 
 
 # ========== 日志配置（配合全局日志过滤器，4.2.7版本兼容） ==========

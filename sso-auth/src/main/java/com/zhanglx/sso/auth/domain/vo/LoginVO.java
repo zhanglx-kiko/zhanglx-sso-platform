@@ -4,10 +4,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * @Author: Zhang L X
@@ -15,6 +20,12 @@ import java.util.Objects;
  * @ClassName: LoginVO
  * @Description:
  */
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@EqualsAndHashCode
+@AllArgsConstructor
+@Schema(name = "LoginVO", description = "登录对象")
 public class LoginVO implements Serializable {
 
     @Serial
@@ -25,21 +36,25 @@ public class LoginVO implements Serializable {
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     /**
      * 用户名
      */
+    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String username;
 
     /**
      * 昵称
      */
+    @Schema(description = "昵称", name = "nickname", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String nickname;
 
     /**
      * 头像
      */
+    @Schema(description = "头像", name = "avatar", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String avatar;
 
     /**
@@ -47,116 +62,19 @@ public class LoginVO implements Serializable {
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "部门ID", name = "deptId", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private Long deptId;
 
     /**
      * Token 名称 (例如: satoken)
      */
+    @Schema(description = "Token 名称", name = "tokenName", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String tokenName;
 
     /**
      * Token 值
      */
+    @Schema(description = "Token 值", name = "tokenValue", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String tokenValue;
 
-    public LoginVO() {
-    }
-
-    public LoginVO(Long id, String username, String nickname, String avatar, Long deptId, String tokenName, String tokenValue) {
-        this.id = id;
-        this.username = username;
-        this.nickname = nickname;
-        this.avatar = avatar;
-        this.deptId = deptId;
-        this.tokenName = tokenName;
-        this.tokenValue = tokenValue;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public LoginVO setId(Long id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public LoginVO setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public LoginVO setNickname(String nickname) {
-        this.nickname = nickname;
-        return this;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public LoginVO setAvatar(String avatar) {
-        this.avatar = avatar;
-        return this;
-    }
-
-    public Long getDeptId() {
-        return deptId;
-    }
-
-    public LoginVO setDeptId(Long deptId) {
-        this.deptId = deptId;
-        return this;
-    }
-
-    public String getTokenName() {
-        return tokenName;
-    }
-
-    public LoginVO setTokenName(String tokenName) {
-        this.tokenName = tokenName;
-        return this;
-    }
-
-    public String getTokenValue() {
-        return tokenValue;
-    }
-
-    public LoginVO setTokenValue(String tokenValue) {
-        this.tokenValue = tokenValue;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        LoginVO loginVO = (LoginVO) o;
-        return Objects.equals(id, loginVO.id) && Objects.equals(username, loginVO.username) && Objects.equals(nickname, loginVO.nickname) && Objects.equals(avatar, loginVO.avatar) && Objects.equals(deptId, loginVO.deptId) && Objects.equals(tokenName, loginVO.tokenName) && Objects.equals(tokenValue, loginVO.tokenValue);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, username, nickname, avatar, deptId, tokenName, tokenValue);
-    }
-
-    @Override
-    public String toString() {
-        return "LoginVO{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", nickname='" + nickname + '\'' +
-                ", avatar='" + avatar + '\'' +
-                ", deptId=" + deptId +
-                ", tokenName='" + tokenName + '\'' +
-                ", tokenValue='" + tokenValue + '\'' +
-                '}';
-    }
 }

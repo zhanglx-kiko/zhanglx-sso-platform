@@ -1,7 +1,7 @@
 package com.zhanglx.sso.web.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zhanglx.sso.common.utils.Result;
+import com.zhanglx.sso.core.domain.result.Result;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

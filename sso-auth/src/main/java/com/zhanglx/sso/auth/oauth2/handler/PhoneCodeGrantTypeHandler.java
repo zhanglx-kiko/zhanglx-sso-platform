@@ -5,8 +5,9 @@ import cn.dev33.satoken.context.model.SaRequest;
 import cn.dev33.satoken.oauth2.SaOAuth2Manager;
 import cn.dev33.satoken.oauth2.data.model.AccessTokenModel;
 import cn.dev33.satoken.oauth2.data.model.request.RequestAuthModel;
-import cn.dev33.satoken.oauth2.exception.SaOAuth2Exception;
 import cn.dev33.satoken.oauth2.granttype.handler.SaOAuth2GrantTypeHandlerInterface;
+import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.web.utils.I18nUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class PhoneCodeGrantTypeHandler implements SaOAuth2GrantTypeHandlerInterf
 
         // 1、校验验证码是否正确
         if (!code.equals(realCode)) {
-            throw new SaOAuth2Exception("验证码错误");
+            throw new BusinessException("invalid.verification.code");
         }
 
         // 2、校验通过，删除验证码

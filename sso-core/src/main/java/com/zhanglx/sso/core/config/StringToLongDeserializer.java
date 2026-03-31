@@ -3,7 +3,7 @@ package com.zhanglx.sso.core.config;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.zhanglx.sso.common.exception.BusinessException;
+import com.zhanglx.sso.core.exception.BusinessException;
 
 import java.io.IOException;
 

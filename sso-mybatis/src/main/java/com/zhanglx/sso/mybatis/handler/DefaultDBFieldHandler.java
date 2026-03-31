@@ -32,7 +32,7 @@ public class DefaultDBFieldHandler implements MetaObjectHandler {
             this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, current);
             this.strictInsertFill(metaObject, "updateBy", Long.class, userId);
             this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, current);
-            this.strictInsertFill(metaObject, "delFlag", Integer.class, 0);
+            this.strictInsertFill(metaObject, "delFlag", Long.class, 0L);
         }
     }
 

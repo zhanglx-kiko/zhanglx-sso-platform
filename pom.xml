@@ -21,20 +21,29 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.3</version>
+        <version>4.0.5</version>
         <relativePath/>
     </parent>
 
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-cloud.version>2025.1.1</spring-cloud.version>
         <sa-token.version>1.45.0</sa-token.version>
         <hutool.version>5.8.43</hutool.version>
         <mybatis-plus.version>3.5.16</mybatis-plus.version>
-        <spring-boot.version>4.0.3</spring-boot.version>
+        <spring-boot.version>4.0.5</spring-boot.version>
         <mapstruct.version>1.7.0.Beta1</mapstruct.version>
         <guava.version>33.5.0-jre</guava.version>
+        <spotbugs.version>4.9.8.2</spotbugs.version>
+        <!-- [新增] API 文档工具版本 -->
+        <knife4j.version>4.5.0</knife4j.version>
+        <!-- [新增] 数据库版本管理工具版本 -->
+        <flyway.version>11.10.0</flyway.version>
+        <micrometer.core.version>1.17.0-M3</micrometer.core.version>
+        <spring.aop.version>4.0.0-M2</spring.aop.version>
+        <fesod.sheet.version>2.0.1-incubating</fesod.sheet.version>
     </properties>
 
     <dependencies>
@@ -48,6 +57,40 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.fesod</groupId>
+                <artifactId>fesod-sheet</artifactId>
+                <version>${fesod.sheet.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-aop</artifactId>
+                <version>${spring.aop.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>${micrometer.core.version}</version>
+            </dependency>
+
+            <!-- [新增] Knife4j API 文档依赖 -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-dependencies</artifactId>
+                <version>${knife4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- [新增] Flyway 数据库版本管理 -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${flyway.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>jakarta.validation</groupId>
                 <artifactId>jakarta.validation-api</artifactId>
@@ -191,21 +234,43 @@
 
     <build>
         <plugins>
+            <!-- [新增] SpotBugs 静态代码分析插件 -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>High</threshold>
+                    <xmlOutput>true</xmlOutput>
+                    <failOnError>false</failOnError>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>25</source>  <!-- 根据你的JDK版本调整 -->
+                    <source>25</source>
                     <target>25</target>
                     <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

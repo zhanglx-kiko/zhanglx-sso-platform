@@ -2,7 +2,8 @@ package com.zhanglx.sso.auth.oauth2.handler;
 
 import cn.dev33.satoken.oauth2.granttype.handler.PasswordGrantTypeHandler;
 import cn.dev33.satoken.oauth2.granttype.handler.model.PasswordAuthResult;
-import com.zhanglx.sso.common.exception.BusinessException;
+import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.web.utils.I18nUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,7 +22,7 @@ public class CustomPasswordGrantTypeHandler extends PasswordGrantTypeHandler {
             long userId = 10001;
             return new PasswordAuthResult(userId);
         } else {
-            throw new BusinessException("无效账号密码");
+            throw new BusinessException("exception.business.user.password.error");
         }
     }
 

@@ -4,11 +4,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * @Author: Zhang L X
@@ -16,74 +21,26 @@ import java.util.Objects;
  * @ClassName: UserPasswordDTO
  * @Description:
  */
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@Schema(name = "UserPasswordDTO", description = "用户密码对象")
 public class UserPasswordDTO implements Serializable {
 
     @NotNull(message = "用户ID不能为空")
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "用户ID", name = "userId", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private Long userId;
 
     @NotBlank(message = "旧密码不能为空")
+    @Schema(description = "旧密码", name = "oldPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String oldPassword;
 
     @NotBlank(message = "新密码不能为空")
+    @Schema(description = "新密码", name = "newPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String newPassword;
-
-    public UserPasswordDTO() {
-    }
-
-    public UserPasswordDTO(Long userId, String oldPassword, String newPassword) {
-        this.userId = userId;
-        this.oldPassword = oldPassword;
-        this.newPassword = newPassword;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public UserPasswordDTO setUserId(Long userId) {
-        this.userId = userId;
-        return this;
-    }
-
-    public String getOldPassword() {
-        return oldPassword;
-    }
-
-    public UserPasswordDTO setOldPassword(String oldPassword) {
-        this.oldPassword = oldPassword;
-        return this;
-    }
-
-    public String getNewPassword() {
-        return newPassword;
-    }
-
-    public UserPasswordDTO setNewPassword(String newPassword) {
-        this.newPassword = newPassword;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        UserPasswordDTO that = (UserPasswordDTO) o;
-        return Objects.equals(userId, that.userId) && Objects.equals(oldPassword, that.oldPassword) && Objects.equals(newPassword, that.newPassword);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userId, oldPassword, newPassword);
-    }
-
-    @Override
-    public String toString() {
-        return "UserPasswordDTO{" +
-                "userId=" + userId +
-                ", oldPassword='" + oldPassword + '\'' +
-                ", newPassword='" + newPassword + '\'' +
-                '}';
-    }
 
 }

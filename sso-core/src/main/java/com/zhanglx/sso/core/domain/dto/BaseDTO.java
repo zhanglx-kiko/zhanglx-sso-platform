@@ -4,11 +4,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 /**
  * @Author: Zhang L X
@@ -16,6 +21,13 @@ import java.util.Objects;
  * @ClassName: BasePO
  * @Description: 数据库实体基类 包含：雪花ID、审计字段、逻辑删除
  */
+// 在 Lombok 的规范中，如果子类（UserDTO）使用了 @SuperBuilder，那么它的所有父类（BaseDTO）必须、绝对也只能使用 @SuperBuilder。
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@Schema(name = "BaseDTO", description = "数据库实体基类")
 public class BaseDTO implements Serializable {
 
     @Serial
@@ -26,96 +38,23 @@ public class BaseDTO implements Serializable {
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "ID", name = "id", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "创建人", name = "nickname", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private Long createBy;
 
+    @Schema(description = "创建时间", name = "createTime", example = "", type = "LocalDateTime", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createTime;
 
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "修改人", name = "nickname", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private Long updateBy;
 
+    @Schema(description = "更新时间", name = "updateTime", example = "", type = "LocalDateTime", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updateTime;
 
-    public BaseDTO() {
-    }
-
-    public BaseDTO(Long id, Long createBy, LocalDateTime createTime, Long updateBy, LocalDateTime updateTime) {
-        this.id = id;
-        this.createBy = createBy;
-        this.createTime = createTime;
-        this.updateBy = updateBy;
-        this.updateTime = updateTime;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public BaseDTO setId(Long id) {
-        this.id = id;
-        return this;
-    }
-
-    public Long getCreateBy() {
-        return createBy;
-    }
-
-    public BaseDTO setCreateBy(Long createBy) {
-        this.createBy = createBy;
-        return this;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public BaseDTO setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-        return this;
-    }
-
-    public Long getUpdateBy() {
-        return updateBy;
-    }
-
-    public BaseDTO setUpdateBy(Long updateBy) {
-        this.updateBy = updateBy;
-        return this;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public BaseDTO setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-        return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        BaseDTO baseDTO = (BaseDTO) o;
-        return Objects.equals(id, baseDTO.id) && Objects.equals(createBy, baseDTO.createBy) && Objects.equals(createTime, baseDTO.createTime) && Objects.equals(updateBy, baseDTO.updateBy) && Objects.equals(updateTime, baseDTO.updateTime);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, createBy, createTime, updateBy, updateTime);
-    }
-
-    @Override
-    public String toString() {
-        return "BaseDTO{" +
-                "id=" + id +
-                ", createBy=" + createBy +
-                ", createTime=" + createTime +
-                ", updateBy=" + updateBy +
-                ", updateTime=" + updateTime +
-                '}';
-    }
 }

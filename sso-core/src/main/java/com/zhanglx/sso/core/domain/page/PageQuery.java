@@ -14,14 +14,14 @@ import java.util.List;
 /**
  * @Author: Zhang L X
  * @Create: 2026/2/11 16:14
- * @ClassName: BasePageQuery
+ * @ClassName: PageQuery
  * @Description: 分页查询参数基类
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BasePageQuery implements Serializable {
+public class PageQuery implements Serializable {
 
     /**
      * 最大分页大小限制

@@ -25,6 +25,18 @@ public class LambdaQueryWrapperX<T> extends LambdaQueryWrapper<T> {
         return this;
     }
 
+    @Override
+    public LambdaQueryWrapperX<T> ne(SFunction<T, ?> column, Object val) {
+        super.ne(column, val);
+        return this;
+    }
+
+    @Override
+    public LambdaQueryWrapperX<T> orderByAsc(SFunction<T, ?> column) {
+        super.orderByAsc(column);
+        return this;
+    }
+
     public LambdaQueryWrapperX<T> inIfPresent(SFunction<T, ?> column, Collection<?> values) {
         if (!CollectionUtils.isEmpty(values)) {
             return (LambdaQueryWrapperX<T>) super.in(column, values);
