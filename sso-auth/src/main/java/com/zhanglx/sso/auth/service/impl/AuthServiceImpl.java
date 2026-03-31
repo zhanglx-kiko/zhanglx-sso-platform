@@ -59,12 +59,6 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("user.password.error");
         }
 
-        // 检查并升级密码（登录成功后）
-        if (argon2PasswordEncoder.needUpgrade(userPO.getPassword())) {
-            log.info("检测到用户 [{}] 密码参数需要升级", userPO.getUsername());
-            upgradeUserPassword(userPO, loginDTO.getPassword());
-        }
-
         if (Integer.valueOf(0).equals(userPO.getStatus())) {
             throw new BusinessException("user.account.disabled");
         }
@@ -80,6 +74,12 @@ public class AuthServiceImpl implements AuthService {
 
         // 执行登录
         StpUtil.login(userPO.getId(), loginDTO.getDevice());
+
+        // 检查并升级密码（登录成功后）
+        if (argon2PasswordEncoder.needUpgrade(userPO.getPassword())) {
+            log.info("检测到用户 [{}] 密码参数需要升级", userPO.getUsername());
+            upgradeUserPassword(userPO, loginDTO.getPassword());
+        }
 
         return assembleLoginVO(userPO, StpUtil.getTokenInfo());
     }

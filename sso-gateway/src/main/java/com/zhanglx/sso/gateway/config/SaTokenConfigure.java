@@ -23,9 +23,9 @@ public class SaTokenConfigure {
                 .addInclude("/**")
                 // 开放地址 (登录接口、静态资源等不需要鉴权)
                 .addExclude("/favicon.ico",
-                        "/auth/login",
-                        "/auth/register",
-                        "/auth/isLogin",
+                        "/apis/v1/auth/login",
+                        "/apis/v1/auth/register",
+                        "/apis/v1/auth/isLogin",
                         "/oauth2/*",
                         "/swagger-resources/**",
                         "/v3/api-docs/**",

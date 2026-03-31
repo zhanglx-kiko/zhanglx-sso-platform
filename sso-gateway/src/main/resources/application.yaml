@@ -46,7 +46,7 @@ spring:
               # IP地址代表直连，不需要负载均衡中间件如Nacos、Eureka
               uri: http://localhost:9000
               predicates:
-                - Path=/auth/**, /oauth2/**
+                - Path=/apis/v1/**, /oauth2/**
                 - Method=GET,POST,DELETE,PUT  # 限定HTTP方法，提升匹配效率
               filters:
                 # 保留原始响应体，不进行封装
@@ -55,7 +55,7 @@ spring:
                 - name: RequestRateLimiter
                   args:
                     redis-rate-limiter.replenishRate: 10
-                    redis-rate-limiter burstCapacity: 20
+                    redis-rate-limiter.burstCapacity: 20
                     key-resolver: "#{@ipKeyResolver}"  # 按IP限流（需自定义Bean）
             - id: sso-auth-swagger
               order: 100

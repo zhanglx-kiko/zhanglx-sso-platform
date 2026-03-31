@@ -36,7 +36,7 @@ public class UserPO extends BasePO {
     @TableField(value = "avatar", jdbcType = JdbcType.VARCHAR)
     private String avatar;
 
-    @TableField(value = "openId", jdbcType = JdbcType.VARCHAR)
+    @TableField(value = "open_id", jdbcType = JdbcType.VARCHAR)
     private String openId;
 
     /**
