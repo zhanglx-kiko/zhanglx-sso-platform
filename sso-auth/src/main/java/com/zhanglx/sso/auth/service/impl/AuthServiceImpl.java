@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (userPO == null) {
             log.warn("登录失败，账号不存在: {}", loginDTO.getUsername());
-            throw new BusinessException("exception.business.user.not.found");
+            throw new BusinessException("business.user.not.found");
         }
 
         if (!checkpw(loginDTO.getPassword(), userPO.getPassword())) {

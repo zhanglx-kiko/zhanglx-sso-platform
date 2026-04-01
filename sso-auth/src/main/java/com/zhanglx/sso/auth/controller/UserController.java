@@ -4,7 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
-import com.zhanglx.sso.auth.domain.dto.UserQueryDTO;
+import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 import com.zhanglx.sso.auth.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -97,7 +97,7 @@ public class UserController {
     @Operation(summary = "分页查询用户列表")
     @PostMapping("/list")
     @SaCheckPermission("user:list")
-    public Page<UserDTO> pageList(@Valid @RequestBody UserQueryDTO query) {
+    public Page<UserDTO> pageList(@Valid @RequestBody UserPageQueryDTO query) {
         return userService.pageQuery(query);
     }
 

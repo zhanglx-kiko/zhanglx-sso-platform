@@ -72,7 +72,7 @@ public class PermissionVO extends BaseVO {
      * 显示顺序
      */
     @Schema(description = "显示顺序", name = "displayNo", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    private String displayNo;
+    private Integer displayNo;
 
     /**
      * 是否为外链(0是 1否)

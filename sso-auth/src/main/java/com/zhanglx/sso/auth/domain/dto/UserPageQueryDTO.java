@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 /**
  * @Author: Zhang L X
  * @Create: 2026/2/11 16:27
- * @ClassName: UserQueryDTO
+ * @ClassName: UserPageQueryDTO
  * @Description:
  */
 @Data
@@ -24,8 +24,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "UserQueryDTO", description = "用户查询对象")
-public class UserQueryDTO extends PageQuery {
+@Schema(name = "UserPageQueryDTO", description = "用户查询对象")
+public class UserPageQueryDTO extends PageQuery {
 
     @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String username;

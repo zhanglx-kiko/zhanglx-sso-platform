@@ -90,10 +90,9 @@ public interface PermissionService {
      * @param username        账号
      * @param identifications 权限项标识列表（可为空，不过滤）
      * @param permissionTypes 权限项类型列表（可为空，不过滤）
-     * @param tenantId        所属活动租户
      * @return List<PermissionVO> 以传入权限项分组的权限项列表
      */
-    List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<String> permissionTypes, String tenantId);
+    List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<String> permissionTypes);
 
     /**
      * 根据角色 id 查询已绑定的权限项列表
@@ -161,5 +160,17 @@ public interface PermissionService {
      * @param taskId 任务 id（用于进度追踪）
      */
     void executeExportTask(String taskId);
+
+    /**
+     * 根据用户 ID 查询用户拥有的所有权限标识集合（用于权限校验与缓存）
+     * <p>
+     * 业务逻辑：
+     * 1. 根据用户角色映射表和角色权限映射表，关联查出所有权限
+     * 2. 仅过滤返回 type >= 2 (按钮/接口) 的 identification
+     *
+     * @param userId 用户 ID
+     * @return List<String> 权限标识列表 (如 "user:add", "role:edit")
+     */
+    List<String> selectPermissionCodesByUserId(Long userId);
 
 }

@@ -90,4 +90,20 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
             "ORDER BY display_no ASC")
     List<PermissionPO> selChildrenPerm(@Param("parentIdentity") String parentIdentity);
 
+    /**
+     * 根据用户 ID 查询用户所拥有的权限标识集合 (用于 Sa-Token 鉴权缓存)
+     * 仅查询 type >= 2 (按钮、接口级) 的权限标识，过滤掉无需鉴权的目录和菜单
+     */
+    @Select("SELECT DISTINCT p.identification " +
+            "FROM t_auth_user_role_mapping urm " +
+            "INNER JOIN t_auth_role_permission_mapping rpm ON urm.role_id = rpm.role_id " +
+            "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
+            "WHERE urm.user_id = #{userId} " +
+            "  AND p.type >= 2 " +
+            "  AND p.del_flag = 0 " +
+            "  AND rpm.del_flag = 0 " +
+            "  AND urm.del_flag = 0 " +
+            "  AND p.identification IS NOT NULL AND p.identification != ''")
+    List<String> selectPermissionCodesByUserId(@Param("userId") Long userId);
+
 }

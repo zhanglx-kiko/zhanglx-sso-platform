@@ -11,20 +11,20 @@ import java.util.Locale;
 
 @Configuration
 public class I18nConfig {
-
-    @Bean
-    public MessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        // 注意：ResourceBundle 机制下，千万不要加 "classpath:" 前缀！直接写相对路径即可。
-        messageSource.setBasenames(
-                "i18n/messages",
-                "i18n/common",
-                "i18n/exception"
-        );
-        messageSource.setDefaultEncoding("UTF-8");
-        messageSource.setUseCodeAsDefaultMessage(false);
-        return messageSource;
-    }
+//  在application.yaml控制国际化文件名
+//    @Bean
+//    public MessageSource messageSource() {
+//        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+//        // 注意：ResourceBundle 机制下，千万不要加 "classpath:" 前缀！直接写相对路径即可。
+//        messageSource.setBasenames(
+//                "i18n/messages",
+//                "i18n/common",
+//                "i18n/exception"
+//        );
+//        messageSource.setDefaultEncoding("UTF-8");
+//        messageSource.setUseCodeAsDefaultMessage(false);
+//        return messageSource;
+//    }
 
     @Bean
     public LocaleResolver localeResolver() {

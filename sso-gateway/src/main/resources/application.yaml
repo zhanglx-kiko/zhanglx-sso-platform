@@ -8,6 +8,10 @@ spring:
     active: dev
   application:
     name: sso-gateway
+  messages:
+    # 逗号分隔所有的 basename
+    basename: i18n/common,i18n/sso-messages
+    encoding: UTF-8
   data:
     redis:
       host: 192.168.3.130

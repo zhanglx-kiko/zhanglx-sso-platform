@@ -55,7 +55,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO addRole(RoleDTO roleDTO) {
         if (roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getRoleName, roleDTO.getRoleName())
                 .or().eq(RolePO::getRoleCode, roleDTO.getRoleCode()))) {
-            throw new BusinessException("exception.business.data.duplicate");
+            throw new BusinessException("business.data.duplicate");
         }
 
         RolePO role = IRoleMapper.INSTANCE.toPO(roleDTO);
@@ -67,7 +67,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO loadRole(Long roleId) {
         AssertUtils.notNull(roleId, "role.id.cannot.be.blank");
         RolePO rolePO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(rolePO, "exception.business.resource.not.found");
+        AssertUtils.notNull(rolePO, "business.resource.not.found");
         RoleDTO roleDTO = IRoleMapper.INSTANCE.toDTO(rolePO);
         roleDTO.setRolePermissions(permissionService.selPermissionByRoleId(roleId));
         return roleDTO;
@@ -77,7 +77,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleInfoVO selectRoleDetail(Long roleId) {
         AssertUtils.notNull(roleId, "role.id.cannot.be.blank");
         RolePO rolePO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(rolePO, "exception.business.resource.not.found");
+        AssertUtils.notNull(rolePO, "business.resource.not.found");
         RoleInfoVO roleVO = IRoleMapper.INSTANCE.toVO(rolePO);
         roleVO.setUserIds(userRoleRelationshipMappingMapper.selUserIdListByRoleId(roleId));
         return roleVO;
@@ -85,10 +85,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleInfoVO bindUsers(Long roleId, List<Long> userIds) {
-        AssertUtils.notNull(roleId, "exception.business.data.invalid");
+        AssertUtils.notNull(roleId, "business.data.invalid");
 
         RolePO role = roleMapper.selectById(roleId);
-        AssertUtils.notNull(role, "exception.business.resource.not.found");
+        AssertUtils.notNull(role, "business.resource.not.found");
 
         // 传入的用户列表为空时，直接清空该角色下的所有用户关联
         if (CollectionUtils.isEmpty(userIds)) {
@@ -147,9 +147,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO associatePermissions(Long roleId, List<RolePermissionRelationshipMappingDTO> permissions) {
-        AssertUtils.notNull(roleId, "exception.business.data.invalid");
+        AssertUtils.notNull(roleId, "business.data.invalid");
         RolePO roleResultPO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(roleResultPO, "exception.business.resource.not.found");
+        AssertUtils.notNull(roleResultPO, "business.resource.not.found");
 
         if (CollectionUtils.isEmpty(permissions)) {
             // 删除所有关联关系
@@ -209,7 +209,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO updateRole(Long id, RoleDTO roleDTO) {
-        AssertUtils.isTrue(roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getId, id)), "exception.business.resource.not.found");
+        AssertUtils.isTrue(roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getId, id)), "business.resource.not.found");
         RolePO updateRole = IRoleMapper.INSTANCE.toPO(roleDTO);
         roleMapper.updateById(updateRole);
         return IRoleMapper.INSTANCE.toDTO(updateRole);
@@ -219,7 +219,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO delRole(Long id) {
         RolePO role = null;
         if (id == null || (role = roleMapper.selectById(id)) == null) {
-            throw new BusinessException("exception.business.resource.not.found");
+            throw new BusinessException("business.resource.not.found");
         }
 
         roleMapper.deleteByIdWithFill(id);
@@ -252,7 +252,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void batchDelRole(List<Long> idList) {
-        AssertUtils.notEmpty(idList = idList.stream().filter(Objects::nonNull).toList(), "exception.business.data.invalid");
+        AssertUtils.notEmpty(idList = idList.stream().filter(Objects::nonNull).toList(), "business.data.invalid");
 
         List<RolePO> existRoles = roleMapper.selectByIds(idList);
         if (CollectionUtils.isEmpty(existRoles)) {
@@ -275,7 +275,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> selectRolesForUser(String userAccount) {
-        AssertUtils.notBlank(userAccount, "exception.business.data.invalid");
+        AssertUtils.notBlank(userAccount, "business.data.invalid");
         // CI 忽略大小写
         // CS 大小写敏感
         if (Strings.CI.equals("guest_username", userAccount)) {
@@ -295,7 +295,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> selectRolesForUser(Long userId) {
-        AssertUtils.notNull(userId, "exception.business.data.invalid");
+        AssertUtils.notNull(userId, "business.data.invalid");
         // 1. 查询用户关联的角色 ID 列表
         List<Long> roleIds = userRoleRelationshipMappingMapper.selRoleIdsByUserId(userId);
 

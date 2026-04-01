@@ -2,7 +2,7 @@ package com.zhanglx.sso.auth.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
-import com.zhanglx.sso.auth.domain.dto.UserQueryDTO;
+import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 
 /**
  * @Author: Zhang L X
@@ -65,7 +65,7 @@ public interface UserService {
      * @param query 查询参数（分页、用户名、部门 ID）
      * @return Page<UserDTO> 分页用户信息
      */
-    Page<UserDTO> pageQuery(UserQueryDTO query);
+    Page<UserDTO> pageQuery(UserPageQueryDTO query);
 
     /**
      * 根据 OpenID 查询用户

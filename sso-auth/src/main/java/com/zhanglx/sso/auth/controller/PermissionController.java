@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
+import com.zhanglx.sso.auth.domain.dto.PermissionQueryDTO;
 import com.zhanglx.sso.auth.domain.dto.excel.ExportProgressDTO;
 import com.zhanglx.sso.auth.domain.dto.excel.ImportProgressDTO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
@@ -112,13 +113,8 @@ public class PermissionController {
     @Operation(summary = "根据标识查询权限列表")
     @PostMapping("/by-identification")
     @SaCheckPermission("permission:list")
-    public List<PermissionVO> getPermissionsByIdentification(
-            @RequestParam String username,
-            @RequestBody(required = false) List<String> identifications,
-            @RequestBody(required = false) List<String> permissionTypes,
-            @RequestParam(required = false) String tenantId
-    ) {
-        return permissionService.selPermissionByIdentification(username, identifications, permissionTypes, tenantId);
+    public List<PermissionVO> getPermissionsByIdentification(@RequestBody PermissionQueryDTO queryDTO) {
+        return permissionService.selPermissionByIdentification(queryDTO.getUsername(), queryDTO.getIdentifications(), queryDTO.getPermissionTypes());
     }
 
     @Operation(summary = "异步批量导入权限 (尽力而为)")

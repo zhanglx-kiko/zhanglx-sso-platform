@@ -204,7 +204,36 @@ VALUES
 
 -- =================== 接口级 (3) ===================
 (3000000000000010000, '保存商品接口', 'mall:goods:api:save', 3000000000000001000, 'mall.goods.list.add.api', NULL, '/apis/v1/goods/save', NULL, 1, 0, 3, '发布商品的物理接口', 0),
-(3000000000000011000, '执行发货接口', 'mall:order:api:ship', 3000000000000001100, 'mall.order.list.ship.api', NULL, '/apis/v1/order/ship', NULL, 1, 0, 3, '回传物流单号的接口', 0);
+-- 【修正：这里的分号被替换为逗号】
+(3000000000000011000, '执行发货接口', 'mall:order:api:ship', 3000000000000001100, 'mall.order.list.ship.api', NULL, '/apis/v1/order/ship', NULL, 1, 0, 3, '回传物流单号的接口', 0),
+
+-- =================== 菜单级 (1) 补充 ===================
+-- 权限菜单（对应 PermissionController 的归属菜单）
+(3000000000000000132, '权限列表', 'system:auth:permission', 3000000000000000013, 'system.auth.permission', 'system/auth/permission/index', '/system/auth/permission', NULL, 3, 0, 1, '', 0),
+
+-- =================== 按钮/接口级 (2) ===================
+-- 1. 用户管理相关权限 (关联 parent_id: 3000000000000000130 管理员列表)
+(3000000000000001300, '新增用户', 'user:add', 3000000000000000130, 'system.auth.user.add', NULL, NULL, NULL, 1, 0, 2, 'UserController.saveUser', 0),
+(3000000000000001301, '修改用户', 'user:edit', 3000000000000000130, 'system.auth.user.edit', NULL, NULL, NULL, 2, 0, 2, 'UserController.updateUserInfo', 0),
+(3000000000000001302, '删除用户', 'user:remove', 3000000000000000130, 'system.auth.user.remove', NULL, NULL, NULL, 3, 0, 2, 'UserController.removeUser', 0),
+(3000000000000001303, '查询用户', 'user:list', 3000000000000000130, 'system.auth.user.list', NULL, NULL, NULL, 4, 0, 2, 'UserController.pageList', 0),
+(3000000000000001304, '重置密码', 'user:reset', 3000000000000000130, 'system.auth.user.reset', NULL, NULL, NULL, 5, 0, 2, 'AuthController.resetPassword', 0),
+
+-- 2. 角色管理相关权限 (关联 parent_id: 3000000000000000131 角色列表)
+(3000000000000001310, '新增角色', 'role:add', 3000000000000000131, 'system.auth.role.add', NULL, NULL, NULL, 1, 0, 2, 'RoleController.addRole', 0),
+(3000000000000001311, '修改角色', 'role:edit', 3000000000000000131, 'system.auth.role.edit', NULL, NULL, NULL, 2, 0, 2, 'RoleController.updateRole', 0),
+(3000000000000001312, '删除角色', 'role:remove', 3000000000000000131, 'system.auth.role.remove', NULL, NULL, NULL, 3, 0, 2, 'RoleController.delRole & batchDelRole', 0),
+(3000000000000001313, '查询角色', 'role:list', 3000000000000000131, 'system.auth.role.list', NULL, NULL, NULL, 4, 0, 2, 'RoleController.pageList', 0),
+(3000000000000001314, '查看角色', 'role:view', 3000000000000000131, 'system.auth.role.view', NULL, NULL, NULL, 5, 0, 2, 'RoleController.getRoleDetail', 0),
+(3000000000000001315, '绑定用户', 'role:bind-user', 3000000000000000131, 'system.auth.role.bind-user', NULL, NULL, NULL, 6, 0, 2, 'RoleController.bindUsers', 0),
+(3000000000000001316, '分配权限', 'role:assign-permission', 3000000000000000131, 'system.auth.role.assign-permission', NULL, NULL, NULL, 7, 0, 2, 'RoleController.associatePermissions', 0),
+
+-- 3. 权限管理相关权限 (关联 parent_id: 3000000000000000132 权限列表)
+(3000000000000001320, '新增权限', 'permission:add', 3000000000000000132, 'system.auth.permission.add', NULL, NULL, NULL, 1, 0, 2, 'PermissionController.addPermission', 0),
+(3000000000000001321, '修改权限', 'permission:edit', 3000000000000000132, 'system.auth.permission.edit', NULL, NULL, NULL, 2, 0, 2, 'PermissionController.updatePermission', 0),
+(3000000000000001322, '删除权限', 'permission:remove', 3000000000000000132, 'system.auth.permission.remove', NULL, NULL, NULL, 3, 0, 2, 'PermissionController.delPermission & batchDelPermission', 0),
+-- 【修正：最后一条数据必须以分号结尾】
+(3000000000000001323, '查询权限', 'permission:list', 3000000000000000132, 'system.auth.permission.list', NULL, NULL, NULL, 4, 0, 2, 'PermissionController.getPermissionTree', 0);
 
 
 -- 6. 一键为超级管理员角色授予上述【所有】权限（完美动态绑定）
@@ -221,3 +250,4 @@ SELECT
     NOW() AS create_time,
     NOW() AS update_time
 FROM `t_auth_permission`;
+

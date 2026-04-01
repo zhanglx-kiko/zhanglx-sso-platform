@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
-import com.zhanglx.sso.auth.domain.dto.UserQueryDTO;
+import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.UserService;
@@ -89,7 +89,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UserDTO userinfo) {
-        AssertUtils.notNull(userinfo.getId(), "exception.business.data.invalid");
+        AssertUtils.notNull(userinfo.getId(), "business.data.invalid");
 
         UserPO oldUser = userMapper.selectById(userinfo.getId());
         if (oldUser == null) {
@@ -119,7 +119,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> pageQuery(UserQueryDTO query) {
+    public Page<UserDTO> pageQuery(UserPageQueryDTO query) {
         Page<UserPO> page = Page.of(query.getPageNum(), query.getPageSize());
 
         LambdaQueryWrapperX<UserPO> wrapper = new LambdaQueryWrapperX<>();

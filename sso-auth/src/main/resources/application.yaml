@@ -6,6 +6,10 @@ spring:
     active: dev
   application:
     name: sso-auth
+  messages:
+    # 逗号分隔所有的 basename
+    basename: i18n/common,i18n/auth-messages,i18n/sso-messages
+    encoding: UTF-8
   # Redis 配置 (请修改为你的实际地址)
   data:
     redis:

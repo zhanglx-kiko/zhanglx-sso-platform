@@ -75,7 +75,7 @@ public class PermissionServiceImpl implements PermissionService {
         // 查询全局是否有重复
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification()))) {
-            throw new BusinessException("exception.business.data.duplicate");
+            throw new BusinessException("business.data.duplicate");
         }
 
         PermissionPO permissionPO = IPermissionMapper.INSTANCE.toPO(permissionDTO);
@@ -137,10 +137,10 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "PermissionTree", allEntries = true)
     public PermissionDTO delPermission(Long id) {
-        AssertUtils.notNull(id, "exception.business.data.invalid");
+        AssertUtils.notNull(id, "business.data.invalid");
 
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, "exception.business.resource.not.found");
+        AssertUtils.notNull(permissionPO, "business.resource.not.found");
 
         // 递归删除权限标签项
         recursiveDelFuncPerm(Lists.newArrayList(IPermissionMapper.INSTANCE.toDTO(permissionPO)));
@@ -183,7 +183,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "PermissionTree", allEntries = true)
     public List<PermissionDTO> batchDelPermission(List<Long> idList) {
-        AssertUtils.notEmpty(idList, "exception.business.data.invalid");
+        AssertUtils.notEmpty(idList, "business.data.invalid");
 
         List<PermissionDTO> results = Lists.newArrayList();
         AtomicInteger counter = new AtomicInteger(0);
@@ -207,12 +207,12 @@ public class PermissionServiceImpl implements PermissionService {
     @CacheEvict(value = "PermissionTree", allEntries = true)
     public PermissionDTO updatePermission(Long id, PermissionDTO permissionDTO) {
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, "exception.business.resource.not.found");
+        AssertUtils.notNull(permissionPO, "business.resource.not.found");
 
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification())
                 .ne(PermissionPO::getId, id))) {
-            throw new BusinessException("exception.business.data.duplicate");
+            throw new BusinessException("business.data.duplicate");
         }
 
         PermissionPO updateMenu = IPermissionMapper.INSTANCE.toPO(permissionDTO);
@@ -330,11 +330,11 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<String> permissionTypes, String tenantId) {
-        AssertUtils.notBlank(username, "exception.business.data.invalid");
+    public List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<String> permissionTypes) {
+        AssertUtils.notBlank(username, "business.data.invalid");
 
         UserDTO user = userService.findUserByUsername(username);
-        AssertUtils.notNull(user, "exception.business.resource.not.found");
+        AssertUtils.notNull(user, "business.resource.not.found");
 
         List<PermissionPO> results = permissionMapper.selectByUserWithIdentityAndType(
                 user.getId(),
@@ -350,7 +350,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionVO> selPermissionByRoleId(long roleId) {
-        AssertUtils.notNull(roleId, "exception.business.data.invalid");
+        AssertUtils.notNull(roleId, "business.data.invalid");
 
         List<PermissionPO> result = permissionMapper.selPermissionByRoleId(roleId);
         if (CollectionUtils.isNotEmpty(result)) {
@@ -624,6 +624,19 @@ public class PermissionServiceImpl implements PermissionService {
                 tempExportFile.delete();
             }
         }
+    }
+
+    @Override
+    public List<String> selectPermissionCodesByUserId(Long userId) {
+        AssertUtils.notNull(userId, "business.data.invalid");
+
+        List<String> permissionCodes = permissionMapper.selectPermissionCodesByUserId(userId);
+
+        if (CollectionUtils.isEmpty(permissionCodes)) {
+            return Lists.newArrayList();
+        }
+
+        return permissionCodes;
     }
 
     /**
