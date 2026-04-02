@@ -3,7 +3,15 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.log
+# 忽略所有 .log 日志文件
+*.log
+logs/
+**/logs/
+
+# 忽略 Git 配置文件（按需选择）
+# 若你不想让 Codex 跟踪这些文件，直接添加：
+.gitignore
+.gitattributes
 ### STS ###
 .apt_generated
 .classpath
