@@ -1,6 +1,10 @@
 package com.zhanglx.sso.gateway.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.zhanglx.sso.common.ResultCode;
+import com.zhanglx.sso.common.result.Result;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -17,116 +21,149 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-/**
- * @Author: Zhang L X
- * @Create: 2026/2/26 14:23
- * @ClassName: ResponseWrapperFilter
- * @Description: 网关级别的响应过滤器
- */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ResponseWrapperFilter implements GlobalFilter, Ordered {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpResponse originalResponse = exchange.getResponse();
-
-        log.info("ResponseWrapperFilter 开始处理请求: {} {}",
-                exchange.getRequest().getMethod(),
-                exchange.getRequest().getPath());
-
         ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                log.info("ResponseWrapperFilter writeWith 被调用, 状态码: {}", getStatusCode());
-
-                if (getStatusCode() != null && getStatusCode().isError()) {
-                    log.info("检测到错误状态码: {}, 开始处理错误响应", getStatusCode().value());
-
-                    return Flux.from(body)
-                            .collectList()
-                            .flatMap(dataBuffers -> {
-                                // 收集响应内容
-                                StringBuilder responseBody = new StringBuilder();
-                                dataBuffers.forEach(dataBuffer -> {
-                                    byte[] content = new byte[dataBuffer.readableByteCount()];
-                                    dataBuffer.read(content);
-                                    DataBufferUtils.release(dataBuffer);
-                                    responseBody.append(new String(content, StandardCharsets.UTF_8));
-                                });
-
-                                String originalResponseStr = responseBody.toString();
-                                log.info("原始错误响应内容: {}", originalResponseStr);
-
-                                try {
-                                    // 尝试解析原始错误信息
-                                    String errorMessage = extractErrorMessage(originalResponseStr);
-                                    log.info("解析出的错误信息: {}", errorMessage);
-
-                                    // 构造统一的错误响应格式
-                                    Map<String, Object> errorResponse = new HashMap<>();
-                                    errorResponse.put("code", getStatusCode().value());
-                                    errorResponse.put("msg", errorMessage);
-                                    errorResponse.put("data", null);
-                                    errorResponse.put("path", exchange.getRequest().getPath().value());
-                                    errorResponse.put("timestamp", System.currentTimeMillis());
-
-                                    String jsonResponse = new ObjectMapper().writeValueAsString(errorResponse);
-                                    log.info("构造的统一错误响应: {}", jsonResponse);
-
-                                    DataBuffer buffer = exchange.getResponse().bufferFactory()
-                                            .wrap(jsonResponse.getBytes(StandardCharsets.UTF_8));
-
-                                    // 设置响应头
-                                    exchange.getResponse().setStatusCode(getStatusCode());
-                                    exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-
-                                    return super.writeWith(Mono.just(buffer));
-                                } catch (Exception e) {
-                                    log.error("解析或构造错误响应失败", e);
-                                    // 如果解析失败，返回原始响应
-                                    return super.writeWith(Flux.fromIterable(dataBuffers));
-                                }
-                            });
-                } else {
-                    log.info("非错误状态码: {}, 直接返回原始响应", getStatusCode());
+                if (getStatusCode() == null || !getStatusCode().isError()) {
+                    return super.writeWith(body);
                 }
-                return super.writeWith(body);
+
+                return Flux.from(body)
+                        .collectList()
+                        .flatMap(dataBuffers -> rewriteErrorBody(getDelegate(), currentStatusCode(), dataBuffers));
+            }
+
+            @Override
+            public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
+                return writeWith(Flux.from(body).flatMapSequential(publisher -> publisher));
+            }
+
+            @Override
+            public Mono<Void> setComplete() {
+                if (getStatusCode() == null || !getStatusCode().isError() || isCommitted()) {
+                    return super.setComplete();
+                }
+
+                return writeNormalizedError(getDelegate(), currentStatusCode(), extractErrorMessage(null, currentStatusCode()));
+            }
+
+            private int currentStatusCode() {
+                return getStatusCode() == null ? 500 : getStatusCode().value();
             }
         };
 
         return chain.filter(exchange.mutate().response(decoratedResponse).build());
     }
 
-    /**
-     * 解析错误信息
-     */
-    private String extractErrorMessage(String responseBody) {
+    private Mono<Void> rewriteErrorBody(ServerHttpResponse targetResponse, int statusCode, List<? extends DataBuffer> dataBuffers) {
+        byte[] originalBytes = readBodyBytes(dataBuffers);
+        String originalBody = new String(originalBytes, StandardCharsets.UTF_8);
+
+        if (isStandardResultBody(originalBody)) {
+            targetResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+            return writeBytes(targetResponse, originalBytes);
+        }
+
+        return writeNormalizedError(targetResponse, statusCode, extractErrorMessage(originalBody, statusCode));
+    }
+
+    private Mono<Void> writeNormalizedError(ServerHttpResponse targetResponse, int statusCode, String message) {
+        Result<Void> normalized = Result.error(statusCode, message);
+
         try {
-            // 解析 JSON 格式的错误响应
-            if (responseBody.startsWith("{") && responseBody.endsWith("}")) {
-                Map errorMap = new ObjectMapper().readValue(responseBody, Map.class);
-                if (errorMap.containsKey("msg")) {
-                    return errorMap.get("msg").toString();
-                } else if (errorMap.containsKey("message")) {
-                    return errorMap.get("message").toString();
-                }
-            }
-            // 如果解析失败，返回默认信息
-            return "系统内部错误";
+            byte[] normalizedBytes = objectMapper.writeValueAsBytes(normalized);
+            targetResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+            return writeBytes(targetResponse, normalizedBytes);
         } catch (Exception e) {
-            log.warn("解析错误信息失败: {}", responseBody);
-            return "系统内部错误";
+            log.error("网关统一错误响应构造失败", e);
+            return targetResponse.setComplete();
         }
     }
 
+    private byte[] readBodyBytes(List<? extends DataBuffer> dataBuffers) {
+        int totalLength = dataBuffers.stream().mapToInt(DataBuffer::readableByteCount).sum();
+        byte[] content = new byte[totalLength];
+        int offset = 0;
+        for (DataBuffer dataBuffer : dataBuffers) {
+            int readable = dataBuffer.readableByteCount();
+            dataBuffer.read(content, offset, readable);
+            offset += readable;
+            DataBufferUtils.release(dataBuffer);
+        }
+        return content;
+    }
+
+    private Mono<Void> writeBytes(ServerHttpResponse targetResponse, byte[] bytes) {
+        DataBuffer buffer = targetResponse.bufferFactory().wrap(bytes);
+        return targetResponse.writeWith(Mono.just(buffer));
+    }
+
+    private boolean isStandardResultBody(String body) {
+        if (body == null || body.isBlank()) {
+            return false;
+        }
+
+        try {
+            JsonNode jsonNode = objectMapper.readTree(body);
+            return jsonNode.isObject() && jsonNode.has("code") && jsonNode.has("msg") && jsonNode.has("data");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String extractErrorMessage(String body, int statusCode) {
+        if (body != null && !body.isBlank()) {
+            try {
+                JsonNode jsonNode = objectMapper.readTree(body);
+                if (jsonNode.hasNonNull("msg")) {
+                    return jsonNode.get("msg").asText();
+                }
+                if (jsonNode.hasNonNull("message")) {
+                    return jsonNode.get("message").asText();
+                }
+                if (jsonNode.hasNonNull("error")) {
+                    return jsonNode.get("error").asText();
+                }
+                if (jsonNode.hasNonNull("detail")) {
+                    return jsonNode.get("detail").asText();
+                }
+            } catch (Exception e) {
+                log.debug("网关错误响应不是JSON，直接回退默认消息");
+            }
+        }
+
+        return switch (statusCode) {
+            case 400 -> ResultCode.BAD_REQUEST.getMessage();
+            case 401 -> ResultCode.UNAUTHORIZED.getMessage();
+            case 403 -> ResultCode.FORBIDDEN.getMessage();
+            case 404 -> ResultCode.NOT_FOUND.getMessage();
+            case 405 -> ResultCode.METHOD_NOT_ALLOWED.getMessage();
+            case 409 -> ResultCode.CONFLICT.getMessage();
+            case 422 -> ResultCode.UNPROCESSABLE_ENTITY.getMessage();
+            case 429 -> ResultCode.TOO_MANY_REQUESTS.getMessage();
+            case 502 -> ResultCode.BAD_GATEWAY.getMessage();
+            case 503 -> ResultCode.SERVICE_UNAVAILABLE.getMessage();
+            case 504 -> ResultCode.GATEWAY_TIMEOUT.getMessage();
+            default -> ResultCode.INTERNAL_SERVER_ERROR.getMessage();
+        };
+    }
 
     @Override
     public int getOrder() {
-        return -1; // 在日志过滤器之后执行
+        return -1;
     }
 
 }
+

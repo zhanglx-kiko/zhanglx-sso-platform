@@ -153,17 +153,17 @@
                 <version>${sa-token.version}</version>
             </dependency>
 
-            <!-- 解决 Sa-Token 依赖的 Jackson 时间序列化类缺失问题 -->
+            <!-- Jackson 3 统一依赖 -->
             <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson-2-bom.version}</version>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson-bom.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
+                <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>${jackson-2-bom.version}</version>
+                <version>${jackson-bom.version}</version>
             </dependency>
 
             <dependency>
@@ -188,7 +188,7 @@
 
             <dependency>
                 <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-redis-jackson</artifactId>
+                <artifactId>sa-token-jackson3</artifactId>
                 <version>${sa-token.version}</version>
             </dependency>
 

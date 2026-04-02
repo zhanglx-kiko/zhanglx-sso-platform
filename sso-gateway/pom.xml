@@ -33,10 +33,9 @@
             <artifactId>sa-token-redis-template</artifactId>
         </dependency>
 
-        <!-- 解决 Sa-Token 依赖的 Jackson 时间序列化类缺失问题 -->
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-jackson3</artifactId>
         </dependency>
 
         <dependency>

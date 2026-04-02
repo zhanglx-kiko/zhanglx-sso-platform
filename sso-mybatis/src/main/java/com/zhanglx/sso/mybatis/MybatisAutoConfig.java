@@ -1,8 +1,8 @@
 package com.zhanglx.sso.mybatis;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.context.annotation.ComponentScan;
+import com.zhanglx.sso.mybatis.config.MybatisAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * @Author: Zhang L X
@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
  * @Description:
  */
 @Configuration
-@ComponentScan(basePackages = "com.zhanglx.sso.mybatis")
-@MapperScan("com.baomidou.mybatisplus.samples.quickstart.mapper")
+@Import(MybatisAutoConfiguration.class)
 public class MybatisAutoConfig {
 }

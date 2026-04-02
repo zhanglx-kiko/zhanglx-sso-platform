@@ -8,8 +8,6 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import com.zhanglx.sso.mybatis.handler.DefaultDBFieldHandler;
 import com.zhanglx.sso.mybatis.handler.StringListTypeHandler;
-import org.apache.ibatis.annotations.Mapper;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -24,8 +22,6 @@ import java.util.List;
  */
 @Configuration
 @EnableTransactionManagement(proxyTargetClass = true)
-@MapperScan(value = "${com.zhanglx.sso.mybatis.domain-package:com.zhanglx.sso.**.mapper}", annotationClass = Mapper.class,
-        lazyInitialization = "${mybatis.lazy-initialization:false}")
 public class MybatisAutoConfiguration {
 
     /**

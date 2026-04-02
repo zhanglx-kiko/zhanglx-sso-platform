@@ -1,6 +1,6 @@
 package com.zhanglx.sso.core.aspect;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.zhanglx.sso.core.annotation.ExportTreeJson;
 import com.zhanglx.sso.core.domain.tree.TreeNode;
 import com.zhanglx.sso.core.utils.tree.GenericTreeIOUtils;
@@ -41,7 +41,7 @@ public class TreeExportAspect {
         Object result = joinPoint.proceed();
 
         // 如果返回值为空或者不是 List，直接放行，交给 Spring 原生处理
-        if (!(result instanceof List<?> list) || list.isEmpty() || !(list.get(0) instanceof TreeNode)) {
+        if (!(result instanceof List<?> list) || list.isEmpty() || !(list.getFirst() instanceof TreeNode)) {
             return result;
         }
 

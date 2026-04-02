@@ -1,31 +1,29 @@
 package com.zhanglx.sso.core.config;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 import com.zhanglx.sso.core.exception.BusinessException;
 
-import java.io.IOException;
-
-/**
- * @Author: Zhang L X
- * @Create: 2026/3/12 15:34
- * @ClassName: StringToLongDeserializer
- * @Description: String 转 Long 自定义反序列化器
- */
-public class StringToLongDeserializer extends JsonDeserializer<Long> {
+public class StringToLongDeserializer extends ValueDeserializer<Long> {
 
     @Override
-    public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        String value = p.getText();
+    public Long deserialize(JsonParser p, DeserializationContext ctxt) {
+        JsonToken currentToken = p.currentToken();
+        if (currentToken == JsonToken.VALUE_NUMBER_INT) {
+            return p.getLongValue();
+        }
+
+        String value = p.getValueAsString();
         if (value == null || value.trim().isEmpty()) {
             return null;
         }
 
         try {
-            return Long.parseLong(value);
+            return Long.parseLong(value.trim());
         } catch (NumberFormatException e) {
-            throw new BusinessException("无法将字符串 [" + value + "] 转换为 Long 类型", e.getMessage());
+            throw BusinessException.badRequest("无法将字符串 [" + value + "] 转换为 Long 类型", e);
         }
     }
 

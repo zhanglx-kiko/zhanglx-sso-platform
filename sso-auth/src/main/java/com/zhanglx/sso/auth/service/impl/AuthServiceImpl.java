@@ -169,11 +169,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 验证验证码
+     * 校验用户提交的验证码。
      *
-     * @param username         用户名
-     * @param verificationCode 验证码
-     * @return 是否验证通过
+     * <p>当前实现仍为占位逻辑，后续可在此处接入 Redis、短信网关或图形验证码服务，
+     * 统一完成验证码读取、过期校验和比对。</p>
+     *
+     * @param username 用户名
+     * @param verificationCode 用户输入的验证码
+     * @return 验证是否通过
      */
     private boolean verifyVerificationCode(String username, String verificationCode) {
         // TODO: 这里需要从 Redis 或其他存储中获取验证码进行比对
@@ -188,7 +191,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
-     * 升级用户密码
+     * 在用户登录成功后按新参数重新加密并升级密码。
+     *
+     * <p>该方法只负责尽力升级，不影响本次登录主流程；升级失败时仅记录日志，
+     * 避免因为密码参数升级阻塞正常登录。</p>
+     *
+     * @param userPO 已登录成功的用户实体
+     * @param rawPassword 用户本次提交的明文密码
      */
     private void upgradeUserPassword(UserPO userPO, String rawPassword) {
         try {
@@ -216,6 +225,13 @@ public class AuthServiceImpl implements AuthService {
         return argon2PasswordEncoder.matchesAsyncWithTimeout(rawPassword, encodedPassword);
     }
 
+    /**
+     * 组装登录成功后的返回对象。
+     *
+     * @param userPO 已认证通过的用户实体
+     * @param tokenInfo Sa-Token 生成的令牌信息
+     * @return 返回给前端的登录视图对象
+     */
     private LoginVO assembleLoginVO(UserPO userPO, SaTokenInfo tokenInfo) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(userPO.getId());

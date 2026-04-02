@@ -2,25 +2,20 @@ package com.zhanglx.sso.auth.service.impl;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.properties.WechatProperties;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.service.RoleService;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
+import com.zhanglx.sso.core.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
-/**
- * @Author: Zhang L X
- * @Create: 2026/3/19 14:28
- * @ClassName: WechatAuthServiceImpl
- * @Description:
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,35 +29,31 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public LoginVO loginByWechatCode(String code) {
-        // 1. 调用微信接口换取 OpenID
         String openId = fetchOpenIdFromWechat(code);
-
-        // 2. 根据 OpenID 查询数据库用户
         UserDTO user = userService.getUserByOpenId(openId);
 
-        // 3. 业务逻辑：如果是首次进入的新用户，执行静默注册
         if (user == null) {
             user = new UserDTO();
             user.setOpenId(openId);
-            // 这里可以设置一些默认的昵称或头像（微信新规不再直接返回昵称头像，需后续引导用户授权）
             user.setNickname("用户_" + System.currentTimeMillis() % 10000);
             user = userService.addWxUser(user);
 
-            // 4. 为新用户绑定默认的角色权限 (例如：角色 ID 为 2 代表普通消费者)
-            // todo 为微信新用户绑定默认角色
-//            roleService.bindDefaultRole(user.getId(), 2L);
-            log.info("检测到新客访问，已静默注册成功，用户 ID: {}", user.getId());
+            // TODO 为微信新用户绑定默认角色
+            log.info("检测到新客访问，已静默注册成功，用户ID: {}", user.getId());
         }
 
-        // 5. 使用 Sa-Token 进行登录会话记录
         StpUtil.login(user.getId());
-
-        // 6. 返回包含了 tokenName 和 tokenValue 的鉴权信息给小程序端
         return assembleLoginVO(user, StpUtil.getTokenInfo());
     }
 
     /**
-     * 向微信服务器发请求获取 OpenID
+     * 调用微信接口，通过授权码换取 OpenID。
+     *
+     * <p>当微信返回业务失败时，会转换为 400 级业务异常；当 HTTP 调用或网络链路异常时，
+     * 会转换为 502 级异常，便于前端区分业务失败与上游服务故障。</p>
+     *
+     * @param code 微信小程序登录授权码
+     * @return 微信 OpenID
      */
     private String fetchOpenIdFromWechat(String code) {
         String url = String.format(
@@ -71,7 +62,6 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         );
 
         try {
-            // 使用 RestClient 发起 GET 请求并解析 JSON
             JsonNode response = restClient.get()
                     .uri(url)
                     .retrieve()
@@ -79,17 +69,26 @@ public class WechatAuthServiceImpl implements WechatAuthService {
 
             if (response != null && response.has("openid")) {
                 return response.get("openid").asText();
-            } else {
-                String errorMsg = response != null ? response.get("errmsg").asText() : "未知错误";
-                log.error("微信登录凭证校验失败: {}", errorMsg);
-                throw new RuntimeException("微信登录失败：" + errorMsg);
             }
+
+            String errorMsg = response != null && response.has("errmsg") ? response.get("errmsg").asText() : "未知错误";
+            log.warn("微信登录凭证校验失败: {}", errorMsg);
+            throw BusinessException.badRequest("微信登录失败: " + errorMsg);
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("调用微信接口网络异常", e);
-            throw new RuntimeException("调用微信服务异常");
+            throw BusinessException.badGateway("调用微信服务异常", e);
         }
     }
 
+    /**
+     * 组装微信登录成功后的返回对象。
+     *
+     * @param userDTO 登录用户信息
+     * @param tokenInfo Sa-Token 生成的令牌信息
+     * @return 返回给前端的登录视图对象
+     */
     private LoginVO assembleLoginVO(UserDTO userDTO, SaTokenInfo tokenInfo) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(userDTO.getId());

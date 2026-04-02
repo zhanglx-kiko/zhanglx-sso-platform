@@ -168,8 +168,6 @@ INSERT INTO `t_auth_user_role_mapping`
 VALUES
     (2031984412698099801, 2031984412698099713, 2031984412698099800, 0, 1, 1, NOW(), NOW());
 
--- 5. 插入标准电商权限树数据
--- 注意：这里的 identification (权限标识) 统一使用冒号(:)分隔，identity_lineage (血缘) 统一使用点(.)分隔，严格对齐。
 INSERT INTO `t_auth_permission`
 (id, name, identification, parent_id, identity_lineage, com_path, path, icon_str, display_no, is_frame, type, remark, del_flag)
 VALUES
@@ -181,7 +179,7 @@ VALUES
 (3000000000000000010, '商品中心', 'mall:goods', 3000000000000000001, 'mall.goods', 'mall/goods/index', '/mall/goods', 'shopping-cart', 1, 0, 0, '商品与库存管理', 0),
 (3000000000000000011, '订单中心', 'mall:order', 3000000000000000001, 'mall.order', 'mall/order/index', '/mall/order', 'document', 2, 0, 0, '交易与售后管理', 0),
 (3000000000000000012, '营销中心', 'mall:market', 3000000000000000001, 'mall.market', 'mall/market/index', '/mall/market', 'present', 3, 0, 0, '优惠券与活动', 0),
-(3000000000000000013, '权限管控', 'system:auth', 3000000000000000002, 'system.auth', 'system/auth/index', '/system/auth', 'lock', 1, 0, 0, '用户角色权限', 0),
+(3000000000000000013, '权限管控', 'system:auth', 3000000000000000002, 'system.auth', NULL, '/system/auth', 'lock', 1, 0, 0, '用户角色权限', 0), -- 【整合】com_path 已设为 NULL
 
 -- =================== 菜单级 (1) ===================
 -- 商品菜单
@@ -204,12 +202,11 @@ VALUES
 
 -- =================== 接口级 (3) ===================
 (3000000000000010000, '保存商品接口', 'mall:goods:api:save', 3000000000000001000, 'mall.goods.list.add.api', NULL, '/apis/v1/goods/save', NULL, 1, 0, 3, '发布商品的物理接口', 0),
--- 【修正：这里的分号被替换为逗号】
 (3000000000000011000, '执行发货接口', 'mall:order:api:ship', 3000000000000001100, 'mall.order.list.ship.api', NULL, '/apis/v1/order/ship', NULL, 1, 0, 3, '回传物流单号的接口', 0),
 
 -- =================== 菜单级 (1) 补充 ===================
--- 权限菜单（对应 PermissionController 的归属菜单）
-(3000000000000000132, '权限列表', 'system:auth:permission', 3000000000000000013, 'system.auth.permission', 'system/auth/permission/index', '/system/auth/permission', NULL, 3, 0, 1, '', 0),
+-- 权限菜单（对应 PermissionController 的归属菜单）【整合】name 已改为 '权限管理'
+(3000000000000000132, '权限管理', 'system:auth:permission', 3000000000000000013, 'system.auth.permission', 'system/auth/permission/index', '/system/auth/permission', NULL, 3, 0, 1, '', 0),
 
 -- =================== 按钮/接口级 (2) ===================
 -- 1. 用户管理相关权限 (关联 parent_id: 3000000000000000130 管理员列表)
@@ -232,17 +229,15 @@ VALUES
 (3000000000000001320, '新增权限', 'permission:add', 3000000000000000132, 'system.auth.permission.add', NULL, NULL, NULL, 1, 0, 2, 'PermissionController.addPermission', 0),
 (3000000000000001321, '修改权限', 'permission:edit', 3000000000000000132, 'system.auth.permission.edit', NULL, NULL, NULL, 2, 0, 2, 'PermissionController.updatePermission', 0),
 (3000000000000001322, '删除权限', 'permission:remove', 3000000000000000132, 'system.auth.permission.remove', NULL, NULL, NULL, 3, 0, 2, 'PermissionController.delPermission & batchDelPermission', 0),
--- 【修正：最后一条数据必须以分号结尾】
 (3000000000000001323, '查询权限', 'permission:list', 3000000000000000132, 'system.auth.permission.list', NULL, NULL, NULL, 4, 0, 2, 'PermissionController.getPermissionTree', 0);
-
 
 -- 6. 一键为超级管理员角色授予上述【所有】权限（完美动态绑定）
 INSERT INTO `t_auth_role_permission_mapping`
 (id, role_id, permission_id, expire_time, del_flag, create_by, update_by, create_time, update_time)
 SELECT
     3000000000000020000 + ROW_NUMBER() OVER () AS id,
-    2031984412698099800 AS role_id,  -- 刚才创建的超级管理员角色ID
-    id AS permission_id,             -- 遍历所有权限表的ID
+    2031984412698099800 AS role_id,
+    id AS permission_id,
     NULL AS expire_time,
     0 AS del_flag,
     1 AS create_by,

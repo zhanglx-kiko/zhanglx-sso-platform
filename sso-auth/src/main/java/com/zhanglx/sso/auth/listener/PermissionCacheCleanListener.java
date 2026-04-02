@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -84,7 +85,7 @@ public class PermissionCacheCleanListener {
             // 【关键修复】：使用 keyCommands().scan() 替代已弃用的直接 scan()
             try (Cursor<byte[]> cursor = connection.keyCommands().scan(options)) {
                 while (cursor.hasNext()) {
-                    keysToDelete.add(new String(cursor.next()));
+                    keysToDelete.add(new String(cursor.next(), StandardCharsets.UTF_8));
 
                     // 批处理删除，防止一次性删除过多导致的瞬间网络拥堵
                     if (keysToDelete.size() >= 500) {

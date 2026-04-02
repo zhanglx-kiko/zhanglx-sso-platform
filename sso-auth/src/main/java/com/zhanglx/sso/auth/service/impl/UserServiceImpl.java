@@ -145,10 +145,13 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 校验用户名唯一性
+     * 校验用户名在当前有效数据范围内是否唯一。
      *
-     * @param username  用户名
-     * @param excludeId 排除的ID (修改时使用，新增传null)
+     * <p>新增用户时 {@code excludeId} 传 {@code null}；修改用户时传入当前用户 ID，
+     * 以便在查询重复用户名时排除自身记录。</p>
+     *
+     * @param username 待校验的用户名
+     * @param excludeId 需要排除的用户 ID
      */
     private void checkUsernameUnique(String username, Long excludeId) {
         AssertUtils.notBlank(username, "user.username.cannot.be.blank");

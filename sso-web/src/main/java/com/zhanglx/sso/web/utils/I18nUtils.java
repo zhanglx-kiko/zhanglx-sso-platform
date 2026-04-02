@@ -1,7 +1,6 @@
 package com.zhanglx.sso.web.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
@@ -18,11 +17,10 @@ import java.util.Locale;
 @Component
 public class I18nUtils {
 
-    private static MessageSource messageSource;
+    private final MessageSource messageSource;
 
-    @Autowired
-    public void setMessageSource(MessageSource messageSource) {
-        I18nUtils.messageSource = messageSource;
+    public I18nUtils(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 
     /**
@@ -31,7 +29,7 @@ public class I18nUtils {
      * @param code 消息代码
      * @return 翻译后的消息
      */
-    public static String getMessage(String code) {
+    public String getMessage(String code) {
         // 显式转换为 Object[]，明确表示没有参数，消除编译器歧义
         return getMessage(code, (Object[]) null);
     }
@@ -43,7 +41,7 @@ public class I18nUtils {
      * @param args 参数数组
      * @return 翻译后的消息
      */
-    public static String getMessage(String code, Object... args) {
+    public String getMessage(String code, Object... args) {
         try {
             Locale locale = LocaleContextHolder.getLocale();
             return messageSource.getMessage(code, args, locale);
@@ -61,7 +59,7 @@ public class I18nUtils {
      * @param args   参数数组
      * @return 翻译后的消息
      */
-    public static String getMessage(String code, Locale locale, Object... args) {
+    public String getMessage(String code, Locale locale, Object... args) {
         try {
             return messageSource.getMessage(code, args, locale);
         } catch (Exception e) {

@@ -42,7 +42,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -72,7 +81,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "PermissionTree", allEntries = true)
     public PermissionDTO addPermission(PermissionDTO permissionDTO) {
-        // 查询全局是否有重复
+        // 查询全局是否存在重复的权限标识。
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification()))) {
             throw new BusinessException("business.data.duplicate");
@@ -83,10 +92,10 @@ public class PermissionServiceImpl implements PermissionService {
         if (Objects.nonNull(permissionPO.getParentId())) {
             PermissionPO parentPermissionPO = permissionMapper.selectById(permissionPO.getParentId());
             if (Objects.isNull(parentPermissionPO)) {
-                // 避免错误的引用
+                // 父节点不存在时，主动降级为顶级节点，避免出现脏引用。
                 permissionPO.setParentId(null);
             } else {
-                // 设置标识血缘
+                // 继承父节点血缘，生成当前节点的 identityLineage。
                 permissionPO.setIdentityLineage(buildIdentityLineage(parentPermissionPO.getIdentification(),
                         parentPermissionPO.getIdentityLineage()));
             }
@@ -97,39 +106,39 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     /**
-     * 构建最健壮的标识血缘 (Identity Lineage)
+     * 构建权限节点的血缘路径。
      *
-     * @param identity      当前权限的标识 (如 mall:goods:add 或 add)
-     * @param parentLineage 父级权限的血缘 (如 mall.goods.list)
-     * @return 规范化后的纯净树形血缘 (如 mall.goods.list.add)
+     * <p>该方法会对前端传入的权限标识做统一规范化处理，并根据父级血缘生成当前节点的
+     * {@code identityLineage}，用于后续树结构查询、导出和递归更新。</p>
+     *
+     * @param identity 当前权限标识，例如 {@code mall:goods:add} 或 {@code add}
+     * @param parentLineage 父级权限的血缘路径，例如 {@code mall.goods.list}
+     * @return 当前节点规范化后的完整血缘路径，例如 {@code mall.goods.list.add}
      */
     private String buildIdentityLineage(String identity, String parentLineage) {
         if (StringUtils.isBlank(identity)) {
             return parentLineage;
         }
 
-        // 1. 规范化分隔符：将前端可能传的冒号(:)、中划线(-)统一替换为标准的点(.)
+        // 1. 统一分隔符，将冒号和中划线都转换为点号。
         String normalizedIdentity = identity.replace(":", ".").replace("-", ".");
 
-        // 2. 顶级节点：如果没有父级血缘，直接返回自身规范化后的标识
+        // 2. 顶级节点没有父级血缘时，直接返回规范化后的标识。
         if (StringUtils.isBlank(parentLineage)) {
             return normalizedIdentity;
         }
 
-        // 3. 场景 A（完整包含）：前端传的全量标识已经完美包含了父级血缘前缀
-        // 例如：parent="mall.goods", identity="mall.goods.add"
+        // 3. 如果前端传入的标识已经包含父级前缀，直接复用即可。
+        // 例如：parent="mall.goods"，identity="mall.goods.add"。
         if (normalizedIdentity.startsWith(parentLineage + ".")) {
-            return normalizedIdentity; // 直接使用，无需拼接
+            return normalizedIdentity;
         }
 
-        // 4. 场景 B（部分重叠 或 极简短标识）：
-        // 例如：parent="system.user.list", identity="system:user:add"
-        // 核心算法：树形血缘的本质永远是【父级绝对路径】+【当前节点的独有核心后缀】。
-        // 我们直接将当前标识按点切分，提取最后一段作为独有后缀。
+        // 4. 否则只取当前标识的最后一段，拼接到父级血缘后面。
+        // 例如：parent="system.user.list"，identity="system:user:add"。
         String[] parts = normalizedIdentity.split("\\.");
         String uniqueSuffix = parts[parts.length - 1];
 
-        // 完美拼接：system.user.list + . + add -> system.user.list.add
         return parentLineage + "." + uniqueSuffix;
     }
 
@@ -142,12 +151,21 @@ public class PermissionServiceImpl implements PermissionService {
         PermissionPO permissionPO = permissionMapper.selectById(id);
         AssertUtils.notNull(permissionPO, "business.resource.not.found");
 
-        // 递归删除权限标签项
+        // 递归删除当前节点及其所有子孙节点。
         recursiveDelFuncPerm(Lists.newArrayList(IPermissionMapper.INSTANCE.toDTO(permissionPO)));
 
         return IPermissionMapper.INSTANCE.toDTO(permissionPO);
     }
 
+    /**
+     * 递归删除权限节点及其子节点。
+     *
+     * <p>该方法会先找出当前批次节点的直接子节点，再执行当前层删除，最后递归向下清理所有
+     * 子孙权限以及对应的角色权限关联关系。</p>
+     *
+     * @param permissionDTOS 需要删除的权限节点列表
+     * @return 按递归顺序汇总后的已删除权限列表
+     */
     private List<PermissionDTO> recursiveDelFuncPerm(List<PermissionDTO> permissionDTOS) {
         if (CollectionUtils.isEmpty(permissionDTOS)) {
             return Lists.newArrayList();
@@ -164,14 +182,14 @@ public class PermissionServiceImpl implements PermissionService {
             subFuncPerms.addAll(tempData);
         }
 
-        // 删除功能权限项
+        // 删除当前层权限节点。
         permissionMapper.deleteByIdsWithFill(idDatas);
 
-        // 删除功能权限项与角色关联关系
+        // 删除权限与角色之间的关联关系。
         rolePermissionRelationshipMappingMapper.delete(new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
                 .in(RolePermissionRelationshipMappingPO::getPermissionId, idDatas));
 
-        // 递归执行删除
+        // 继续递归删除子节点。
         if (CollectionUtils.isNotEmpty(subFuncPerms)) {
             results.addAll(recursiveDelFuncPerm(IPermissionMapper.INSTANCE.toDTOList(subFuncPerms)));
         }
@@ -221,7 +239,7 @@ public class PermissionServiceImpl implements PermissionService {
         updateMenu.setCreateBy(permissionPO.getCreateBy());
         permissionMapper.updateById(updateMenu);
 
-        // 如果 identification 有变化，更新关联的 lineage
+        // 如果权限标识发生变化，需要同步递归更新所有子节点的血缘路径。
         if (!Strings.CS.equals(permissionPO.getIdentification(), updateMenu.getIdentification())) {
             List<PermissionPO> children = permissionMapper.selChildrenPerm(permissionPO.getIdentification());
             List<PermissionDTO> childrenDTOs = IPermissionMapper.INSTANCE.toDTOList(
@@ -241,6 +259,17 @@ public class PermissionServiceImpl implements PermissionService {
         return IPermissionMapper.INSTANCE.toDTO(updateMenu);
     }
 
+    /**
+     * 递归刷新子节点的血缘路径。
+     *
+     * <p>当父节点的 {@code identification} 发生变化时，所有子节点都需要基于新的父级血缘重新计算
+     * 自身的 {@code identityLineage}。</p>
+     *
+     * @param identity 当前父节点的权限标识
+     * @param parentIdentityLineage 当前父节点的血缘路径
+     * @param childrenPermission 待更新的子节点树
+     * @return 所有被更新的子节点平铺列表
+     */
     private List<PermissionDTO> recursiveUpdateIdentityLineage(String identity, String parentIdentityLineage, List<PermissionDTO> childrenPermission) {
         if (CollectionUtils.isEmpty(childrenPermission)) {
             return Lists.newArrayList();
@@ -287,7 +316,7 @@ public class PermissionServiceImpl implements PermissionService {
                 return Lists.newArrayList();
             }
 
-            // 避免查找时，部分子节点的父节点也满足查找条件，需要对结果进行去重
+            // 避免父子节点同时命中关键字时结果重复。
             results = findAncestor(results, permissionDTOS);
             results = new ArrayList<>(results.stream()
                     .collect(Collectors.toMap(PermissionDTO::getId, Function.identity(), (existing, replacement) -> existing))
@@ -303,6 +332,16 @@ public class PermissionServiceImpl implements PermissionService {
         return treeBuilder.buildTree(results, TreeFilterStrategy.STRICT_BRANCH_HIDE, true);
     }
 
+    /**
+     * 为搜索结果补齐祖先节点。
+     *
+     * <p>关键字搜索时，命中的往往是某个深层子节点。为了让前端仍能正确展示树形层级，需要把这些
+     * 节点的所有祖先节点递归补齐回来。</p>
+     *
+     * @param searchFuncPermLabels 命中的权限节点列表
+     * @param allFuncPermLabels 全量权限节点列表
+     * @return 包含祖先节点的结果集
+     */
     private List<PermissionDTO> findAncestor(List<PermissionDTO> searchFuncPermLabels, List<PermissionDTO> allFuncPermLabels) {
         List<PermissionDTO> results = Lists.newArrayList();
         List<PermissionDTO> ancestorNodes = Lists.newArrayList();
@@ -376,7 +415,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public void executeImportTask(String taskId, File tempFile) {
         try {
-            // 1. 初始化尽力而为监听器，正确传入依赖和 BiConsumer 方法引用
+            // 1. 初始化尽力而为监听器，并注入批量落库回调。
             BestEffortImportListener listener = new BestEffortImportListener(
                     validator,
                     taskId,
@@ -384,29 +423,29 @@ public class PermissionServiceImpl implements PermissionService {
                     this::saveToDatabase
             );
 
-            // 2. 【核心优化】：Fesod 直接读取磁盘物理文件，不占用 JVM 内存流
+            // 2. Fesod 直接读取磁盘临时文件，避免把整份 Excel 拉进 JVM 内存。
             FesodSheet.read(tempFile, PermissionExcelVO.class, listener)
                     .sheet()
                     .doRead();
 
-            // 3. 检查是否有失败的数据，如果有，生成错误 Excel 并模拟上传 OSS
+            // 3. 如果存在失败数据，则生成错误文件供前端下载定位。
             List<PermissionExcelVO> failedData = listener.getAllFailedData();
             String errorFileUrl = "";
             if (!failedData.isEmpty()) {
                 errorFileUrl = generateAndUploadErrorExcel(failedData, taskId);
             }
 
-            // 4. 标记任务完成
+            // 4. 标记导入任务完成。
             progressManager.completeTask(taskId, errorFileUrl);
 
-            // 5. 数据落地且任务完成后，发布权限变更事件（清理缓存等）
+            // 5. 导入成功后发布权限变更事件，用于后续缓存刷新。
             eventPublisher.publishEvent(new PermissionChangedEvent(this, taskId));
 
         } catch (Exception e) {
             log.error("解析 Excel 发生致命异常", e);
             progressManager.failTask(taskId, "导入失败: " + e.getMessage());
         } finally {
-            // 6. 【核心收尾】：无论成功失败，务必删除上传的临时文件，防止塞满服务器硬盘
+            // 6. 无论成功还是失败，都必须清理上传的临时文件。
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();
             }
@@ -414,7 +453,13 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     /**
-     * 高效入库与映射逻辑（DFS 记忆化算法 + 编程式极速事务）
+     * 将一批校验通过的 Excel 数据解析后批量入库。
+     *
+     * <p>这个方法负责把 Excel 行数据映射成权限实体、解析父子血缘关系、剔除失败记录，并通过编程式
+     * 事务统一提交到数据库，保证批次内写入的原子性。</p>
+     *
+     * @param validBatch 当前批次校验通过的数据
+     * @param failedList 当前任务累计失败的数据列表
      */
     private void saveToDatabase(List<PermissionExcelVO> validBatch, List<PermissionExcelVO> failedList) {
         if (CollectionUtils.isEmpty(validBatch)) {
@@ -446,7 +491,7 @@ public class PermissionServiceImpl implements PermissionService {
         while (iterator.hasNext()) {
             PermissionExcelVO vo = iterator.next();
             try {
-                // 纯 CPU 运算：DFS 解析血缘，不需要数据库连接
+                // 纯 CPU 运算：DFS 解析血缘，不占用数据库连接资源。
                 ResolvedNode node = resolveNode(vo.getIdentification(), batchMap, dbMap, resolvedCache, new HashSet<>());
 
                 PermissionPO po = IPermissionMapper.INSTANCE.excelVOToPo(vo);
@@ -461,40 +506,43 @@ public class PermissionServiceImpl implements PermissionService {
             }
         }
 
-        // 【高可用核心】：编程式事务
-        // 只有在这里，真正向数据库发送 Insert 指令的一瞬间，才去获取数据库连接开启事务。
-        // 一旦抛出异常，立刻回滚并上报。
+        // 只有真正写库时才开启事务，尽量缩短连接占用时间。
         if (CollectionUtils.isNotEmpty(poListToInsert)) {
             transactionTemplate.execute(status -> {
                 try {
-                    // 请确保你的 PermissionMapper 里有批量插入方法，比如 mybatis-plus 的 insertBatch 或自定义的 foreach insert
                     permissionMapper.insert(poListToInsert);
-                    return true; // 返回任意值表示执行成功
+                    return true;
                 } catch (Exception e) {
-                    status.setRollbackOnly(); // 标记事务必须回滚
-                    throw e; // 继续抛出，交给外层的 listener.invoke 的 try-catch 处理
+                    status.setRollbackOnly();
+                    throw e;
                 }
             });
         }
     }
 
     /**
-     * 将失败的数据利用 Fesod 写回到一个新的本地 Excel 并上传
+     * 生成失败数据的错误 Excel 文件并返回下载地址。
+     *
+     * <p>当前实现先把失败数据写入本地临时文件，并预留 OSS 上传扩展点；后续接入对象存储后，只需在
+     * TODO 位置补充上传逻辑即可。</p>
+     *
+     * @param failedData 导入失败的数据列表
+     * @param taskId 导入任务 ID
+     * @return 错误文件下载地址；生成失败时返回空字符串
      */
     private String generateAndUploadErrorExcel(List<PermissionExcelVO> failedData, String taskId) {
         File tempErrorFile = null;
         try {
-            // 使用临时物理文件，代替容易 OOM 的 ByteArrayOutputStream
+            // 使用物理临时文件代替内存流，避免大文件场景下出现 OOM。
             tempErrorFile = File.createTempFile("error_import_" + taskId, ".xlsx");
             FesodSheet.write(tempErrorFile, PermissionExcelVO.class).sheet("失败数据").doWrite(failedData);
 
-            // TODO: 调用 OSS 客户端将 tempErrorFile 上传到 MinIO 或阿里云
+            // TODO: 调用 OSS 客户端将 tempErrorFile 上传到 MinIO 或阿里云。
             return "http://your-oss-url/error_import_" + taskId + ".xlsx";
         } catch (Exception e) {
             log.error("生成错误 Excel 失败", e);
             return "";
         } finally {
-            // 清理本地临时错误文件
             if (tempErrorFile != null && tempErrorFile.exists()) {
                 tempErrorFile.delete();
             }
@@ -502,14 +550,17 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     /**
-     * DFS 深度优先解析节点血缘关系
+     * 深度优先解析当前节点的父子血缘关系。
+     *
+     * <p>该方法会综合当前批次数据、数据库中已存在的数据和已解析缓存，递归构建出节点的
+     * {@code id}、{@code parentId} 以及 {@code identityLineage}，同时检测孤儿节点和循环依赖。</p>
      *
      * @param identification 当前要解析的权限标识
-     * @param batchMap       当前批次数据缓存
-     * @param dbMap          数据库已有数据缓存
-     * @param resolvedCache  已解析完成的节点缓存（记忆化，避免重复计算）
-     * @param visiting       当前递归链路中正在访问的节点集合（用于精准侦测循环依赖）
-     * @return 解析完成的节点核心信息
+     * @param batchMap 当前批次的 Excel 数据缓存
+     * @param dbMap 数据库中已存在的权限缓存
+     * @param resolvedCache 已完成解析的节点缓存，用于记忆化加速
+     * @param visiting 当前递归链路上的访问集合，用于检测循环依赖
+     * @return 解析完成后的节点核心信息
      */
     private ResolvedNode resolveNode(String identification,
                                      Map<String, PermissionExcelVO> batchMap,
@@ -517,55 +568,50 @@ public class PermissionServiceImpl implements PermissionService {
                                      Map<String, ResolvedNode> resolvedCache,
                                      Set<String> visiting) {
 
-        // 命中已解析缓存，直接返回 O(1)
+        // 命中已解析缓存时，直接返回。
         if (resolvedCache.containsKey(identification)) {
             return resolvedCache.get(identification);
         }
 
-        // 命中数据库已有节点，直接提取信息返回
+        // 命中数据库中已存在的节点时，直接复用数据库信息。
         if (dbMap.containsKey(identification)) {
             PermissionPO po = dbMap.get(identification);
             return new ResolvedNode(po.getId(), po.getParentId(), po.getIdentityLineage());
         }
 
-        // 既不在缓存，也不在数据库，更不在当前批次中 -> 孤儿节点，报错抛弃
+        // 既不在缓存，也不在数据库，还不在当前批次中时，说明它是孤儿节点。
         if (!batchMap.containsKey(identification)) {
-            throw new RuntimeException("映射失败：找不到权限标识 [" + identification + "]");
+            throw BusinessException.badRequest("映射失败：找不到权限标识 [" + identification + "]");
         }
 
-        // 循环依赖侦测（A -> B -> A）
+        // 检测循环依赖，例如 A -> B -> A。
         if (visiting.contains(identification)) {
-            throw new RuntimeException("侦测到循环依赖：权限标识 [" + identification + "] 构成了死循环");
+            throw BusinessException.badRequest("侦测到循环依赖：权限标识 [" + identification + "] 构成了死循环");
         }
 
-        // 将当前节点加入正在访问清单
         visiting.add(identification);
 
-        // 获取当前节点的原始数据
         PermissionExcelVO vo = batchMap.get(identification);
         ResolvedNode currentNode = new ResolvedNode(SnowFlakeUtils.generateId(), null, null);
 
-        // 如果没有父级标识，说明它是顶级节点
+        // 没有父级标识时，说明当前节点是顶级节点。
         if (StringUtils.isBlank(vo.getParentIdentification())) {
             currentNode.setParentId(null);
             currentNode.setLineage(vo.getIdentification());
         } else {
-            // 如果有父级标识，递归去解析它的父级！
+            // 否则递归解析父节点，并继承父级 ID 与血缘路径。
             ResolvedNode parentNode = resolveNode(vo.getParentIdentification(), batchMap, dbMap, resolvedCache, visiting);
-
-            // 父级解析完毕后，继承父级的 ID 和 Lineage
             currentNode.setParentId(parentNode.getId());
             currentNode.setLineage(buildIdentityLineage(vo.getIdentification(), parentNode.getLineage()));
         }
 
-        // 当前节点解析完毕，移除访问标记，并加入完成缓存
         visiting.remove(identification);
         resolvedCache.put(identification, currentNode);
 
         return currentNode;
     }
 
-    @Async // 使用虚拟线程池
+    @Async // 使用异步线程执行导出任务。
     @Override
     public void executeExportTask(String taskId) {
         long totalCount = permissionMapper.selectCount(new LambdaQueryWrapperX<>());
@@ -578,10 +624,10 @@ public class PermissionServiceImpl implements PermissionService {
 
         File tempExportFile = null;
         try {
-            // 1. 全量导出使用物理临时文件接收，杜绝 OOM
+            // 1. 使用物理临时文件承接导出结果，避免内存膨胀。
             tempExportFile = File.createTempFile("export_permissions_" + taskId, ".xlsx");
 
-            // 2. try-with-resources 自动关闭 Writer，将缓冲数据刷入磁盘
+            // 2. 按分页写入 Excel，确保大数据量场景下仍可稳定运行。
             try (ExcelWriter excelWriter = FesodSheet.write(tempExportFile, PermissionExcelVO.class).build()) {
 
                 WriteSheet writeSheet = FesodSheet.writerSheet("权限数据").build();
@@ -607,19 +653,19 @@ public class PermissionServiceImpl implements PermissionService {
 
                     exportProgressManager.updateProgress(taskId, poList.size());
                 }
-            } // 离开此块时，ExcelWriter 触发 finish()，文件安全刷盘
+            }
 
-            // 3. TODO: 将物理文件上传到 OSS
+            // 3. TODO: 将导出的物理文件上传到 OSS。
             String fileUrl = "http://your-oss-url/export_permissions_" + taskId + ".xlsx";
 
-            // 4. 标记任务完成
+            // 4. 标记任务完成。
             exportProgressManager.completeTask(taskId, fileUrl);
 
         } catch (Exception e) {
             log.error("权限导出失败", e);
             exportProgressManager.failTask(taskId, "导出生成失败: " + e.getMessage());
         } finally {
-            // 5. 务必清理本地导出的临时文件
+            // 5. 清理本地导出的临时文件。
             if (tempExportFile != null && tempExportFile.exists()) {
                 tempExportFile.delete();
             }
@@ -640,18 +686,21 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     /**
-     * 将 PO 转换为给用户看的 VO
-     * 难点：我们需要把数据库里的 parentId 翻译回直观的 parentIdentification
+     * 将权限实体转换为导出用的 Excel 视图对象。
+     *
+     * <p>导出时需要把数据库中的 {@code parentId} 翻译回更直观的
+     * {@code parentIdentification}，以便导入导出格式保持一致。</p>
+     *
+     * @param poList 待导出的权限实体列表
+     * @return 转换后的 Excel 视图对象列表
      */
     private List<PermissionExcelVO> convertToExcelVO(List<PermissionPO> poList) {
-        // 提取这批数据中所有的 parentId
         List<Long> parentIds = poList.stream()
                 .map(PermissionPO::getParentId)
                 .filter(id -> id != null && id > 0)
                 .distinct()
                 .toList();
 
-        // 批量查询父节点标识，避免 N+1
         Map<Long, String> parentIdToIdentityMap = Map.of();
         if (!parentIds.isEmpty()) {
             List<PermissionPO> parentPOs = permissionMapper.selectList(
@@ -665,7 +714,6 @@ public class PermissionServiceImpl implements PermissionService {
 
         Map<Long, String> finalParentIdToIdentityMap = parentIdToIdentityMap;
 
-        // 映射转换
         return poList.stream().map(po -> {
             PermissionExcelVO vo = IPermissionMapper.INSTANCE.poToExcelVo(po);
             if (po.getParentId() != null) {

@@ -11,14 +11,17 @@ import java.util.List;
 /**
  * @Author: Zhang L X
  * @Create: 2026/3/17 15:04
- * @ClassName: RolePO
- * @Description:
+ * @ClassName: RoleMapper
+ * @Description: 角色数据访问层
  */
 @Mapper
 public interface RoleMapper extends IBaseMapperX<RolePO> {
 
     /**
-     * 根据用户名查询角色
+     * 根据用户名查询用户已绑定的角色列表。
+     *
+     * @param userAccount 用户账号
+     * @return 当前账号绑定的角色列表
      */
     @Select("SELECT r.id, r.role_name, r.role_code, r.role_type, r.build_in, r.remark " +
             "FROM t_auth_user u " +
