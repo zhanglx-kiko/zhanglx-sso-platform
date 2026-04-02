@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.service;
 
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
@@ -61,5 +62,20 @@ public interface AuthService {
      * @param userId 用户 id
      */
     void resetPassword(Long userId);
+
+    /**
+     * 忘记密码 - 通过验证码重置密码
+     * <p>
+     * 业务逻辑：
+     * 1. 校验用户名和新密码是否为空
+     * 2. 查询用户信息
+     * 3. 验证验证码是否正确
+     * 4. 加密新密码
+     * 5. 更新数据库
+     * 6. 强制踢出该用户所有在线会话（安全必须）
+     *
+     * @param forgotPasswordDTO 忘记密码参数（用户名、新密码、验证码）
+     */
+    void forgotPassword(ForgotPasswordDTO forgotPasswordDTO);
 
 }

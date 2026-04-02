@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
@@ -163,6 +164,26 @@ public class AuthController {
     })
     public void resetPassword(@PathVariable String userId) {
         authService.resetPassword(Long.parseLong(userId));
+    }
+
+    /**
+     * 忘记密码 - 通过验证码重置密码
+     * 路径：POST /apis/v1/auth/forgot-password
+     * 权限：公开（无需登录）
+     * <p>
+     * 业务逻辑：
+     * 1. 校验用户名和新密码是否为空
+     * 2. 查询用户信息
+     * 3. 验证验证码是否正确
+     * 4. 加密并更新新密码
+     * 5. 强制踢出该用户所有在线会话（安全必须）
+     *
+     * @param forgotPasswordDTO 忘记密码参数，包含用户名、新密码、验证码
+     */
+    @Operation(summary = "忘记密码 - 通过验证码重置密码")
+    @PostMapping("/forgot-password")
+    public void forgotPassword(@RequestBody @Validated ForgotPasswordDTO forgotPasswordDTO) {
+        authService.forgotPassword(forgotPasswordDTO);
     }
 
 }

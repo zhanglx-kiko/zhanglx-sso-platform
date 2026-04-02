@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.LoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
@@ -127,6 +128,63 @@ public class AuthServiceImpl implements AuthService {
         // 否则该用户凭旧 Token 还能继续操作，存在安全隐患
         StpUtil.logout(userPO.getId());
         log.info("管理员重置了用户 [{}] 的密码，并强制踢其下线", userPO.getUsername());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
+        // 1. 查询用户信息
+        LambdaQueryWrapperX<UserPO> queryWrapper = new LambdaQueryWrapperX<>();
+        queryWrapper.eq(UserPO::getUsername, forgotPasswordDTO.getUsername());
+        UserPO userPO = userMapper.selectOne(queryWrapper);
+
+        if (userPO == null) {
+            log.warn("修改密码失败，账号不存在：{}", forgotPasswordDTO.getUsername());
+            throw new BusinessException("business.user.not.found");
+        }
+
+        // 2. 检查账户状态
+        if (Integer.valueOf(0).equals(userPO.getStatus())) {
+            throw new BusinessException("user.account.disabled");
+        }
+
+        // 3. 验证验证码（这里需要对接您的验证码服务，暂时模拟验证）
+        // TODO: 替换为实际的验证码验证逻辑（例如从 Redis 获取验证码进行比对）
+        if (!verifyVerificationCode(forgotPasswordDTO.getUsername(), forgotPasswordDTO.getVerificationCode())) {
+            throw new BusinessException("invalid.verification.code");
+        }
+
+        // 4. 加密新密码
+        String encodedPassword = argon2PasswordEncoder.encodeAsyncWithTimeout(forgotPasswordDTO.getNewPassword());
+
+        // 5. 更新数据库
+        userPO.setPassword(encodedPassword);
+        userMapper.updateById(userPO);
+
+        // 6. 【关键安全步骤】密码重置后，必须踢该用户下线！
+        // 防止旧 Token 继续使用
+        StpUtil.logout(userPO.getId());
+
+        log.info("用户 [{}] 通过验证码成功重置密码，并强制踢其下线", userPO.getUsername());
+    }
+
+    /**
+     * 验证验证码
+     *
+     * @param username         用户名
+     * @param verificationCode 验证码
+     * @return 是否验证通过
+     */
+    private boolean verifyVerificationCode(String username, String verificationCode) {
+        // TODO: 这里需要从 Redis 或其他存储中获取验证码进行比对
+        // 示例代码：
+        // String storedCode = redisTemplate.opsForValue().get("captcha:" + username);
+        // return verificationCode.equals(storedCode);
+
+        // 临时实现：假设验证码总是正确（仅用于测试）
+        // 生产环境必须替换为真实验证逻辑
+        log.warn("【警告】验证码验证功能尚未实现，当前始终返回 true。请尽快接入实际验证码服务！");
+        return true;
     }
 
     /**

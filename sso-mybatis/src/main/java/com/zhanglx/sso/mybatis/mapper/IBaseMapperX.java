@@ -98,9 +98,10 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
             return 0;
         }
         // 生成 SQL: UPDATE table SET del_flag = id, update_time = now() WHERE id = id AND del_flag = 0
-        return this.update(null, Wrappers.<T>lambdaUpdate()
-                .set(T::getDelFlag, id)
-                .eq(T::getId, id));
+        // 使用 UpdateWrapper 直接指定列名 "id"，避开 Lambda 对 BasePO 的解析
+        return this.update(null, new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<T>()
+                .setSql("del_flag = id")
+                .eq("id", id));
     }
 
     /**
@@ -115,9 +116,10 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
         }
         // 利用 setSql("del_flag = id") 直接下推给 MySQL 执行，无需在 Java 内存中组装实体对象
         // 生成的 SQL: UPDATE table SET del_flag = id, update_time = now() WHERE id IN (...) AND del_flag = 0
-        return this.update(null, Wrappers.<T>lambdaUpdate()
+        // 使用 UpdateWrapper 直接指定列名 "id"
+        return this.update(null, new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<T>()
                 .setSql("del_flag = id")
-                .in(T::getId, idList));
+                .in("id", idList));
     }
 
     @Override
