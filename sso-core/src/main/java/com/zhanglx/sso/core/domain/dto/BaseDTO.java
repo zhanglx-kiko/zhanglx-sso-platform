@@ -29,32 +29,28 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @Schema(name = "BaseDTO", description = "数据库实体基类")
 public class BaseDTO implements Serializable {
-
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键 ID (String 类型，防止前端精度丢失，反序列化时自动转为 Long)
-     */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
-    @Schema(description = "ID", name = "id", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "ID", name = "id", type = "String", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
-    @Schema(description = "创建人", name = "nickname", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "创建人ID", name = "createBy", type = "String", accessMode = Schema.AccessMode.READ_ONLY)
     private Long createBy;
 
-    @Schema(description = "创建时间", name = "createTime", example = "", type = "LocalDateTime", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "创建时间", name = "createTime", type = "LocalDateTime", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createTime;
 
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
-    @Schema(description = "修改人", name = "nickname", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "修改人ID", name = "updateBy", type = "String", accessMode = Schema.AccessMode.READ_ONLY)
     private Long updateBy;
 
-    @Schema(description = "更新时间", name = "updateTime", example = "", type = "LocalDateTime", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "更新时间", name = "updateTime", type = "LocalDateTime", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updateTime;
 
 }
