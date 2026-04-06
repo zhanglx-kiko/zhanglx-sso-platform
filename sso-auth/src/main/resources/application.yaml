@@ -127,6 +127,13 @@ sa-token:
 default:
   password: 123456
 
+member:
+  verification-code:
+    expire-seconds: 300
+    resend-interval-seconds: 60
+    code-length: 6
+    mock-send-enabled: true
+
 # Argon2加密配置
 security:
   argon2:
@@ -182,6 +189,4 @@ knife4j:
 #    - name: 补充文档
 #      locations: classpath:static/markdown/others/*
 #      group: 01-系统接口 # 此处分组必须使用在Knife4jConfig已存在的分组名group，当存在displayName时，使用displayName名称
-
-
 

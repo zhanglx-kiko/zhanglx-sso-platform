@@ -42,7 +42,8 @@ public class GlobalExceptionHandler {
         } else {
             log.warn("业务异常: code={}, msg={}", e.getCode(), e.getMessage());
         }
-        return Result.error(e.getCode(), resolveMessage(e.getMessage()));
+
+        return Result.error(e.getCode(), resolveBusinessMessage(e));
     }
 
     @ExceptionHandler(NotLoginException.class)
@@ -159,6 +160,11 @@ public class GlobalExceptionHandler {
     private String resolveMessage(String messageKeyOrMessage) {
         String resolved = i18nUtils.getMessage(messageKeyOrMessage);
         return resolved == null || resolved.isBlank() ? messageKeyOrMessage : resolved;
+    }
+
+    private String resolveBusinessMessage(BusinessException exception) {
+        String resolved = i18nUtils.getMessage(exception.getMessageKey(), exception.getArgs());
+        return resolved == null || resolved.isBlank() ? exception.getMessageKey() : resolved;
     }
 
     private BusinessException unwrapBusinessException(Throwable throwable) {

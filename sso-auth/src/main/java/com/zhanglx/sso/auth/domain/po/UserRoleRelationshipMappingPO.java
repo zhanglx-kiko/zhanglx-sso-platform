@@ -21,7 +21,7 @@ import org.apache.ibatis.type.JdbcType;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "t_auth_user_role_mapping", autoResultMap = true)
+@TableName(value = "t_auth_user_role", autoResultMap = true)
 public class UserRoleRelationshipMappingPO extends BasePO {
 
     /**

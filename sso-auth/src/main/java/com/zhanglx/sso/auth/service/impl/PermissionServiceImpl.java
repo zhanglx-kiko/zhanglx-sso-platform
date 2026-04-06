@@ -6,7 +6,6 @@ import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.excel.ResolvedNode;
 import com.zhanglx.sso.auth.domain.po.PermissionPO;
-import com.zhanglx.sso.auth.domain.po.RolePermissionRelationshipMappingPO;
 import com.zhanglx.sso.auth.domain.vo.PermissionExcelVO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
 import com.zhanglx.sso.auth.event.PermissionChangedEvent;
@@ -19,6 +18,7 @@ import com.zhanglx.sso.auth.utils.IPermissionMapper;
 import com.zhanglx.sso.auth.utils.excel.ExportProgressManager;
 import com.zhanglx.sso.auth.utils.excel.ImportProgressManager;
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.strategy.TreeFilterStrategy;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionUtils;
@@ -42,16 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -84,7 +75,7 @@ public class PermissionServiceImpl implements PermissionService {
         // 查询全局是否存在重复的权限标识。
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification()))) {
-            throw new BusinessException("business.data.duplicate");
+            throw new BusinessException(CommonErrorCode.CONFLICT);
         }
 
         PermissionPO permissionPO = IPermissionMapper.INSTANCE.toPO(permissionDTO);
@@ -111,7 +102,7 @@ public class PermissionServiceImpl implements PermissionService {
      * <p>该方法会对前端传入的权限标识做统一规范化处理，并根据父级血缘生成当前节点的
      * {@code identityLineage}，用于后续树结构查询、导出和递归更新。</p>
      *
-     * @param identity 当前权限标识，例如 {@code mall:goods:add} 或 {@code add}
+     * @param identity      当前权限标识，例如 {@code mall:goods:add} 或 {@code add}
      * @param parentLineage 父级权限的血缘路径，例如 {@code mall.goods.list}
      * @return 当前节点规范化后的完整血缘路径，例如 {@code mall.goods.list.add}
      */
@@ -149,7 +140,7 @@ public class PermissionServiceImpl implements PermissionService {
         AssertUtils.notNull(id, "business.data.invalid");
 
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, "business.resource.not.found");
+        AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
 
         // 递归删除当前节点及其所有子孙节点。
         recursiveDelFuncPerm(Lists.newArrayList(IPermissionMapper.INSTANCE.toDTO(permissionPO)));
@@ -186,8 +177,7 @@ public class PermissionServiceImpl implements PermissionService {
         permissionMapper.deleteByIdsWithFill(idDatas);
 
         // 删除权限与角色之间的关联关系。
-        rolePermissionRelationshipMappingMapper.delete(new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
-                .in(RolePermissionRelationshipMappingPO::getPermissionId, idDatas));
+        rolePermissionRelationshipMappingMapper.deleteByPermissionIds(idDatas);
 
         // 继续递归删除子节点。
         if (CollectionUtils.isNotEmpty(subFuncPerms)) {
@@ -225,12 +215,12 @@ public class PermissionServiceImpl implements PermissionService {
     @CacheEvict(value = "PermissionTree", allEntries = true)
     public PermissionDTO updatePermission(Long id, PermissionDTO permissionDTO) {
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, "business.resource.not.found");
+        AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
 
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification())
                 .ne(PermissionPO::getId, id))) {
-            throw new BusinessException("business.data.duplicate");
+            throw new BusinessException(CommonErrorCode.CONFLICT);
         }
 
         PermissionPO updateMenu = IPermissionMapper.INSTANCE.toPO(permissionDTO);
@@ -265,9 +255,9 @@ public class PermissionServiceImpl implements PermissionService {
      * <p>当父节点的 {@code identification} 发生变化时，所有子节点都需要基于新的父级血缘重新计算
      * 自身的 {@code identityLineage}。</p>
      *
-     * @param identity 当前父节点的权限标识
+     * @param identity              当前父节点的权限标识
      * @param parentIdentityLineage 当前父节点的血缘路径
-     * @param childrenPermission 待更新的子节点树
+     * @param childrenPermission    待更新的子节点树
      * @return 所有被更新的子节点平铺列表
      */
     private List<PermissionDTO> recursiveUpdateIdentityLineage(String identity, String parentIdentityLineage, List<PermissionDTO> childrenPermission) {
@@ -339,7 +329,7 @@ public class PermissionServiceImpl implements PermissionService {
      * 节点的所有祖先节点递归补齐回来。</p>
      *
      * @param searchFuncPermLabels 命中的权限节点列表
-     * @param allFuncPermLabels 全量权限节点列表
+     * @param allFuncPermLabels    全量权限节点列表
      * @return 包含祖先节点的结果集
      */
     private List<PermissionDTO> findAncestor(List<PermissionDTO> searchFuncPermLabels, List<PermissionDTO> allFuncPermLabels) {
@@ -373,7 +363,7 @@ public class PermissionServiceImpl implements PermissionService {
         AssertUtils.notBlank(username, "business.data.invalid");
 
         UserDTO user = userService.findUserByUsername(username);
-        AssertUtils.notNull(user, "business.resource.not.found");
+        AssertUtils.notNull(user, CommonErrorCode.NOT_FOUND);
 
         List<PermissionPO> results = permissionMapper.selectByUserWithIdentityAndType(
                 user.getId(),
@@ -404,10 +394,7 @@ public class PermissionServiceImpl implements PermissionService {
     @CacheEvict(value = "PermissionTree", allEntries = true)
     public void delMappingByRoleId(List<Long> roleId) {
         if (CollectionUtils.isNotEmpty(roleId)) {
-            rolePermissionRelationshipMappingMapper.delete(
-                    new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
-                            .in(RolePermissionRelationshipMappingPO::getRoleId, roleId)
-            );
+            rolePermissionRelationshipMappingMapper.deleteByRoleIds(roleId);
         }
     }
 
@@ -524,10 +511,10 @@ public class PermissionServiceImpl implements PermissionService {
      * 生成失败数据的错误 Excel 文件并返回下载地址。
      *
      * <p>当前实现先把失败数据写入本地临时文件，并预留 OSS 上传扩展点；后续接入对象存储后，只需在
-     * TODO 位置补充上传逻辑即可。</p>
+     * 待补充 位置补充上传逻辑即可。</p>
      *
      * @param failedData 导入失败的数据列表
-     * @param taskId 导入任务 ID
+     * @param taskId     导入任务 ID
      * @return 错误文件下载地址；生成失败时返回空字符串
      */
     private String generateAndUploadErrorExcel(List<PermissionExcelVO> failedData, String taskId) {
@@ -537,7 +524,7 @@ public class PermissionServiceImpl implements PermissionService {
             tempErrorFile = File.createTempFile("error_import_" + taskId, ".xlsx");
             FesodSheet.write(tempErrorFile, PermissionExcelVO.class).sheet("失败数据").doWrite(failedData);
 
-            // TODO: 调用 OSS 客户端将 tempErrorFile 上传到 MinIO 或阿里云。
+            // 待补充: 调用 OSS 客户端将 tempErrorFile 上传到 MinIO 或阿里云。
             return "http://your-oss-url/error_import_" + taskId + ".xlsx";
         } catch (Exception e) {
             log.error("生成错误 Excel 失败", e);
@@ -556,10 +543,10 @@ public class PermissionServiceImpl implements PermissionService {
      * {@code id}、{@code parentId} 以及 {@code identityLineage}，同时检测孤儿节点和循环依赖。</p>
      *
      * @param identification 当前要解析的权限标识
-     * @param batchMap 当前批次的 Excel 数据缓存
-     * @param dbMap 数据库中已存在的权限缓存
-     * @param resolvedCache 已完成解析的节点缓存，用于记忆化加速
-     * @param visiting 当前递归链路上的访问集合，用于检测循环依赖
+     * @param batchMap       当前批次的 Excel 数据缓存
+     * @param dbMap          数据库中已存在的权限缓存
+     * @param resolvedCache  已完成解析的节点缓存，用于记忆化加速
+     * @param visiting       当前递归链路上的访问集合，用于检测循环依赖
      * @return 解析完成后的节点核心信息
      */
     private ResolvedNode resolveNode(String identification,
@@ -655,7 +642,7 @@ public class PermissionServiceImpl implements PermissionService {
                 }
             }
 
-            // 3. TODO: 将导出的物理文件上传到 OSS。
+            // 3. 待补充: 将导出的物理文件上传到 OSS。
             String fileUrl = "http://your-oss-url/export_permissions_" + taskId + ".xlsx";
 
             // 4. 标记任务完成。

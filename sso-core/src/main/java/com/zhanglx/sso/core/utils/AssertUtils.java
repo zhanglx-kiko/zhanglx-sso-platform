@@ -2,6 +2,7 @@ package com.zhanglx.sso.core.utils;
 
 import cn.hutool.core.util.StrUtil;
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.ErrorCode;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -29,6 +30,10 @@ public class AssertUtils {
         throw new BusinessException(message);
     }
 
+    private static void throwException(ErrorCode errorCode, Object... args) {
+        throw new BusinessException(errorCode, args);
+    }
+
     private static void throwException(Supplier<String> messageSupplier) {
         throw new BusinessException(messageSupplier != null ? messageSupplier.get() : "业务校验失败");
     }
@@ -40,6 +45,12 @@ public class AssertUtils {
     public static void isTrue(boolean expression, String message) {
         if (!expression) {
             throwException(message);
+        }
+    }
+
+    public static void isTrue(boolean expression, ErrorCode errorCode, Object... args) {
+        if (!expression) {
+            throwException(errorCode, args);
         }
     }
 
@@ -65,6 +76,12 @@ public class AssertUtils {
         }
     }
 
+    public static void notNull(Object object, ErrorCode errorCode, Object... args) {
+        if (object == null) {
+            throwException(errorCode, args);
+        }
+    }
+
     public static void notNull(Object object, Supplier<String> messageSupplier) {
         if (object == null) {
             throwException(messageSupplier);
@@ -87,6 +104,12 @@ public class AssertUtils {
         }
     }
 
+    public static void notBlank(String text, ErrorCode errorCode, Object... args) {
+        if (StrUtil.isBlank(text)) {
+            throwException(errorCode, args);
+        }
+    }
+
     public static void notBlank(String text, Supplier<String> messageSupplier) {
         if (StrUtil.isBlank(text)) {
             throwException(messageSupplier);
@@ -103,15 +126,33 @@ public class AssertUtils {
         }
     }
 
+    public static void notEmpty(Collection<?> collection, ErrorCode errorCode, Object... args) {
+        if (CollectionUtils.isEmpty(collection)) {
+            throwException(errorCode, args);
+        }
+    }
+
     public static void notEmpty(Map<?, ?> map, String message) {
         if (CollectionUtils.isEmpty(map)) {
             throwException(message);
         }
     }
 
+    public static void notEmpty(Map<?, ?> map, ErrorCode errorCode, Object... args) {
+        if (CollectionUtils.isEmpty(map)) {
+            throwException(errorCode, args);
+        }
+    }
+
     public static void notEmpty(Object[] array, String message) {
         if (ObjectUtils.isEmpty(array)) {
             throwException(message);
+        }
+    }
+
+    public static void notEmpty(Object[] array, ErrorCode errorCode, Object... args) {
+        if (ObjectUtils.isEmpty(array)) {
+            throwException(errorCode, args);
         }
     }
 

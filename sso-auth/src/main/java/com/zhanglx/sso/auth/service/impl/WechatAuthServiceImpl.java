@@ -2,60 +2,104 @@ package com.zhanglx.sso.auth.service.impl;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
-import tools.jackson.databind.JsonNode;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
+import com.zhanglx.sso.auth.domain.po.MemberSocialPO;
+import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.properties.WechatProperties;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
-import com.zhanglx.sso.auth.service.RoleService;
+import com.zhanglx.sso.auth.exception.UserErrorCode;
+import com.zhanglx.sso.auth.mapper.MemberSocialMapper;
+import com.zhanglx.sso.auth.mapper.MemberUserMapper;
+import com.zhanglx.sso.auth.service.MemberUserService;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WechatAuthServiceImpl implements WechatAuthService {
 
+    private static final String WECHAT_MINI_IDENTITY_TYPE = "WX_MINI";
+
     private final WechatProperties wechatProperties;
     private final UserService userService;
-    private final RoleService roleService;
+    private final MemberUserService memberUserService;
+    private final MemberUserMapper memberUserMapper;
+    private final MemberSocialMapper memberSocialMapper;
     private final RestClient restClient = RestClient.create();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public LoginVO loginByWechatCode(String code) {
-        String openId = fetchOpenIdFromWechat(code);
+        JsonNode response = fetchWechatSession(code);
+        String openId = response.get("openid").asText();
         UserDTO user = userService.getUserByOpenId(openId);
 
         if (user == null) {
             user = new UserDTO();
             user.setOpenId(openId);
+            user.setUsername(openId);
             user.setNickname("用户_" + System.currentTimeMillis() % 10000);
-            user = userService.addWxUser(user);
-
-            // TODO 为微信新用户绑定默认角色
-            log.info("检测到新客访问，已静默注册成功，用户ID: {}", user.getId());
+            user = userService.addWxUser(user, openId);
+            log.info("已创建后台微信账号，userId={}", user.getId());
         }
 
         StpUtil.login(user.getId());
         return assembleLoginVO(user, StpUtil.getTokenInfo());
     }
 
-    /**
-     * 调用微信接口，通过授权码换取 OpenID。
-     *
-     * <p>当微信返回业务失败时，会转换为 400 级业务异常；当 HTTP 调用或网络链路异常时，
-     * 会转换为 502 级异常，便于前端区分业务失败与上游服务故障。</p>
-     *
-     * @param code 微信小程序登录授权码
-     * @return 微信 OpenID
-     */
-    private String fetchOpenIdFromWechat(String code) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public LoginVO loginMemberByWechatCode(String code) {
+        JsonNode response = fetchWechatSession(code);
+        String openId = response.get("openid").asText();
+        String unionId = response.has("unionid") ? response.get("unionid").asText() : null;
+
+        MemberSocialPO socialPO = memberSocialMapper.selectOne(
+                MemberSocialPO::getIdentityType, WECHAT_MINI_IDENTITY_TYPE,
+                MemberSocialPO::getIdentifier, openId
+        );
+
+        MemberUserPO memberUserPO;
+        if (socialPO == null) {
+            memberUserPO = createWechatMember(openId, unionId);
+        } else {
+            memberUserPO = memberUserMapper.selectById(socialPO.getMemberId());
+            if (memberUserPO == null) {
+                memberUserPO = MemberUserPO.builder()
+                        .status(1)
+                        .build();
+                memberUserMapper.insert(memberUserPO);
+
+                socialPO.setMemberId(memberUserPO.getId());
+                socialPO.setUnionId(unionId);
+                memberSocialMapper.updateById(socialPO);
+            }
+        }
+
+        if (Integer.valueOf(0).equals(memberUserPO.getStatus())) {
+            throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
+        }
+
+        StpMemberUtil.login(memberUserPO.getId());
+        memberUserService.touchLastLoginTime(memberUserPO.getId());
+        return assembleMemberLoginVO(memberUserPO);
+    }
+
+    private JsonNode fetchWechatSession(String code) {
+        if (!StringUtils.hasText(code)) {
+            throw BusinessException.badRequest("wechat.code.cannot.be.blank");
+        }
+
         String url = String.format(
                 "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
                 wechatProperties.getAppId(), wechatProperties.getSecret(), code
@@ -68,27 +112,38 @@ public class WechatAuthServiceImpl implements WechatAuthService {
                     .body(JsonNode.class);
 
             if (response != null && response.has("openid")) {
-                return response.get("openid").asText();
+                return response;
             }
 
-            String errorMsg = response != null && response.has("errmsg") ? response.get("errmsg").asText() : "未知错误";
-            log.warn("微信登录凭证校验失败: {}", errorMsg);
-            throw BusinessException.badRequest("微信登录失败: " + errorMsg);
+            String errorMsg = response != null && response.has("errmsg") ? response.get("errmsg").asText() : "unknown error";
+            log.warn("微信登录校验失败，errmsg={}", errorMsg);
+            throw BusinessException.badRequest("wechat.login.failed");
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            log.error("调用微信接口网络异常", e);
-            throw BusinessException.badGateway("调用微信服务异常", e);
+            log.error("调用微信登录接口失败", e);
+            throw BusinessException.badGateway("technical.wechat.service.error", e);
         }
     }
 
-    /**
-     * 组装微信登录成功后的返回对象。
-     *
-     * @param userDTO 登录用户信息
-     * @param tokenInfo Sa-Token 生成的令牌信息
-     * @return 返回给前端的登录视图对象
-     */
+    private MemberUserPO createWechatMember(String openId, String unionId) {
+        MemberUserPO memberUserPO = MemberUserPO.builder()
+                .status(1)
+                .build();
+        memberUserMapper.insert(memberUserPO);
+
+        MemberSocialPO memberSocialPO = MemberSocialPO.builder()
+                .memberId(memberUserPO.getId())
+                .identityType(WECHAT_MINI_IDENTITY_TYPE)
+                .identifier(openId)
+                .unionId(unionId)
+                .build();
+        memberSocialMapper.insert(memberSocialPO);
+
+        log.info("已创建会员微信账号，memberId={}", memberUserPO.getId());
+        return memberUserPO;
+    }
+
     private LoginVO assembleLoginVO(UserDTO userDTO, SaTokenInfo tokenInfo) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(userDTO.getId());
@@ -101,4 +156,16 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return loginVO;
     }
 
+    private LoginVO assembleMemberLoginVO(MemberUserPO memberUserPO) {
+        LoginVO loginVO = new LoginVO();
+        loginVO.setId(memberUserPO.getId());
+        String displayName = StringUtils.hasText(memberUserPO.getPhoneNumber())
+                ? memberUserPO.getPhoneNumber()
+                : "member_" + memberUserPO.getId();
+        loginVO.setUsername(displayName);
+        loginVO.setNickname(displayName);
+        loginVO.setTokenName(StpMemberUtil.getStpLogic().getTokenName());
+        loginVO.setTokenValue(StpMemberUtil.getTokenValue());
+        return loginVO;
+    }
 }

@@ -10,18 +10,18 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/10 20:45
- * @ClassName: UserPO
- * @Description: 用户持久化对象 (对应数据库表)
+ * 系统用户持久化对象，对应 V2 表 `t_sys_user`。
  */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "t_auth_user", autoResultMap = true)
+@TableName(value = "t_sys_user", autoResultMap = true)
 public class UserPO extends BasePO {
 
     @TableField(value = "username", jdbcType = JdbcType.VARCHAR)
@@ -30,28 +30,54 @@ public class UserPO extends BasePO {
     @TableField(value = "password", jdbcType = JdbcType.VARCHAR)
     private String password;
 
+    @TableField(value = "user_type", jdbcType = JdbcType.TINYINT)
+    private Integer userType;
+
+    @TableField(exist = false)
+    private String openId;
+
     @TableField(value = "nickname", jdbcType = JdbcType.VARCHAR)
     private String nickname;
 
     @TableField(value = "avatar", jdbcType = JdbcType.VARCHAR)
     private String avatar;
 
-    @TableField(value = "open_id", jdbcType = JdbcType.VARCHAR)
-    private String openId;
+    @TableField(value = "phone_number", jdbcType = JdbcType.VARCHAR)
+    private String phoneNumber;
 
-    /**
-     * 是否允许并发登录：0-禁止(会顶号)，1-允许(默认)
-     */
-    @TableField(value = "allow_concurrent_login", jdbcType = JdbcType.INTEGER)
+    @TableField(value = "sex", jdbcType = JdbcType.TINYINT)
+    private Integer sex;
+
+    @TableField(exist = false)
+    private LocalDate birthday;
+
+    @TableField(value = "email", jdbcType = JdbcType.VARCHAR)
+    private String email;
+
+    @TableField(value = "allow_concurrent_login", jdbcType = JdbcType.TINYINT)
     private Integer allowConcurrentLogin;
 
-    /**
-     * 部门ID
-     */
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;
 
-    @TableField(value = "status", jdbcType = JdbcType.INTEGER)
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT)
     private Integer status;
 
+    @TableField(exist = false)
+    private Integer userLevel;
+
+    @TableField(exist = false)
+    private Long points;
+
+    @TableField(exist = false)
+    private Integer memberType;
+
+    @TableField(exist = false)
+    private Integer realNameStatus;
+
+    @TableField(exist = false)
+    private LocalDateTime lastLoginTime;
+
+    @TableField(exist = false)
+    private String lastLoginIp;
 }

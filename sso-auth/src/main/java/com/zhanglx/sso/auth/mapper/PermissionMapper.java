@@ -51,8 +51,8 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
     @Select("<script>" +
             "SELECT DISTINCT p.id, p.name, p.identification, p.parent_id, p.identity_lineage, " +
             "       p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.remark " +
-            "FROM t_auth_user_role_mapping urm " +
-            "INNER JOIN t_auth_role_permission_mapping rpm ON urm.role_id = rpm.role_id " +
+            "FROM t_auth_user_role urm " +
+            "INNER JOIN t_auth_role_permission rpm ON urm.role_id = rpm.role_id " +
             "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
             "WHERE urm.user_id = #{userId} " +
             "  AND p.del_flag = 0 " +
@@ -84,7 +84,7 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
      */
     @Select("SELECT p.id, p.name, p.identification, p.parent_id, p.identity_lineage, " +
             "p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.remark " +
-            "FROM t_auth_role_permission_mapping rpm " +
+            "FROM t_auth_role_permission rpm " +
             "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
             "WHERE rpm.role_id = #{roleId} " +
             "  AND p.del_flag = 0 " +
@@ -117,8 +117,8 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
      * @return 权限编码列表
      */
     @Select("SELECT DISTINCT p.identification " +
-            "FROM t_auth_user_role_mapping urm " +
-            "INNER JOIN t_auth_role_permission_mapping rpm ON urm.role_id = rpm.role_id " +
+            "FROM t_auth_user_role urm " +
+            "INNER JOIN t_auth_role_permission rpm ON urm.role_id = rpm.role_id " +
             "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
             "WHERE urm.user_id = #{userId} " +
             "  AND p.type >= 2 " +

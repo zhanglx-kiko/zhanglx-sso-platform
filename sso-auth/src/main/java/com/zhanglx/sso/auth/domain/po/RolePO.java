@@ -11,10 +11,7 @@ import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/18 11:34
- * @ClassName: RolePO
- * @Description:
+ * 角色持久化对象，对应 V2 表 `t_auth_role`。
  */
 @Data
 @SuperBuilder
@@ -24,34 +21,27 @@ import org.apache.ibatis.type.JdbcType;
 @EqualsAndHashCode(callSuper = true)
 public class RolePO extends BasePO {
 
-    /**
-     * 角色名称
-     */
     @TableField(value = "role_name", jdbcType = JdbcType.VARCHAR)
     private String roleName;
 
-    /**
-     * 角色编码
-     */
     @TableField(value = "role_code", jdbcType = JdbcType.VARCHAR)
     private String roleCode;
 
-    /**
-     * 角色类型
-     */
-    @TableField(value = "role_type", jdbcType = JdbcType.VARCHAR)
+    @TableField(value = "app_code", jdbcType = JdbcType.VARCHAR)
+    private String appCode;
+
+    @TableField(value = "data_scope", jdbcType = JdbcType.TINYINT)
+    private Integer dataScope;
+
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT)
+    private Integer status;
+
+    @TableField(exist = false)
     private String roleType;
 
-    /**
-     * 是否内置:1-内置,0-非内置
-     */
-    @TableField(value = "build_in", jdbcType = JdbcType.TINYINT)
+    @TableField(exist = false)
     private Integer buildIn;
 
-    /**
-     * 备注
-     */
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
-
 }

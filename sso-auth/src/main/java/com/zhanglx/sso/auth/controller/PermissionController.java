@@ -119,6 +119,7 @@ public class PermissionController {
 
     @Operation(summary = "异步批量导入权限 (尽力而为)")
     @PostMapping("/import")
+    @SaCheckPermission("permission:import")
     public String importPermissions(@RequestParam("file") MultipartFile file) throws Exception {
         // 1. 生成唯一任务 ID
         String taskId = UUID.randomUUID().toString().replace("-", "");
@@ -140,15 +141,20 @@ public class PermissionController {
 
     @Operation(summary = "查询导入进度")
     @GetMapping("/import/progress/{taskId}")
+    @SaCheckPermission("permission:import")
     public ImportProgressDTO getImportProgress(@PathVariable("taskId") String taskId) {
         ImportProgressDTO progress = progressManager.getProgress(taskId);
+        /*
         AssertUtils.notNull(progress, "任务不存在或已过期");
 
+        */
+        AssertUtils.notNull(progress, "import task not found");
         return progress;
     }
 
     @Operation(summary = "异步导出权限数据")
     @GetMapping("/export")
+    @SaCheckPermission("permission:export")
     public String exportPermissions() {
         // 1. 生成唯一任务 ID
         String taskId = UUID.randomUUID().toString().replace("-", "");
@@ -165,9 +171,13 @@ public class PermissionController {
 
     @Operation(summary = "查询导出进度")
     @GetMapping("/export/progress/{taskId}")
+    @SaCheckPermission("permission:export")
     public ExportProgressDTO getExportProgress(@PathVariable("taskId") String taskId) {
         ExportProgressDTO progress = exportProgressManager.getProgress(taskId);
+        /*
         AssertUtils.notNull(progress, "导出任务不存在或已过期");
+        */
+        AssertUtils.notNull(progress, "export task not found");
         return progress;
     }
 

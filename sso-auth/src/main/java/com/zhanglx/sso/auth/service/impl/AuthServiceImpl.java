@@ -4,10 +4,11 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
-import com.zhanglx.sso.auth.domain.dto.LoginDTO;
+import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AuthService;
 import com.zhanglx.sso.core.exception.BusinessException;
@@ -19,12 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-/**
- * @Author: Zhang L X
- * @Create: 2026/2/10 21:14
- * @ClassName: AuthServiceImpl
- * @Description:
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,77 +31,61 @@ public class AuthServiceImpl implements AuthService {
     @Value("${default.password:123456}")
     private String defaultPassword;
 
-    /**
-     * 用户登录实现
-     * 完整逻辑：校验 -> 查询 -> 比对 -> 互顶判断 -> 登录 -> 组装结果
-     */
     @Override
-    public LoginVO login(LoginDTO loginDTO) {
-        if (loginDTO == null || !StringUtils.hasText(loginDTO.getUsername()) || !StringUtils.hasText(loginDTO.getPassword())) {
+    public LoginVO login(UserLoginDTO userLoginDTO) {
+        if (userLoginDTO == null
+                || !StringUtils.hasText(userLoginDTO.getUsername())
+                || !StringUtils.hasText(userLoginDTO.getPassword())) {
             throw new BusinessException("user.account.empty");
         }
 
         LambdaQueryWrapperX<UserPO> queryWrapper = new LambdaQueryWrapperX<>();
-        queryWrapper.eq(UserPO::getUsername, loginDTO.getUsername());
+        queryWrapper.eq(UserPO::getUsername, userLoginDTO.getUsername());
         UserPO userPO = userMapper.selectOne(queryWrapper);
 
         if (userPO == null) {
-            log.warn("登录失败，账号不存在: {}", loginDTO.getUsername());
-            throw new BusinessException("business.user.not.found");
+            log.warn("登录失败，账号不存在：{}", userLoginDTO.getUsername());
+            throw new BusinessException(UserErrorCode.BUSINESS_USER_NOT_FOUND);
         }
 
-        if (!checkpw(loginDTO.getPassword(), userPO.getPassword())) {
-            log.warn("登录失败，密码错误. 用户: {}", loginDTO.getUsername());
-            throw new BusinessException("user.password.error");
+        if (!checkpw(userLoginDTO.getPassword(), userPO.getPassword())) {
+            log.warn("登录失败，密码错误：{}", userLoginDTO.getUsername());
+            throw new BusinessException(UserErrorCode.USER_PASSWORD_ERROR);
         }
 
         if (Integer.valueOf(0).equals(userPO.getStatus())) {
-            throw new BusinessException("user.account.disabled");
+            throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 
-        // --- 互顶/并发控制 ---
-        Integer allowConcurrent = userPO.getAllowConcurrentLogin();
-        // 如果禁止并发 (0)，则踢掉该账号之前所有的登录 Session
-        if (Integer.valueOf(0).equals(allowConcurrent)) {
-            // 注意：这里不需要传 device，直接踢掉该 UserID 下的所有令牌
+        if (Integer.valueOf(0).equals(userPO.getAllowConcurrentLogin())) {
             StpUtil.logout(userPO.getId());
-            log.info("用户 [{}] 配置为互顶模式，已强制清理旧会话", userPO.getUsername());
+            log.info("用户 [{}] 不允许并发登录，已清理旧会话", userPO.getUsername());
         }
 
-        // 执行登录
-        StpUtil.login(userPO.getId(), loginDTO.getDevice());
+        StpUtil.login(userPO.getId(), userLoginDTO.getDevice());
 
-        // 检查并升级密码（登录成功后）
         if (argon2PasswordEncoder.needUpgrade(userPO.getPassword())) {
             log.info("检测到用户 [{}] 密码参数需要升级", userPO.getUsername());
-            upgradeUserPassword(userPO, loginDTO.getPassword());
+            upgradeUserPassword(userPO, userLoginDTO.getPassword());
         }
 
         return assembleLoginVO(userPO, StpUtil.getTokenInfo());
     }
 
-    /**
-     * 独立修改密码
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updatePassword(UserPasswordDTO userPasswordDTO) {
         UserPO userPO = userMapper.selectById(userPasswordDTO.getUserId());
         if (userPO == null) {
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND, userPasswordDTO.getUserId());
         }
 
-        // 1. 校验旧密码是否正确
         if (!checkpw(userPasswordDTO.getOldPassword(), userPO.getPassword())) {
-            throw new BusinessException("旧密码错误");
+            throw new BusinessException(UserErrorCode.USER_OLD_PASSWORD_ERROR);
         }
 
-        // 2. 加密新密码
         userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(userPasswordDTO.getNewPassword()));
-
         userMapper.updateById(userPO);
-
-        // 3. (可选) 修改密码后，是否需要踢掉所有在线设备让其重新登录？
         StpUtil.logout(userPO.getId());
     }
 
@@ -115,123 +94,61 @@ public class AuthServiceImpl implements AuthService {
     public void resetPassword(Long userId) {
         UserPO userPO = userMapper.selectById(userId);
         if (userPO == null) {
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND, userId);
         }
 
-        // 1. 加密新密码
         userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(defaultPassword));
-
-        // 2. 更新数据库
         userMapper.updateById(userPO);
-
-        // 3. 【关键安全步骤】管理员强制重置密码后，必须踢该用户下线！
-        // 否则该用户凭旧 Token 还能继续操作，存在安全隐患
         StpUtil.logout(userPO.getId());
-        log.info("管理员重置了用户 [{}] 的密码，并强制踢其下线", userPO.getUsername());
+        log.info("管理员已重置用户 [{}] 的密码，并强制其重新登录", userPO.getUsername());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
-        // 1. 查询用户信息
         LambdaQueryWrapperX<UserPO> queryWrapper = new LambdaQueryWrapperX<>();
         queryWrapper.eq(UserPO::getUsername, forgotPasswordDTO.getUsername());
         UserPO userPO = userMapper.selectOne(queryWrapper);
 
         if (userPO == null) {
-            log.warn("修改密码失败，账号不存在：{}", forgotPasswordDTO.getUsername());
-            throw new BusinessException("business.user.not.found");
+            log.warn("忘记密码失败，账号不存在：{}", forgotPasswordDTO.getUsername());
+            throw new BusinessException(UserErrorCode.BUSINESS_USER_NOT_FOUND);
         }
 
-        // 2. 检查账户状态
         if (Integer.valueOf(0).equals(userPO.getStatus())) {
-            throw new BusinessException("user.account.disabled");
+            throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 
-        // 3. 验证验证码（这里需要对接您的验证码服务，暂时模拟验证）
-        // TODO: 替换为实际的验证码验证逻辑（例如从 Redis 获取验证码进行比对）
         if (!verifyVerificationCode(forgotPasswordDTO.getUsername(), forgotPasswordDTO.getVerificationCode())) {
             throw new BusinessException("invalid.verification.code");
         }
 
-        // 4. 加密新密码
-        String encodedPassword = argon2PasswordEncoder.encodeAsyncWithTimeout(forgotPasswordDTO.getNewPassword());
-
-        // 5. 更新数据库
-        userPO.setPassword(encodedPassword);
+        userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(forgotPasswordDTO.getNewPassword()));
         userMapper.updateById(userPO);
-
-        // 6. 【关键安全步骤】密码重置后，必须踢该用户下线！
-        // 防止旧 Token 继续使用
         StpUtil.logout(userPO.getId());
-
-        log.info("用户 [{}] 通过验证码成功重置密码，并强制踢其下线", userPO.getUsername());
+        log.info("用户 [{}] 通过验证码重置了密码，并已强制下线", userPO.getUsername());
     }
 
-    /**
-     * 校验用户提交的验证码。
-     *
-     * <p>当前实现仍为占位逻辑，后续可在此处接入 Redis、短信网关或图形验证码服务，
-     * 统一完成验证码读取、过期校验和比对。</p>
-     *
-     * @param username 用户名
-     * @param verificationCode 用户输入的验证码
-     * @return 验证是否通过
-     */
     private boolean verifyVerificationCode(String username, String verificationCode) {
-        // TODO: 这里需要从 Redis 或其他存储中获取验证码进行比对
-        // 示例代码：
-        // String storedCode = redisTemplate.opsForValue().get("captcha:" + username);
-        // return verificationCode.equals(storedCode);
-
-        // 临时实现：假设验证码总是正确（仅用于测试）
-        // 生产环境必须替换为真实验证逻辑
-        log.warn("【警告】验证码验证功能尚未实现，当前始终返回 true。请尽快接入实际验证码服务！");
-        return true;
+        log.warn("验证码校验逻辑尚未接入真实服务，当前使用占位实现，username={}", username);
+        return StringUtils.hasText(verificationCode);
     }
 
-    /**
-     * 在用户登录成功后按新参数重新加密并升级密码。
-     *
-     * <p>该方法只负责尽力升级，不影响本次登录主流程；升级失败时仅记录日志，
-     * 避免因为密码参数升级阻塞正常登录。</p>
-     *
-     * @param userPO 已登录成功的用户实体
-     * @param rawPassword 用户本次提交的明文密码
-     */
     private void upgradeUserPassword(UserPO userPO, String rawPassword) {
         try {
-            // 使用新参数重新加密
             String newEncodedPassword = argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword);
-
-            // 更新数据库
             userPO.setPassword(newEncodedPassword);
             userMapper.updateById(userPO);
-
             log.info("用户 [{}] 密码升级成功", userPO.getUsername());
         } catch (Exception e) {
             log.error("用户 [{}] 密码升级失败", userPO.getUsername(), e);
         }
     }
 
-    /**
-     * 密码校验
-     *
-     * @param rawPassword     原始密码
-     * @param encodedPassword 加密后的哈希字符串
-     * @return 是否校验通过，true表示校验通过
-     */
     private boolean checkpw(String rawPassword, String encodedPassword) {
         return argon2PasswordEncoder.matchesAsyncWithTimeout(rawPassword, encodedPassword);
     }
 
-    /**
-     * 组装登录成功后的返回对象。
-     *
-     * @param userPO 已认证通过的用户实体
-     * @param tokenInfo Sa-Token 生成的令牌信息
-     * @return 返回给前端的登录视图对象
-     */
     private LoginVO assembleLoginVO(UserPO userPO, SaTokenInfo tokenInfo) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(userPO.getId());
@@ -243,5 +160,4 @@ public class AuthServiceImpl implements AuthService {
         loginVO.setTokenValue(tokenInfo.getTokenValue());
         return loginVO;
     }
-
 }

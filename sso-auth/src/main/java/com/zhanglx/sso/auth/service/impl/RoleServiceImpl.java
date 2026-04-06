@@ -18,6 +18,7 @@ import com.zhanglx.sso.auth.service.RoleService;
 import com.zhanglx.sso.auth.utils.IRoleMapper;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionDiffUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionUtils;
@@ -55,7 +56,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO addRole(RoleDTO roleDTO) {
         if (roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getRoleName, roleDTO.getRoleName())
                 .or().eq(RolePO::getRoleCode, roleDTO.getRoleCode()))) {
-            throw new BusinessException("business.data.duplicate");
+            throw new BusinessException(CommonErrorCode.CONFLICT);
         }
 
         RolePO role = IRoleMapper.INSTANCE.toPO(roleDTO);
@@ -67,7 +68,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO loadRole(Long roleId) {
         AssertUtils.notNull(roleId, "role.id.cannot.be.blank");
         RolePO rolePO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(rolePO, "business.resource.not.found");
+        AssertUtils.notNull(rolePO, CommonErrorCode.NOT_FOUND);
         RoleDTO roleDTO = IRoleMapper.INSTANCE.toDTO(rolePO);
         roleDTO.setRolePermissions(permissionService.selPermissionByRoleId(roleId));
         return roleDTO;
@@ -77,7 +78,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleInfoVO selectRoleDetail(Long roleId) {
         AssertUtils.notNull(roleId, "role.id.cannot.be.blank");
         RolePO rolePO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(rolePO, "business.resource.not.found");
+        AssertUtils.notNull(rolePO, CommonErrorCode.NOT_FOUND);
         RoleInfoVO roleVO = IRoleMapper.INSTANCE.toVO(rolePO);
         roleVO.setUserIds(userRoleRelationshipMappingMapper.selUserIdListByRoleId(roleId));
         return roleVO;
@@ -88,12 +89,11 @@ public class RoleServiceImpl implements RoleService {
         AssertUtils.notNull(roleId, "business.data.invalid");
 
         RolePO role = roleMapper.selectById(roleId);
-        AssertUtils.notNull(role, "business.resource.not.found");
+        AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
 
         // 传入的用户列表为空时，直接清空该角色下的所有用户关联
         if (CollectionUtils.isEmpty(userIds)) {
-            userRoleRelationshipMappingMapper.delete(new LambdaQueryWrapperX<UserRoleRelationshipMappingPO>()
-                    .eq(UserRoleRelationshipMappingPO::getRoleId, roleId));
+            userRoleRelationshipMappingMapper.deleteByRoleId(roleId);
 
             return IRoleMapper.INSTANCE.toVO(role);
         }
@@ -115,11 +115,7 @@ public class RoleServiceImpl implements RoleService {
         // 4. 批量删除被移出该角色的用户关联
         Set<Long> toDeleteIds = diff.toDelete();
         if (!toDeleteIds.isEmpty()) {
-            userRoleRelationshipMappingMapper.delete(
-                    new LambdaQueryWrapperX<UserRoleRelationshipMappingPO>()
-                            .eq(UserRoleRelationshipMappingPO::getRoleId, roleId)
-                            .in(UserRoleRelationshipMappingPO::getUserId, toDeleteIds)
-            );
+            userRoleRelationshipMappingMapper.deleteByRoleIdAndUserIds(roleId, toDeleteIds.stream().toList());
         }
 
         // 5. 批量插入新加入该角色的用户关联
@@ -149,12 +145,11 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO associatePermissions(Long roleId, List<RolePermissionRelationshipMappingDTO> permissions) {
         AssertUtils.notNull(roleId, "business.data.invalid");
         RolePO roleResultPO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(roleResultPO, "business.resource.not.found");
+        AssertUtils.notNull(roleResultPO, CommonErrorCode.NOT_FOUND);
 
         if (CollectionUtils.isEmpty(permissions)) {
             // 删除所有关联关系
-            rolePermissionRelationshipMappingMapper.delete(new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
-                    .eq(RolePermissionRelationshipMappingPO::getRoleId, roleId));
+            rolePermissionRelationshipMappingMapper.deleteByRoleId(roleId);
             return IRoleMapper.INSTANCE.toDTO(roleResultPO);
         }
 
@@ -178,11 +173,7 @@ public class RoleServiceImpl implements RoleService {
         // 3. 批量删除失效的关联
         Set<Long> toDeleteIds = diff.toDelete();
         if (!toDeleteIds.isEmpty()) {
-            rolePermissionRelationshipMappingMapper.delete(
-                    new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
-                            .eq(RolePermissionRelationshipMappingPO::getRoleId, roleId)
-                            .in(RolePermissionRelationshipMappingPO::getPermissionId, toDeleteIds)
-            );
+            rolePermissionRelationshipMappingMapper.deleteByRoleIdAndPermissionIds(roleId, toDeleteIds.stream().toList());
         }
 
         // 4. 批量插入新增的关联
@@ -209,7 +200,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO updateRole(Long id, RoleDTO roleDTO) {
-        AssertUtils.isTrue(roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getId, id)), "business.resource.not.found");
+        AssertUtils.isTrue(roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getId, id)), CommonErrorCode.NOT_FOUND);
         RolePO updateRole = IRoleMapper.INSTANCE.toPO(roleDTO);
         roleMapper.updateById(updateRole);
         return IRoleMapper.INSTANCE.toDTO(updateRole);
@@ -219,11 +210,11 @@ public class RoleServiceImpl implements RoleService {
     public RoleDTO delRole(Long id) {
         RolePO role = null;
         if (id == null || (role = roleMapper.selectById(id)) == null) {
-            throw new BusinessException("business.resource.not.found");
+            throw new BusinessException(CommonErrorCode.NOT_FOUND);
         }
 
         roleMapper.deleteByIdWithFill(id);
-        userRoleRelationshipMappingMapper.delete(new LambdaQueryWrapperX<UserRoleRelationshipMappingPO>().eq(UserRoleRelationshipMappingPO::getRoleId, id));
+        userRoleRelationshipMappingMapper.deleteByRoleId(id);
         permissionService.delMappingByRoleId(Collections.singletonList(id));
         return IRoleMapper.INSTANCE.toDTO(role);
     }
@@ -237,7 +228,6 @@ public class RoleServiceImpl implements RoleService {
         wrapper.like(RolePO::getRoleCode, queryParam.getSearchKey())
                 .or()
                 .like(RolePO::getRoleName, queryParam.getSearchKey())
-                .and(true, wrapper1 -> wrapper1.ne(RolePO::getBuildIn, 1))
                 .orderByDesc(RolePO::getCreateTime);
 
         roleMapper.selectPage(page, wrapper);
@@ -265,10 +255,7 @@ public class RoleServiceImpl implements RoleService {
 
         roleMapper.deleteByIdsWithFill(existIds);
 
-        userRoleRelationshipMappingMapper.delete(
-                new LambdaQueryWrapperX<UserRoleRelationshipMappingPO>()
-                        .in(UserRoleRelationshipMappingPO::getRoleId, existIds)
-        );
+        userRoleRelationshipMappingMapper.deleteByRoleIds(existIds);
 
         permissionService.delMappingByRoleId(existIds);
     }

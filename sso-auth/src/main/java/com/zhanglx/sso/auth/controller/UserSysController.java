@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhanglx.sso.auth.domain.dto.UserBaseDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 import com.zhanglx.sso.auth.service.UserService;
@@ -15,23 +16,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "认证与用户管理API")
-@RequestMapping("/apis/v1/user")
-public class UserController {
+@RequestMapping("/apis/v1/user/s")
+public class UserSysController {
 
     private final UserService userService;
 
     @Operation(summary = "新增用户")
     @PostMapping("/add")
+    @SaCheckPermission("user:add")
     public void saveUser(@RequestBody @Validated UserDTO userDTO) {
         userDTO.setId(null);
         userService.addUser(userDTO);
@@ -40,8 +37,8 @@ public class UserController {
     @Operation(summary = "更新用户基本信息")
     @PostMapping("/update/info")
     @SaCheckPermission("user:edit")
-    public void updateUserInfo(@RequestBody @Validated UserDTO userDTO) {
-        userService.updateUserInfo(userDTO);
+    public void updateUserInfo(@RequestBody @Validated UserBaseDTO userBaseDTO) {
+        userService.updateUserInfo(userBaseDTO);
     }
 
     @Operation(summary = "删除用户")
@@ -63,6 +60,13 @@ public class UserController {
     @SaCheckPermission("user:list")
     public Page<UserDTO> pageList(@Valid @RequestBody UserPageQueryDTO query) {
         return userService.pageQuery(query);
+    }
+
+    @Operation(summary = "修改用户状态")
+    @PostMapping("/disable/{userId}")
+    @SaCheckPermission("user:disable")
+    public void disableUser(@PathVariable String userId) {
+        userService.disableUser(parseUserId(userId));
     }
 
     private Long parseUserId(String userId) {

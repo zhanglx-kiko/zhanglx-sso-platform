@@ -12,55 +12,40 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
-/**
- * @Author: Zhang L X
- * @Create: 2026/3/18 09:30
- * @ClassName: RoleDTO
- * @Description:
- */
 @Data
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "RoleDTO", description = "用户对象")
+@Schema(name = "RoleDTO", description = "角色对象")
 public class RoleDTO extends BaseDTO {
 
-    /**
-     * 角色名称
-     */
-    @NotBlank(message = "角色名称不能为空")
-    @Schema(description = "角色名称", name = "roleName", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @NotBlank(message = "{role.name.cannot.be.blank}")
+    @Schema(description = "角色名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String roleName;
 
-    /**
-     * 角色编码
-     */
-    @Schema(description = "角色编码", name = "roleCode", example = "admin", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @NotBlank(message = "{role.code.cannot.be.blank}")
+    @Schema(description = "角色编码", requiredMode = Schema.RequiredMode.REQUIRED, example = "admin")
     private String roleCode;
 
-    /**
-     * 角色类型
-     */
-    @Schema(description = "角色类型", name = "roleType", example = "角色类型", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "应用编码", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "sso")
+    private String appCode;
+
+    @Schema(description = "数据范围", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "1")
+    private Integer dataScope;
+
+    @Schema(description = "状态", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "1")
+    private Integer status;
+
+    @Schema(description = "角色类型兼容字段", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String roleType;
 
-    /**
-     * 是否内置
-     */
-    @Schema(description = "是否内置:1-内置,0-非内置", name = "buildIn", example = "0", type = "Integer", hidden = true, defaultValue = "0", allowableValues = {"1", "0"}, requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "是否内置兼容字段", requiredMode = Schema.RequiredMode.NOT_REQUIRED, hidden = true)
     private Integer buildIn;
 
-    /**
-     * 权限项列表
-     */
-    @Schema(description = "权限项列表", name = "rolePermissions", example = "", type = "List<PermissionVO>", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "权限项列表", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<PermissionVO> rolePermissions;
 
-    /**
-     * 备注
-     */
-    @Schema(description = "备注", name = "remark", example = "备注", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "备注", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String remark;
-
 }

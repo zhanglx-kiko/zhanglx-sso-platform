@@ -23,9 +23,10 @@ public interface RoleMapper extends IBaseMapperX<RolePO> {
      * @param userAccount 用户账号
      * @return 当前账号绑定的角色列表
      */
-    @Select("SELECT r.id, r.role_name, r.role_code, r.role_type, r.build_in, r.remark " +
-            "FROM t_auth_user u " +
-            "INNER JOIN t_auth_user_role_mapping urm ON u.id = urm.user_id " +
+    @Select("SELECT r.id, r.app_code, r.role_name, r.role_code, r.data_scope, r.status, r.remark, " +
+            "r.create_by, r.create_time, r.update_by, r.update_time " +
+            "FROM t_sys_user u " +
+            "INNER JOIN t_auth_user_role urm ON u.id = urm.user_id " +
             "INNER JOIN t_auth_role r ON urm.role_id = r.id " +
             "WHERE u.username = #{userAccount} " +
             "  AND r.del_flag = 0 " +

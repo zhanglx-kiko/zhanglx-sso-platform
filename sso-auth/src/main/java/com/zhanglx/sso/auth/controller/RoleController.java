@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -166,7 +167,7 @@ public class RoleController {
      */
     @Operation(summary = "查询当前登录用户的角色列表")
     @GetMapping("/my-roles")
-    @SaCheckPermission
+    @SaCheckLogin
     public List<RoleDTO> getMyRoles() {
         String username = StpUtil.getLoginIdAsString();
         return roleService.selectRolesForUser(username);

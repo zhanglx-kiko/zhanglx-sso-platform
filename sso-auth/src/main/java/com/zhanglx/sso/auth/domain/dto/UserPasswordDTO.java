@@ -25,7 +25,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-@Schema(name = "UserPasswordDTO", description = "用户密码对象")
+@Schema(name = "UserPasswordDTO", description = "用户修改密码对象")
 public class UserPasswordDTO implements Serializable {
 
     @JsonSerialize(using = ToStringSerializer.class)

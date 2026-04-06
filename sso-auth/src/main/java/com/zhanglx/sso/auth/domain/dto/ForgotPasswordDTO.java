@@ -20,8 +20,8 @@ import java.io.Serializable;
 @Schema(name = "ForgotPasswordDTO", description = "忘记密码请求参数")
 public class ForgotPasswordDTO implements Serializable {
 
-    @NotBlank(message = "用户名不能为空")
-    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "账号不能为空")
+    @Schema(description = "账号", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED)
     private String username;
 
     @NotBlank(message = "新密码不能为空")

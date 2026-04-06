@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TableName(value = "t_auth_role_permission_mapping", autoResultMap = true)
+@TableName(value = "t_auth_role_permission", autoResultMap = true)
 public class RolePermissionRelationshipMappingPO extends BasePO {
 
     /**
@@ -41,7 +41,7 @@ public class RolePermissionRelationshipMappingPO extends BasePO {
     /**
      * 授权过期时间
      */
-    @TableField(value = "expire_time", jdbcType = JdbcType.TIMESTAMP)
+    @TableField(exist = false)
     private LocalDateTime expireTime;
 
 

@@ -102,7 +102,7 @@ public class Argon2PasswordEncoder {
             return hashResult.getResult();
         } catch (Exception e) {
             log.error("Argon2加密失败", e);
-            throw new BusinessException("password.encryption.failed");
+            throw BusinessException.internalError("password.encryption.failed");
         }
     }
 
@@ -158,9 +158,9 @@ public class Argon2PasswordEncoder {
         try {
             return encodeAsync(rawPassword).get(ASYNC_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            throw new BusinessException("password.encryption.timed.out");
+            throw BusinessException.internalError("password.encryption.timed.out");
         } catch (Exception e) {
-            throw new BusinessException("password.encryption.failed");
+            throw BusinessException.internalError("password.encryption.failed");
         }
     }
 
@@ -171,7 +171,7 @@ public class Argon2PasswordEncoder {
         try {
             return matchesAsync(rawPassword, encodedPassword).get(ASYNC_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            throw new BusinessException("password.verification.timed.out");
+            throw BusinessException.internalError("password.verification.timed.out");
         } catch (Exception e) {
             return false;
         }

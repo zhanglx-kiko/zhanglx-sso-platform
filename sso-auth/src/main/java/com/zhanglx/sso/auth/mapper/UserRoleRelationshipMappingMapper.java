@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.mapper;
 
 import com.zhanglx.sso.auth.domain.po.UserRoleRelationshipMappingPO;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -23,7 +24,7 @@ public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRole
      * @param roleId 角色 ID
      * @return 绑定到该角色的用户 ID 列表
      */
-    @Select("SELECT user_id FROM t_auth_user_role_mapping WHERE role_id = #{roleId} AND del_flag = 0")
+    @Select("SELECT user_id FROM t_auth_user_role WHERE role_id = #{roleId} AND del_flag = 0")
     List<Long> selUserIdListByRoleId(@Param("roleId") Long roleId);
 
     /**
@@ -32,7 +33,26 @@ public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRole
      * @param userId 用户 ID
      * @return 该用户绑定的角色 ID 列表
      */
-    @Select("SELECT role_id FROM t_auth_user_role_mapping WHERE user_id = #{userId} AND del_flag = 0")
+    @Select("SELECT role_id FROM t_auth_user_role WHERE user_id = #{userId} AND del_flag = 0")
     List<Long> selRoleIdsByUserId(@Param("userId") Long userId);
+
+    @Delete("DELETE FROM t_auth_user_role WHERE role_id = #{roleId}")
+    int deleteByRoleId(@Param("roleId") Long roleId);
+
+    @Delete("<script>" +
+            "DELETE FROM t_auth_user_role WHERE role_id = #{roleId} AND user_id IN " +
+            "<foreach item='userId' collection='userIds' open='(' separator=',' close=')'>" +
+            "#{userId}" +
+            "</foreach>" +
+            "</script>")
+    int deleteByRoleIdAndUserIds(@Param("roleId") Long roleId, @Param("userIds") List<Long> userIds);
+
+    @Delete("<script>" +
+            "DELETE FROM t_auth_user_role WHERE role_id IN " +
+            "<foreach item='roleId' collection='roleIds' open='(' separator=',' close=')'>" +
+            "#{roleId}" +
+            "</foreach>" +
+            "</script>")
+    int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
 
 }
