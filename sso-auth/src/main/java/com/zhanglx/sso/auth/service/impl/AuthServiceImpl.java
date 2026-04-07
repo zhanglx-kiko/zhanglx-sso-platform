@@ -8,9 +8,12 @@ import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AuthService;
+import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+    private final AuthOperationGuard authOperationGuard;
 
     @Value("${default.password:123456}")
     private String defaultPassword;
@@ -53,11 +57,11 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(UserErrorCode.USER_PASSWORD_ERROR);
         }
 
-        if (Integer.valueOf(0).equals(userPO.getStatus())) {
+        if (UserStatusEnum.DISABLED.matches(userPO.getStatus())) {
             throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 
-        if (Integer.valueOf(0).equals(userPO.getAllowConcurrentLogin())) {
+        if (YesNoEnum.NO.matches(userPO.getAllowConcurrentLogin())) {
             StpUtil.logout(userPO.getId());
             log.info("用户 [{}] 不允许并发登录，已清理旧会话", userPO.getUsername());
         }
@@ -92,6 +96,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void resetPassword(Long userId) {
+        authOperationGuard.checkResetPasswordNotSelf(userId);
         UserPO userPO = userMapper.selectById(userId);
         if (userPO == null) {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND, userId);
@@ -115,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(UserErrorCode.BUSINESS_USER_NOT_FOUND);
         }
 
-        if (Integer.valueOf(0).equals(userPO.getStatus())) {
+        if (UserStatusEnum.DISABLED.matches(userPO.getStatus())) {
             throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 

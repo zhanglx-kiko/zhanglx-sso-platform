@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -7,14 +8,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.time.LocalDateTime;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/18 10:13
- * @ClassName: RolePermissionRelationshipMappingDTO
- * @Description:
+ * 角色与权限项关系映射对象。
  */
 @Data
 @SuperBuilder
@@ -25,21 +26,24 @@ import java.time.LocalDateTime;
 public class RolePermissionRelationshipMappingDTO extends BaseDTO {
 
     /**
-     * 角色Id
+     * 角色 ID。
      */
-    @Schema(description = "角色Id", name = "roleId", example = "", type = "Long", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "角色ID", name = "roleId", example = "1", type = "Long", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private Long roleId;
 
     /**
-     * 权限项id
+     * 权限项 ID。
      */
-    @Schema(description = "权限项id", name = "permissionId", example = "", type = "Long", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @JsonSerialize(using = ToStringSerializer.class)
+    @JsonDeserialize(using = StringToLongDeserializer.class)
+    @Schema(description = "权限项ID", name = "permissionId", example = "1", type = "Long", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private Long permissionId;
 
     /**
-     * 授权过期时间
+     * 授权过期时间。
      */
-    @Schema(description = "授权过期时间", name = "expireTime", example = "", type = "LocalDateTime", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "授权过期时间", name = "expireTime", example = "2026-12-31T23:59:59", type = "LocalDateTime", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private LocalDateTime expireTime;
-
 }

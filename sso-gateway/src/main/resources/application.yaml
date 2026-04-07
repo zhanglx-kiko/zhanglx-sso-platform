@@ -14,7 +14,7 @@ spring:
     encoding: UTF-8
   data:
     redis:
-      host: 192.168.3.130
+      host: 192.168.3.131
       port: 6379
       database: 0
       password: P@ssw0rd!23  # 替换为你的Redis密码（空密码则注释）
@@ -58,8 +58,12 @@ spring:
                 # 设置超时时间
                 - name: RequestRateLimiter
                   args:
+                    # 令牌桶每秒填充速率（每秒允许多少请求）
                     redis-rate-limiter.replenishRate: 10
+                    # 令牌桶总容量（允许的一瞬间突发请求数）
                     redis-rate-limiter.burstCapacity: 20
+                    # 每个请求消耗多少个令牌
+                    redis-rate-limiter.requestedTokens: 1
                     key-resolver: "#{@ipKeyResolver}"  # 按IP限流（需自定义Bean）
             - id: sso-auth-swagger
               order: 100

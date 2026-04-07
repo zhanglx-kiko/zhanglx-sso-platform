@@ -1,9 +1,14 @@
 package com.zhanglx.sso.auth.service.impl;
 
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
-import com.zhanglx.sso.auth.domain.dto.*;
+import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberVerificationCodeSendDTO;
+import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.auth.exception.MemberErrorCode;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.MemberUserMapper;
@@ -48,13 +53,13 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             throw new BusinessException(UserErrorCode.USER_PASSWORD_ERROR);
         }
 
-        if (Integer.valueOf(0).equals(memberUserPO.getStatus())) {
+        if (UserStatusEnum.DISABLED.matches(memberUserPO.getStatus())) {
             throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 
         StpMemberUtil.login(memberUserPO.getId(), memberLoginDTO.getDevice());
         if (argon2PasswordEncoder.needUpgrade(memberUserPO.getPassword())) {
-            log.info("检测到用户 [{}] 密码参数需要升级", memberUserPO.getId());
+            log.info("Password params need upgrade for member [{}]", memberUserPO.getId());
             upgradeUserPassword(memberUserPO, memberLoginDTO.getPassword());
         }
         memberUserService.touchLastLoginTime(memberUserPO.getId());
@@ -79,7 +84,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         MemberUserPO memberUserPO = MemberUserPO.builder()
                 .phoneNumber(memberRegisterDTO.getPhoneNumber())
                 .password(argon2PasswordEncoder.encodeAsyncWithTimeout(memberRegisterDTO.getPassword()))
-                .status(1)
+                .status(UserStatusEnum.NORMAL.getCode())
                 .build();
         memberUserMapper.insert(memberUserPO);
 
@@ -181,10 +186,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             String newEncodedPassword = argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword);
             memberUserPO.setPassword(newEncodedPassword);
             memberUserMapper.updateById(memberUserPO);
-            log.info("用户 [{}] 密码升级成功", memberUserPO.getId());
+            log.info("Password upgraded for member [{}]", memberUserPO.getId());
         } catch (Exception e) {
-            log.error("用户 [{}] 密码升级失败", memberUserPO.getId(), e);
+            log.error("Failed to upgrade password for member [{}]", memberUserPO.getId(), e);
         }
     }
-
 }

@@ -1,0 +1,85 @@
+package com.zhanglx.sso.auth.controller;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhanglx.sso.auth.annotation.RepeatSubmit;
+import com.zhanglx.sso.auth.domain.dto.PostDTO;
+import com.zhanglx.sso.auth.domain.dto.PostQueryDTO;
+import com.zhanglx.sso.auth.domain.dto.StatusUpdateDTO;
+import com.zhanglx.sso.auth.service.PostService;
+import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.core.utils.AssertUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@Validated
+@RequiredArgsConstructor
+@Tag(name = "岗位管理", description = "B 端岗位管理接口")
+@RequestMapping("/apis/v1/auth/s/posts")
+public class AuthPostController {
+
+    private final PostService postService;
+
+    @Operation(summary = "新增岗位")
+    @PostMapping
+    @RepeatSubmit
+    @SaCheckPermission("post:add")
+    public PostDTO create(@RequestBody @Valid PostDTO dto) {
+        dto.setId(null);
+        return postService.create(dto);
+    }
+
+    @Operation(summary = "修改岗位")
+    @PutMapping("/{id}")
+    @RepeatSubmit
+    @SaCheckPermission("post:edit")
+    public PostDTO update(@PathVariable String id, @RequestBody @Valid PostDTO dto) {
+        return postService.update(RequestIdUtils.parseId(id, "岗位ID"), dto);
+    }
+
+    @Operation(summary = "删除岗位")
+    @DeleteMapping("/{id}")
+    @RepeatSubmit
+    @SaCheckPermission("post:remove")
+    public void delete(@PathVariable String id) {
+        postService.delete(RequestIdUtils.parseId(id, "岗位ID"));
+    }
+
+    @Operation(summary = "批量删除岗位")
+    @DeleteMapping
+    @RepeatSubmit
+    @SaCheckPermission("post:remove")
+    public void batchDelete(@RequestBody List<String> ids) {
+        AssertUtils.notEmpty(ids, "岗位 ID 列表不能为空");
+        postService.batchDelete(RequestIdUtils.parseIds(ids, "岗位ID"));
+    }
+
+    @Operation(summary = "岗位详情")
+    @GetMapping("/{id}")
+    @SaCheckPermission("post:view")
+    public PostDTO getById(@PathVariable String id) {
+        return postService.getById(RequestIdUtils.parseId(id, "岗位ID"));
+    }
+
+    @Operation(summary = "分页查询岗位")
+    @PostMapping("/page")
+    @SaCheckPermission("post:list")
+    public Page<PostDTO> pageQuery(@RequestBody PostQueryDTO queryDTO) {
+        return postService.pageQuery(queryDTO);
+    }
+
+    @Operation(summary = "更新岗位状态")
+    @PatchMapping("/{id}/status")
+    @RepeatSubmit
+    @SaCheckPermission("post:status")
+    public PostDTO updateStatus(@PathVariable String id, @RequestBody @Valid StatusUpdateDTO dto) {
+        return postService.updateStatus(RequestIdUtils.parseId(id, "岗位ID"), dto.getStatus());
+    }
+}

@@ -176,4 +176,6 @@ public interface RoleService {
      */
     List<RoleDTO> selectRolesForUser(Long userId);
 
+    RoleDTO updateStatus(Long roleId, Integer status);
+
 }

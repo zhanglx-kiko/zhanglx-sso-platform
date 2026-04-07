@@ -20,9 +20,9 @@ public interface IRolePermissionRelationshipMappingPOMapper {
 
     IRolePermissionRelationshipMappingPOMapper INSTANCE = Mappers.getMapper(IRolePermissionRelationshipMappingPOMapper.class);
 
-//    @Mapping(target = "delFlag", ignore = true)
     RolePermissionRelationshipMappingDTO toDTO(RolePermissionRelationshipMappingPO rolePermissionRelationshipMappingPO);
 
+    @Mapping(target = "delFlag", ignore = true)
     RolePermissionRelationshipMappingPO toPO(RolePermissionRelationshipMappingDTO rolePermissionRelationshipMappingDTO);
 
     List<RolePermissionRelationshipMappingDTO> toDTOList(List<RolePermissionRelationshipMappingPO> rolePermissionRelationshipMappingPOList);

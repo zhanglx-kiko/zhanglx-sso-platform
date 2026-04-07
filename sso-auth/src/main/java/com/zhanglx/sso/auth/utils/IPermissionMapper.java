@@ -6,6 +6,7 @@ import com.zhanglx.sso.auth.domain.vo.PermissionExcelVO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -22,10 +23,10 @@ public interface IPermissionMapper {
 
     IPermissionMapper INSTANCE = Mappers.getMapper(IPermissionMapper.class);
 
-    //    @Mapping(target = "delFlag", ignore = true)
+    @Mapping(target = "children", ignore = true)
     PermissionDTO toDTO(PermissionPO permissionPO);
 
-    //    @Mapping(target = "children", ignore = true)
+    @Mapping(target = "delFlag", ignore = true)
     PermissionPO toPO(PermissionDTO permissionDTO);
 
     List<PermissionDTO> toDTOList(List<PermissionPO> permissionPOList);
@@ -34,17 +35,20 @@ public interface IPermissionMapper {
 
     List<PermissionVO> toVOList(List<PermissionPO> result);
 
-    //    @Mapping(target = "delFlag", ignore = true)
     PermissionVO toVO(PermissionPO result);
 
-    //    @Mapping(target = "errorMessage", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createBy", ignore = true)
+    @Mapping(target = "createTime", ignore = true)
+    @Mapping(target = "updateBy", ignore = true)
+    @Mapping(target = "updateTime", ignore = true)
+    @Mapping(target = "parentId", ignore = true)
+    @Mapping(target = "identityLineage", ignore = true)
+    @Mapping(target = "delFlag", ignore = true)
+    @Mapping(target = "status", ignore = true)
     PermissionPO excelVOToPo(PermissionExcelVO vo);
 
-    //    @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "createBy", ignore = true)
-//    @Mapping(target = "createTime", ignore = true)
-//    @Mapping(target = "updateBy", ignore = true)
-//    @Mapping(target = "updateTime", ignore = true)
-//    @Mapping(target = "delFlag", ignore = true)
+    @Mapping(target = "parentIdentification", ignore = true)
+    @Mapping(target = "errorMessage", ignore = true)
     PermissionExcelVO poToExcelVo(PermissionPO po);
 }

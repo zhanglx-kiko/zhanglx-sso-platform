@@ -5,6 +5,8 @@ import com.zhanglx.sso.auth.domain.dto.UserBaseDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 
+import java.util.List;
+
 public interface UserService {
 
     void addUser(UserDTO user);
@@ -21,5 +23,9 @@ public interface UserService {
 
     UserDTO findUserByUsername(String username);
 
-    void disableUser(Long userId);
+    UserDTO getUserDetail(Long userId);
+
+    void batchRemoveUsers(List<Long> userIds);
+
+    void updateStatus(Long userId, Integer status);
 }

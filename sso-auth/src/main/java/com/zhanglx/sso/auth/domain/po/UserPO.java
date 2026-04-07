@@ -60,6 +60,9 @@ public class UserPO extends BasePO {
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;
 
+    /**
+     * 状态：1-正常，0-禁用
+     */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT)
     private Integer status;
 

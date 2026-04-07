@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.List;
 
@@ -37,5 +39,6 @@ public class RoleInfoVO extends BaseVO {
     private String roleType;
 
     @Schema(description = "已绑定的用户 ID 列表", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonSerialize(contentUsing = ToStringSerializer.class)
     private List<Long> userIds;
 }

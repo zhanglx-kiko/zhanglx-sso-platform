@@ -7,6 +7,8 @@ import com.zhanglx.sso.auth.domain.po.MemberSocialPO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.properties.WechatProperties;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.enums.SocialIdentityTypeEnum;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.MemberSocialMapper;
 import com.zhanglx.sso.auth.mapper.MemberUserMapper;
@@ -28,8 +30,6 @@ import tools.jackson.databind.JsonNode;
 @RequiredArgsConstructor
 public class WechatAuthServiceImpl implements WechatAuthService {
 
-    private static final String WECHAT_MINI_IDENTITY_TYPE = "WX_MINI";
-
     private final WechatProperties wechatProperties;
     private final UserService userService;
     private final MemberUserService memberUserService;
@@ -48,9 +48,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             user = new UserDTO();
             user.setOpenId(openId);
             user.setUsername(openId);
-            user.setNickname("用户_" + System.currentTimeMillis() % 10000);
+            user.setNickname("user_" + System.currentTimeMillis() % 10000);
             user = userService.addWxUser(user, openId);
-            log.info("已创建后台微信账号，userId={}", user.getId());
+            log.info("Created back-office WeChat account, userId={}", user.getId());
         }
 
         StpUtil.login(user.getId());
@@ -65,7 +65,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         String unionId = response.has("unionid") ? response.get("unionid").asText() : null;
 
         MemberSocialPO socialPO = memberSocialMapper.selectOne(
-                MemberSocialPO::getIdentityType, WECHAT_MINI_IDENTITY_TYPE,
+                MemberSocialPO::getIdentityType, SocialIdentityTypeEnum.WX_MINI.getCode(),
                 MemberSocialPO::getIdentifier, openId
         );
 
@@ -76,7 +76,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             memberUserPO = memberUserMapper.selectById(socialPO.getMemberId());
             if (memberUserPO == null) {
                 memberUserPO = MemberUserPO.builder()
-                        .status(1)
+                        .status(UserStatusEnum.NORMAL.getCode())
                         .build();
                 memberUserMapper.insert(memberUserPO);
 
@@ -86,7 +86,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             }
         }
 
-        if (Integer.valueOf(0).equals(memberUserPO.getStatus())) {
+        if (UserStatusEnum.DISABLED.matches(memberUserPO.getStatus())) {
             throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 
@@ -116,31 +116,31 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             }
 
             String errorMsg = response != null && response.has("errmsg") ? response.get("errmsg").asText() : "unknown error";
-            log.warn("微信登录校验失败，errmsg={}", errorMsg);
+            log.warn("WeChat login validation failed, errmsg={}", errorMsg);
             throw BusinessException.badRequest("wechat.login.failed");
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            log.error("调用微信登录接口失败", e);
+            log.error("Failed to call WeChat login API", e);
             throw BusinessException.badGateway("technical.wechat.service.error", e);
         }
     }
 
     private MemberUserPO createWechatMember(String openId, String unionId) {
         MemberUserPO memberUserPO = MemberUserPO.builder()
-                .status(1)
+                .status(UserStatusEnum.NORMAL.getCode())
                 .build();
         memberUserMapper.insert(memberUserPO);
 
         MemberSocialPO memberSocialPO = MemberSocialPO.builder()
                 .memberId(memberUserPO.getId())
-                .identityType(WECHAT_MINI_IDENTITY_TYPE)
+                .identityType(SocialIdentityTypeEnum.WX_MINI.getCode())
                 .identifier(openId)
                 .unionId(unionId)
                 .build();
         memberSocialMapper.insert(memberSocialPO);
 
-        log.info("已创建会员微信账号，memberId={}", memberUserPO.getId());
+        log.info("Created member WeChat account, memberId={}", memberUserPO.getId());
         return memberUserPO;
     }
 

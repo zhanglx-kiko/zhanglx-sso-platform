@@ -1,0 +1,27 @@
+package com.zhanglx.sso.auth.domain.dto;
+
+import com.zhanglx.sso.core.domain.page.PageQuery;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@Schema(name = "ConfigQueryDTO", description = "系统参数分页查询参数")
+public class ConfigQueryDTO extends PageQuery {
+
+    @Schema(description = "参数名称")
+    private String configName;
+
+    @Schema(description = "参数键")
+    private String configKey;
+
+    @Schema(description = "是否系统内置：1-是，0-否")
+    private Integer configType;
+}

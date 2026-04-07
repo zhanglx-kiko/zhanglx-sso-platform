@@ -90,4 +90,7 @@ public class PermissionPO extends BasePO {
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT)
+    private Short status;
+
 }

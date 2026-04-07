@@ -13,7 +13,7 @@ spring:
   # Redis 配置 (请修改为你的实际地址)
   data:
     redis:
-      host: 192.168.3.130
+      host: 192.168.3.131
       port: 6379
       database: 0
       password: P@ssw0rd!23  # 替换为你的Redis密码（空密码则注释）
@@ -28,7 +28,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # rewriteBatchedStatements=true 批处理
-    url: jdbc:mysql://192.168.3.130:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    url: jdbc:mysql://192.168.3.131:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
     username: root
     password: P@ssw0rd!23
     # HikariCP 连接池配置优化 (JDK 25 虚拟线程下高并发优化)
@@ -93,13 +93,6 @@ mybatis-plus:
 
 # sa-token 配置
 sa-token:
-  # OAuth2.0 配置
-  oauth2-server:
-    # 定义哪些 scope 是高级权限，多个用逗号隔开
-    higher-scope: openid,userid
-    # 定义哪些 scope 是低级权限，多个用逗号隔开
-    lower-scope: userinfo
-    not-login-view: /notLogin
   # token 名称 (前端请求头需要带上这个名称)
   token-name: token
   # token 有效期 (单位: 秒) - 30天
@@ -107,7 +100,6 @@ sa-token:
   # token 临时有效期 (指定时间内无操作就视为过期) - 30分钟
   active-timeout: 1800
   # 是否允许同一账号并发登录 (为 true 时允许一起登录, 为 false 时新登录挤掉旧登录)
-  # 【注意】这里必须设为 true，具体的“挤人”逻辑我们在代码里控制，以满足你的“灵活配置”需求
   is-concurrent: true
   # 在多人登录同一账号时，是否共用一个 token (为 true 时所有登录共用一个 token, 为 false 时每次登录产生新 token)
   is-share: false
@@ -189,4 +181,11 @@ knife4j:
 #    - name: 补充文档
 #      locations: classpath:static/markdown/others/*
 #      group: 01-系统接口 # 此处分组必须使用在Knife4jConfig已存在的分组名group，当存在displayName时，使用displayName名称
+
+
+sso:
+  repeat-submit:
+    enabled: true
+    default-window-seconds: 5
+    key-prefix: sso:repeat-submit
 

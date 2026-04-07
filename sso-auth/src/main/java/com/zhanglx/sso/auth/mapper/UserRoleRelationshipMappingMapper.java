@@ -2,10 +2,10 @@ package com.zhanglx.sso.auth.mapper;
 
 import com.zhanglx.sso.auth.domain.po.UserRoleRelationshipMappingPO;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
-import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -36,23 +36,34 @@ public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRole
     @Select("SELECT role_id FROM t_auth_user_role WHERE user_id = #{userId} AND del_flag = 0")
     List<Long> selRoleIdsByUserId(@Param("userId") Long userId);
 
-    @Delete("DELETE FROM t_auth_user_role WHERE role_id = #{roleId}")
+    @Update("UPDATE t_auth_user_role SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0")
     int deleteByRoleId(@Param("roleId") Long roleId);
 
-    @Delete("<script>" +
-            "DELETE FROM t_auth_user_role WHERE role_id = #{roleId} AND user_id IN " +
+    @Update("<script>" +
+            "UPDATE t_auth_user_role SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0 AND user_id IN " +
             "<foreach item='userId' collection='userIds' open='(' separator=',' close=')'>" +
             "#{userId}" +
             "</foreach>" +
             "</script>")
     int deleteByRoleIdAndUserIds(@Param("roleId") Long roleId, @Param("userIds") List<Long> userIds);
 
-    @Delete("<script>" +
-            "DELETE FROM t_auth_user_role WHERE role_id IN " +
+    @Update("<script>" +
+            "UPDATE t_auth_user_role SET del_flag = id WHERE role_id IN " +
             "<foreach item='roleId' collection='roleIds' open='(' separator=',' close=')'>" +
             "#{roleId}" +
-            "</foreach>" +
+            "</foreach> AND del_flag = 0" +
             "</script>")
     int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
+
+    @Update("UPDATE t_auth_user_role SET del_flag = id WHERE user_id = #{userId} AND del_flag = 0")
+    int deleteByUserId(@Param("userId") Long userId);
+
+    @Update("<script>" +
+            "UPDATE t_auth_user_role SET del_flag = id WHERE user_id IN " +
+            "<foreach item='userId' collection='userIds' open='(' separator=',' close=')'>" +
+            "#{userId}" +
+            "</foreach> AND del_flag = 0" +
+            "</script>")
+    int deleteByUserIds(@Param("userIds") List<Long> userIds);
 
 }

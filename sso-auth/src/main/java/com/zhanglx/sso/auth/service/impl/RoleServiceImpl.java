@@ -4,17 +4,28 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.zhanglx.sso.auth.domain.dto.RoleDTO;
 import com.zhanglx.sso.auth.domain.dto.RolePermissionRelationshipMappingDTO;
+import com.zhanglx.sso.auth.domain.po.AppPO;
+import com.zhanglx.sso.auth.domain.po.PermissionPO;
 import com.zhanglx.sso.auth.domain.po.RolePO;
 import com.zhanglx.sso.auth.domain.po.RolePermissionRelationshipMappingPO;
+import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.po.UserRoleRelationshipMappingPO;
 import com.zhanglx.sso.auth.domain.vo.RoleInfoVO;
+import com.zhanglx.sso.auth.enums.DataScopeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
 import com.zhanglx.sso.auth.event.RolePermissionChangedEvent;
 import com.zhanglx.sso.auth.event.RoleUsersChangedEvent;
+import com.zhanglx.sso.auth.mapper.AppMapper;
+import com.zhanglx.sso.auth.mapper.PermissionMapper;
+import com.zhanglx.sso.auth.mapper.RoleDeptMapper;
 import com.zhanglx.sso.auth.mapper.RoleMapper;
 import com.zhanglx.sso.auth.mapper.RolePermissionRelationshipMappingMapper;
+import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.mapper.UserRoleRelationshipMappingMapper;
 import com.zhanglx.sso.auth.service.PermissionService;
 import com.zhanglx.sso.auth.service.RoleService;
+import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.IRoleMapper;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import com.zhanglx.sso.core.exception.BusinessException;
@@ -35,31 +46,36 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * @Author: Zhang L X
- * @Create: 2026/3/18 11:29
- * @ClassName: RoleServiceImpl
- * @Description:
- */
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class RoleServiceImpl implements RoleService {
 
+    private final AppMapper appMapper;
+    private final UserMapper userMapper;
     private final RoleMapper roleMapper;
+    private final PermissionMapper permissionMapper;
     private final PermissionService permissionService;
+    private final RoleDeptMapper roleDeptMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final UserRoleRelationshipMappingMapper userRoleRelationshipMappingMapper;
     private final RolePermissionRelationshipMappingMapper rolePermissionRelationshipMappingMapper;
+    private final AuthOperationGuard authOperationGuard;
 
     @Override
     public RoleDTO addRole(RoleDTO roleDTO) {
-        if (roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getRoleName, roleDTO.getRoleName())
-                .or().eq(RolePO::getRoleCode, roleDTO.getRoleCode()))) {
-            throw new BusinessException(CommonErrorCode.CONFLICT);
-        }
+        String appCode = normalizeAppCode(roleDTO.getAppCode());
+        validateApp(appCode);
+        validateRoleUnique(appCode, roleDTO.getRoleCode(), roleDTO.getRoleName(), null);
 
         RolePO role = IRoleMapper.INSTANCE.toPO(roleDTO);
+        role.setAppCode(appCode);
+        if (role.getDataScope() == null) {
+            role.setDataScope(DataScopeEnum.ALL.getCode());
+        }
+        if (role.getStatus() == null) {
+            role.setStatus(EnableStatusEnum.ENABLED.getCode());
+        }
         roleMapper.insert(role);
         return IRoleMapper.INSTANCE.toDTO(role);
     }
@@ -87,58 +103,84 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleInfoVO bindUsers(Long roleId, List<Long> userIds) {
         AssertUtils.notNull(roleId, "business.data.invalid");
-
         RolePO role = roleMapper.selectById(roleId);
         AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
 
-        // 传入的用户列表为空时，直接清空该角色下的所有用户关联
-        if (CollectionUtils.isEmpty(userIds)) {
-            userRoleRelationshipMappingMapper.deleteByRoleId(roleId);
-
-            return IRoleMapper.INSTANCE.toVO(role);
-        }
-
-        // 2. 查询当前角色已绑定的用户 ID 列表
         List<Long> existingUserIds = userRoleRelationshipMappingMapper.selectList(
                 new LambdaQueryWrapperX<UserRoleRelationshipMappingPO>()
                         .eq(UserRoleRelationshipMappingPO::getRoleId, roleId)
         ).stream().map(UserRoleRelationshipMappingPO::getUserId).toList();
 
-        // 3. 计算新旧数据的差异
-        CollectionDiffUtils.DiffResult<Long> diff = CollectionDiffUtils.compare(existingUserIds, userIds);
+        if (CollectionUtils.isEmpty(userIds)) {
+            authOperationGuard.checkRoleUsersBindingDoesNotRemoveCurrentUser(existingUserIds, List.of());
+            userRoleRelationshipMappingMapper.deleteByRoleId(roleId);
+            return IRoleMapper.INSTANCE.toVO(role);
+        }
 
-        // 无变更，直接放行
+        List<Long> normalizedUserIds = userIds.stream().filter(Objects::nonNull).distinct().toList();
+        List<UserPO> userList = userMapper.selectByIds(normalizedUserIds);
+        AssertUtils.isTrue(userList.size() == normalizedUserIds.size(), "瀛樺湪鏃犳晥鐨勭敤鎴?ID");
+        authOperationGuard.checkRoleUsersBindingDoesNotRemoveCurrentUser(existingUserIds, normalizedUserIds);
+
+        CollectionDiffUtils.DiffResult<Long> diff = CollectionDiffUtils.compare(existingUserIds, normalizedUserIds);
         if (!diff.hasChanges()) {
             return IRoleMapper.INSTANCE.toVO(role);
         }
 
-        // 4. 批量删除被移出该角色的用户关联
         Set<Long> toDeleteIds = diff.toDelete();
         if (!toDeleteIds.isEmpty()) {
             userRoleRelationshipMappingMapper.deleteByRoleIdAndUserIds(roleId, toDeleteIds.stream().toList());
         }
 
-        // 5. 批量插入新加入该角色的用户关联
         Set<Long> toAddIds = diff.toAdd();
         if (!toAddIds.isEmpty()) {
-            List<UserRoleRelationshipMappingPO> insertList = toAddIds.stream()
-                    .map(userId -> {
-                        UserRoleRelationshipMappingPO up = new UserRoleRelationshipMappingPO();
-                        up.setUserId(userId);
-                        up.setRoleId(roleId);
-                        return up;
-                    })
-                    .toList();
-
-            userRoleRelationshipMappingMapper.insert(insertList, 50);
+            List<UserRoleRelationshipMappingPO> insertList = Lists.newArrayListWithCapacity(toAddIds.size());
+            toAddIds.forEach(userId -> insertList.add(
+                    UserRoleRelationshipMappingPO.builder().userId(userId).roleId(roleId).build()
+            ));
+            userRoleRelationshipMappingMapper.insert(insertList);
         }
 
-        // 6. 事务即将提交，发布领域事件（可用于通知 Sa-Token 清理相关用户的角色/权限缓存，踢人下线等）
         if (eventPublisher != null) {
             eventPublisher.publishEvent(new RoleUsersChangedEvent(roleId, diff));
         }
-
         return IRoleMapper.INSTANCE.toVO(role);
+    }
+
+    @Override
+    public RoleDTO updateRole(Long id, RoleDTO roleDTO) {
+        RolePO exist = roleMapper.selectById(id);
+        AssertUtils.notNull(exist, CommonErrorCode.NOT_FOUND);
+
+        String appCode = normalizeAppCode(roleDTO.getAppCode() == null ? exist.getAppCode() : roleDTO.getAppCode());
+        validateApp(appCode);
+        validateRoleUnique(appCode, roleDTO.getRoleCode(), roleDTO.getRoleName(), id);
+
+        exist.setAppCode(appCode);
+        exist.setRoleCode(roleDTO.getRoleCode());
+        exist.setRoleName(roleDTO.getRoleName());
+        exist.setDataScope(roleDTO.getDataScope());
+        exist.setStatus(roleDTO.getStatus());
+        exist.setRemark(roleDTO.getRemark());
+        roleMapper.updateById(exist);
+
+        if (!DataScopeEnum.CUSTOM.matches(exist.getDataScope())) {
+            roleDeptMapper.deleteByRoleId(id);
+        }
+        return IRoleMapper.INSTANCE.toDTO(exist);
+    }
+
+    @Override
+    public RoleDTO delRole(Long id) {
+        RolePO role = roleMapper.selectById(id);
+        AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
+        ensureCurrentUserRoleUnaffected(Collections.singleton(id), AuthOperationErrorCode.DELETE_CURRENT_USER_ROLE_FORBIDDEN);
+
+        roleMapper.deleteByIdWithFill(id);
+        userRoleRelationshipMappingMapper.deleteByRoleId(id);
+        roleDeptMapper.deleteByRoleId(id);
+        permissionService.delMappingByRoleId(Collections.singletonList(id));
+        return IRoleMapper.INSTANCE.toDTO(role);
     }
 
     @Override
@@ -148,90 +190,68 @@ public class RoleServiceImpl implements RoleService {
         AssertUtils.notNull(roleResultPO, CommonErrorCode.NOT_FOUND);
 
         if (CollectionUtils.isEmpty(permissions)) {
-            // 删除所有关联关系
+            ensureCurrentUserRoleUnaffected(Collections.singleton(roleId),
+                    AuthOperationErrorCode.REDUCE_CURRENT_USER_ROLE_PERMISSION_FORBIDDEN);
             rolePermissionRelationshipMappingMapper.deleteByRoleId(roleId);
             return IRoleMapper.INSTANCE.toDTO(roleResultPO);
         }
 
-        // 1. 查询当前角色已有的权限关联
+        List<Long> newPermissionIds = permissions.stream()
+                .map(RolePermissionRelationshipMappingDTO::getPermissionId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        List<PermissionPO> permissionList = permissionMapper.selectByIds(newPermissionIds);
+        AssertUtils.isTrue(permissionList.size() == newPermissionIds.size(), "瀛樺湪鏃犳晥鐨勬潈闄?ID");
+
         List<Long> existingPermissionIds = rolePermissionRelationshipMappingMapper.selectList(
                 new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
                         .eq(RolePermissionRelationshipMappingPO::getRoleId, roleId)
         ).stream().map(RolePermissionRelationshipMappingPO::getPermissionId).toList();
 
-        // 待添加的权限ID
-        List<Long> newPermissionIds = permissions.stream().map(RolePermissionRelationshipMappingDTO::getPermissionId).toList();
-
-        // 2. 计算差异
         CollectionDiffUtils.DiffResult<Long> diff = CollectionDiffUtils.compare(existingPermissionIds, newPermissionIds);
-
         if (!diff.hasChanges()) {
-            // 无变更，直接放行
             return IRoleMapper.INSTANCE.toDTO(roleResultPO);
         }
 
-        // 3. 批量删除失效的关联
         Set<Long> toDeleteIds = diff.toDelete();
         if (!toDeleteIds.isEmpty()) {
+            ensureCurrentUserRoleUnaffected(Collections.singleton(roleId),
+                    AuthOperationErrorCode.REDUCE_CURRENT_USER_ROLE_PERMISSION_FORBIDDEN);
             rolePermissionRelationshipMappingMapper.deleteByRoleIdAndPermissionIds(roleId, toDeleteIds.stream().toList());
         }
 
-        // 4. 批量插入新增的关联
         Set<Long> toAddIds = diff.toAdd();
         if (!toAddIds.isEmpty()) {
-            List<RolePermissionRelationshipMappingPO> insertList = toAddIds.stream()
-                    .map(permissionId -> {
-                        RolePermissionRelationshipMappingPO rp = new RolePermissionRelationshipMappingPO();
-                        rp.setRoleId(roleId);
-                        rp.setPermissionId(permissionId);
-                        return rp;
-                    })
-                    .toList();
-
-            // 务必确保 application.yml 或 jdbc url 中开启了 rewriteBatchedStatements=true
+            List<RolePermissionRelationshipMappingPO> insertList = Lists.newArrayListWithCapacity(toAddIds.size());
+            toAddIds.forEach(permissionId -> insertList.add(
+                    RolePermissionRelationshipMappingPO.builder()
+                            .roleId(roleId)
+                            .permissionId(permissionId)
+                            .build()
+            ));
             rolePermissionRelationshipMappingMapper.insert(insertList);
         }
 
-        // 5. 事务即将提交，发布领域事件通知 Sa-Token 清理缓存
         eventPublisher.publishEvent(new RolePermissionChangedEvent(roleId));
-
         return IRoleMapper.INSTANCE.toDTO(roleResultPO);
-    }
-
-    @Override
-    public RoleDTO updateRole(Long id, RoleDTO roleDTO) {
-        AssertUtils.isTrue(roleMapper.exists(new LambdaQueryWrapperX<RolePO>().eq(RolePO::getId, id)), CommonErrorCode.NOT_FOUND);
-        RolePO updateRole = IRoleMapper.INSTANCE.toPO(roleDTO);
-        roleMapper.updateById(updateRole);
-        return IRoleMapper.INSTANCE.toDTO(updateRole);
-    }
-
-    @Override
-    public RoleDTO delRole(Long id) {
-        RolePO role = null;
-        if (id == null || (role = roleMapper.selectById(id)) == null) {
-            throw new BusinessException(CommonErrorCode.NOT_FOUND);
-        }
-
-        roleMapper.deleteByIdWithFill(id);
-        userRoleRelationshipMappingMapper.deleteByRoleId(id);
-        permissionService.delMappingByRoleId(Collections.singletonList(id));
-        return IRoleMapper.INSTANCE.toDTO(role);
     }
 
     @Override
     public Page<RoleDTO> selRole(PageQuery queryParam) {
         Page<RolePO> page = Page.of(queryParam.getPageNum(), queryParam.getPageSize());
-
-        LambdaQueryWrapperX<RolePO> wrapper = new LambdaQueryWrapperX<>();
-        // 内置角色不被查询
-        wrapper.like(RolePO::getRoleCode, queryParam.getSearchKey())
-                .or()
-                .like(RolePO::getRoleName, queryParam.getSearchKey())
+        LambdaQueryWrapperX<RolePO> wrapper = new LambdaQueryWrapperX<RolePO>()
                 .orderByDesc(RolePO::getCreateTime);
 
-        roleMapper.selectPage(page, wrapper);
+        if (queryParam != null && queryParam.getSearchKey() != null && !queryParam.getSearchKey().isBlank()) {
+            wrapper.and(w -> w.like(RolePO::getRoleCode, queryParam.getSearchKey())
+                    .or()
+                    .like(RolePO::getRoleName, queryParam.getSearchKey())
+                    .or()
+                    .like(RolePO::getAppCode, queryParam.getSearchKey()));
+        }
 
+        roleMapper.selectPage(page, wrapper);
         Page<RoleDTO> result = new Page<>();
         result.setCurrent(page.getCurrent());
         result.setSize(page.getSize());
@@ -242,62 +262,108 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void batchDelRole(List<Long> idList) {
-        AssertUtils.notEmpty(idList = idList.stream().filter(Objects::nonNull).toList(), "business.data.invalid");
-
+        AssertUtils.notEmpty(idList = idList.stream().filter(Objects::nonNull).distinct().toList(), "business.data.invalid");
         List<RolePO> existRoles = roleMapper.selectByIds(idList);
         if (CollectionUtils.isEmpty(existRoles)) {
             return;
         }
 
-        List<Long> existIds = existRoles.stream()
-                .map(RolePO::getId)
-                .collect(Collectors.toList());
-
+        List<Long> existIds = existRoles.stream().map(RolePO::getId).collect(Collectors.toList());
+        ensureCurrentUserRoleUnaffected(existIds, AuthOperationErrorCode.DELETE_CURRENT_USER_ROLE_FORBIDDEN);
         roleMapper.deleteByIdsWithFill(existIds);
-
         userRoleRelationshipMappingMapper.deleteByRoleIds(existIds);
-
+        roleDeptMapper.deleteByRoleIds(existIds);
         permissionService.delMappingByRoleId(existIds);
     }
 
     @Override
     public List<RoleDTO> selectRolesForUser(String userAccount) {
         AssertUtils.notBlank(userAccount, "business.data.invalid");
-        // CI 忽略大小写
-        // CS 大小写敏感
         if (Strings.CI.equals("guest_username", userAccount)) {
-            return Lists.newArrayList(RoleDTO.builder()
-                    .roleName("guest")
-                    .roleCode("role_guest")
-                    .build());
+            return Lists.newArrayList(RoleDTO.builder().roleName("guest").roleCode("role_guest").build());
         }
 
         List<RolePO> roles = roleMapper.selectRolesForUser(userAccount);
         if (CollectionUtils.isNotEmpty(roles)) {
             return IRoleMapper.INSTANCE.toDTOList(roles);
         }
-
         return Lists.newArrayList();
     }
 
     @Override
     public List<RoleDTO> selectRolesForUser(Long userId) {
         AssertUtils.notNull(userId, "business.data.invalid");
-        // 1. 查询用户关联的角色 ID 列表
         List<Long> roleIds = userRoleRelationshipMappingMapper.selRoleIdsByUserId(userId);
-
         if (CollectionUtils.isEmpty(roleIds)) {
             return Lists.newArrayList();
         }
-
-        // 2. 根据角色 ID 列表查询角色信息
         List<RolePO> roles = roleMapper.selectByIds(roleIds);
-
         if (CollectionUtils.isNotEmpty(roles)) {
             return IRoleMapper.INSTANCE.toDTOList(roles);
         }
-
         return Lists.newArrayList();
     }
 
+    @Override
+    public RoleDTO updateStatus(Long roleId, Integer status) {
+        RolePO role = roleMapper.selectById(roleId);
+        AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
+        if (EnableStatusEnum.isDisabled(status)) {
+            ensureCurrentUserRoleUnaffected(Collections.singleton(roleId), AuthOperationErrorCode.DISABLE_CURRENT_USER_ROLE_FORBIDDEN);
+        }
+        role.setStatus(status);
+        roleMapper.updateById(role);
+        return IRoleMapper.INSTANCE.toDTO(role);
+    }
+
+    private void validateApp(String appCode) {
+        AppPO app = appMapper.selectOne(AppPO::getAppCode, appCode);
+        AssertUtils.notNull(app, "鎵€灞炲簲鐢ㄤ笉瀛樺湪");
+        AssertUtils.isTrue(EnableStatusEnum.isEnabled(app.getStatus()), "鎵€灞炲簲鐢ㄥ凡鍋滅敤");
+    }
+
+    private String normalizeAppCode(String appCode) {
+        return appCode == null || appCode.isBlank() ? "sso" : appCode.trim();
+    }
+
+    private void validateRoleUnique(String appCode, String roleCode, String roleName, Long excludeId) {
+        AssertUtils.notBlank(roleCode, "role.code.cannot.be.blank");
+        AssertUtils.notBlank(roleName, "role.name.cannot.be.blank");
+
+        LambdaQueryWrapperX<RolePO> codeWrapper = new LambdaQueryWrapperX<RolePO>()
+                .eq(RolePO::getAppCode, appCode)
+                .eq(RolePO::getRoleCode, roleCode);
+        LambdaQueryWrapperX<RolePO> nameWrapper = new LambdaQueryWrapperX<RolePO>()
+                .eq(RolePO::getAppCode, appCode)
+                .eq(RolePO::getRoleName, roleName);
+        if (excludeId != null) {
+            codeWrapper.ne(RolePO::getId, excludeId);
+            nameWrapper.ne(RolePO::getId, excludeId);
+        }
+        AssertUtils.isTrue(roleMapper.selectCount(codeWrapper) == 0, "瑙掕壊缂栫爜宸插瓨鍦?");
+        AssertUtils.isTrue(roleMapper.selectCount(nameWrapper) == 0, "瑙掕壊鍚嶇О宸插瓨鍦?");
+    }
+
+    private void ensureCurrentUserRoleUnaffected(java.util.Collection<Long> roleIds, AuthOperationErrorCode errorCode) {
+        Long currentUserId = authOperationGuard.getCurrentLoginUserId();
+        if (currentUserId == null || CollectionUtils.isEmpty(roleIds)) {
+            return;
+        }
+
+        Set<Long> targetRoleIds = roleIds.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (targetRoleIds.isEmpty()) {
+            return;
+        }
+
+        List<Long> currentUserRoleIds = userRoleRelationshipMappingMapper.selRoleIdsByUserId(currentUserId);
+        if (CollectionUtils.isEmpty(currentUserRoleIds)) {
+            return;
+        }
+
+        if (currentUserRoleIds.stream().anyMatch(targetRoleIds::contains)) {
+            throw new BusinessException(errorCode);
+        }
+    }
 }

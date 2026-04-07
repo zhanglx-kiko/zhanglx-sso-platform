@@ -1,0 +1,71 @@
+package com.zhanglx.sso.auth.controller;
+
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhanglx.sso.auth.annotation.RepeatSubmit;
+import com.zhanglx.sso.auth.domain.dto.ConfigDTO;
+import com.zhanglx.sso.auth.domain.dto.ConfigQueryDTO;
+import com.zhanglx.sso.auth.service.ConfigService;
+import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@Validated
+@RequiredArgsConstructor
+@Tag(name = "参数管理", description = "B 端系统参数管理接口")
+@RequestMapping("/apis/v1/auth/s/configs")
+public class AuthConfigController {
+
+    private final ConfigService configService;
+
+    @Operation(summary = "新增参数")
+    @PostMapping
+    @RepeatSubmit
+    @SaCheckPermission("config:add")
+    public ConfigDTO create(@RequestBody @Valid ConfigDTO dto) {
+        dto.setId(null);
+        return configService.create(dto);
+    }
+
+    @Operation(summary = "修改参数")
+    @PutMapping("/{id}")
+    @RepeatSubmit
+    @SaCheckPermission("config:edit")
+    public ConfigDTO update(@PathVariable String id, @RequestBody @Valid ConfigDTO dto) {
+        return configService.update(RequestIdUtils.parseId(id, "参数ID"), dto);
+    }
+
+    @Operation(summary = "删除参数")
+    @DeleteMapping("/{id}")
+    @RepeatSubmit
+    @SaCheckPermission("config:remove")
+    public void delete(@PathVariable String id) {
+        configService.delete(RequestIdUtils.parseId(id, "参数ID"));
+    }
+
+    @Operation(summary = "参数详情")
+    @GetMapping("/{id}")
+    @SaCheckPermission("config:view")
+    public ConfigDTO getById(@PathVariable String id) {
+        return configService.getById(RequestIdUtils.parseId(id, "参数ID"));
+    }
+
+    @Operation(summary = "按键查询参数")
+    @GetMapping("/by-key/{configKey}")
+    @SaCheckPermission("config:view")
+    public ConfigDTO getByKey(@PathVariable String configKey) {
+        return configService.getByKey(configKey);
+    }
+
+    @Operation(summary = "分页查询参数")
+    @PostMapping("/page")
+    @SaCheckPermission("config:list")
+    public Page<ConfigDTO> pageQuery(@RequestBody ConfigQueryDTO queryDTO) {
+        return configService.pageQuery(queryDTO);
+    }
+}

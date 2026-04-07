@@ -173,4 +173,8 @@ public interface PermissionService {
      */
     List<String> selectPermissionCodesByUserId(Long userId);
 
+    PermissionDTO getPermission(Long id);
+
+    PermissionDTO updateStatus(Long id, Integer status);
+
 }

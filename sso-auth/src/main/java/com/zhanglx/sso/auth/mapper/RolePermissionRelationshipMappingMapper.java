@@ -2,9 +2,9 @@ package com.zhanglx.sso.auth.mapper;
 
 import com.zhanglx.sso.auth.domain.po.RolePermissionRelationshipMappingPO;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
-import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -17,11 +17,11 @@ import java.util.List;
 @Mapper
 public interface RolePermissionRelationshipMappingMapper extends IBaseMapperX<RolePermissionRelationshipMappingPO> {
 
-    @Delete("DELETE FROM t_auth_role_permission WHERE role_id = #{roleId}")
+    @Update("UPDATE t_auth_role_permission SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0")
     int deleteByRoleId(@Param("roleId") Long roleId);
 
-    @Delete("<script>" +
-            "DELETE FROM t_auth_role_permission WHERE role_id = #{roleId} AND permission_id IN " +
+    @Update("<script>" +
+            "UPDATE t_auth_role_permission SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0 AND permission_id IN " +
             "<foreach item='permissionId' collection='permissionIds' open='(' separator=',' close=')'>" +
             "#{permissionId}" +
             "</foreach>" +
@@ -29,19 +29,19 @@ public interface RolePermissionRelationshipMappingMapper extends IBaseMapperX<Ro
     int deleteByRoleIdAndPermissionIds(@Param("roleId") Long roleId,
                                        @Param("permissionIds") List<Long> permissionIds);
 
-    @Delete("<script>" +
-            "DELETE FROM t_auth_role_permission WHERE role_id IN " +
+    @Update("<script>" +
+            "UPDATE t_auth_role_permission SET del_flag = id WHERE role_id IN " +
             "<foreach item='roleId' collection='roleIds' open='(' separator=',' close=')'>" +
             "#{roleId}" +
-            "</foreach>" +
+            "</foreach> AND del_flag = 0" +
             "</script>")
     int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
 
-    @Delete("<script>" +
-            "DELETE FROM t_auth_role_permission WHERE permission_id IN " +
+    @Update("<script>" +
+            "UPDATE t_auth_role_permission SET del_flag = id WHERE permission_id IN " +
             "<foreach item='permissionId' collection='permissionIds' open='(' separator=',' close=')'>" +
             "#{permissionId}" +
-            "</foreach>" +
+            "</foreach> AND del_flag = 0" +
             "</script>")
     int deleteByPermissionIds(@Param("permissionIds") List<Long> permissionIds);
 }

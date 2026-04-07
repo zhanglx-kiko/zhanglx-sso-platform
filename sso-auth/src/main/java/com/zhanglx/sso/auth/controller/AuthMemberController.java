@@ -1,6 +1,7 @@
 package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import com.zhanglx.sso.auth.annotation.RepeatSubmit;
 import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
@@ -37,6 +38,7 @@ public class AuthMemberController {
 
     @Operation(summary = "会员注册")
     @PostMapping("/register")
+    @RepeatSubmit
     public LoginVO register(@RequestBody @Validated MemberRegisterDTO memberRegisterDTO) {
         return memberAuthService.register(memberRegisterDTO);
     }
@@ -50,6 +52,7 @@ public class AuthMemberController {
 
     @Operation(summary = "会员微信登录")
     @PostMapping("/wechat/login")
+    @RepeatSubmit
     public LoginVO wechatLogin(@RequestParam String code) {
         return wechatAuthService.loginMemberByWechatCode(code);
     }
@@ -63,6 +66,7 @@ public class AuthMemberController {
 
     @Operation(summary = "会员修改密码")
     @PostMapping("/user/update/password")
+    @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
     public void updatePassword(@RequestBody @Validated UserPasswordDTO passwordDTO) {
         passwordDTO.setUserId(StpMemberUtil.getLoginIdAsLong());
@@ -71,6 +75,7 @@ public class AuthMemberController {
 
     @Operation(summary = "会员忘记密码")
     @PostMapping("/forgot-password")
+    @RepeatSubmit
     public void forgotPassword(@RequestBody @Validated MemberForgotPasswordDTO forgotPasswordDTO) {
         memberAuthService.forgotPassword(forgotPasswordDTO);
     }

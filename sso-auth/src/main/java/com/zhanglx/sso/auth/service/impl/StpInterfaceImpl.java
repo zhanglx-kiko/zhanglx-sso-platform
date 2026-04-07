@@ -1,4 +1,4 @@
-package com.zhanglx.sso.auth.oauth2.server;
+package com.zhanglx.sso.auth.service.impl;
 
 import cn.dev33.satoken.stp.StpInterface;
 import cn.dev33.satoken.stp.StpUtil;
