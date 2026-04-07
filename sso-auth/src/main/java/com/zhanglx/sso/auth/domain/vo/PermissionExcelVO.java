@@ -25,7 +25,7 @@ public class PermissionExcelVO {
     @NotNull(message = "类型不能为空")
     @Min(value = -1, message = "类型暂只支持-1到3")
     @Max(value = 3, message = "类型暂只支持-1到3")
-    private Short type;
+    private Integer type;
 
     // 废弃原有的 id 和 parentId，改为使用直观的标识符关联
     @ExcelProperty(value = "上级权限标识", index = 1)
@@ -52,7 +52,7 @@ public class PermissionExcelVO {
     @ExcelProperty(value = "是否为外链(0是 1否)", index = 6)
     @Min(value = 0, message = "是否外链只能输入0或1")
     @Max(value = 1, message = "是否外链只能输入0或1")
-    private Short isFrame;
+    private Integer isFrame;
 
     @ExcelProperty(value = "菜单图标", index = 7)
     @Length(max = 64, message = "菜单图标不能超过64个字符")

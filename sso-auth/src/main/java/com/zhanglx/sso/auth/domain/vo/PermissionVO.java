@@ -80,15 +80,15 @@ public class PermissionVO extends BaseVO {
     /**
      * 是否为外链，0 否，1 是。
      */
-    @Schema(description = "是否为外链，0 否，1 是", name = "isFrame", example = "", type = "Short", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    private Short isFrame;
+    @Schema(description = "是否为外链，0 否，1 是", name = "isFrame", example = "", type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    private Integer isFrame;
 
     /**
      * 类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口。
      */
-    @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", example = "", type = "Short", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", example = "", type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     @NotNull(message = "类型不能为空")
-    private Short type;
+    private Integer type;
 
     /**
      * 备注。
@@ -96,6 +96,6 @@ public class PermissionVO extends BaseVO {
     @Schema(description = "备注", name = "remark", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String remark;
 
-    @Schema(description = "状态", name = "status", example = "", type = "Short", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    private Short status;
+    @Schema(description = "状态", name = "status", example = "", type = "Integer", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    private Integer status;
 }

@@ -22,20 +22,16 @@ public enum EnableStatusEnum implements IIntegerBaseEnum<String> {
         return IBaseEnum.fromCode(code, EnableStatusEnum.class);
     }
 
-    public boolean matches(Number value) {
-        return value != null && value.intValue() == code;
-    }
-
-    public Short toShortCode() {
-        return code.shortValue();
-    }
-
     public static boolean isEnabled(Number value) {
         return ENABLED.matches(value);
     }
 
     public static boolean isDisabled(Number value) {
         return DISABLED.matches(value);
+    }
+
+    public boolean matches(Number value) {
+        return value != null && value.intValue() == code;
     }
 
 }

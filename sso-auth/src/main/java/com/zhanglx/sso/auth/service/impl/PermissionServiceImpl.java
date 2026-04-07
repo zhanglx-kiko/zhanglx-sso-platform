@@ -419,7 +419,7 @@ public class PermissionServiceImpl implements PermissionService {
         PermissionPO permissionPO = permissionMapper.selectById(id);
         AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
 
-        permissionPO.setStatus(statusEnum.toShortCode());
+        permissionPO.setStatus(statusEnum.getCode());
         permissionMapper.updateById(permissionPO);
         return IPermissionMapper.INSTANCE.toDTO(permissionPO);
     }

@@ -6,11 +6,7 @@ import com.zhanglx.sso.core.domain.tree.TreeNode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
@@ -86,15 +82,15 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
      * 是否为外链，1 是，0 否。
      */
     @Builder.Default
-    @Schema(description = "是否为外链，1 是，0 否", name = "isFrame", example = "0", type = "Short", defaultValue = "0", allowableValues = {"1", "0"}, requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Short isFrame = 0;
+    @Schema(description = "是否为外链，1 是，0 否", name = "isFrame", example = "0", type = "Integer", defaultValue = "0", allowableValues = {"1", "0"}, requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    private Integer isFrame = 0;
 
     /**
      * 类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口。
      */
     @NotNull(message = "类型不能为空")
-    @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", allowableValues = {"-1", "0", "1", "2", "3"}, type = "Short", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Short type;
+    @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", allowableValues = {"-1", "0", "1", "2", "3"}, type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    private Integer type;
 
     /**
      * 备注。
@@ -109,6 +105,6 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
     @Schema(description = "子权限项", name = "children", type = "List<PermissionDTO>", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private List<PermissionDTO> children = new ArrayList<>();
 
-    @Schema(description = "状态", name = "status", example = "1", type = "Short", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Short status;
+    @Schema(description = "状态", name = "status", example = "1", type = "Integer", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    private Integer status;
 }

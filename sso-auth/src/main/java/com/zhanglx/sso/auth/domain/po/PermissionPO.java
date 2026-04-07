@@ -76,13 +76,13 @@ public class PermissionPO extends BasePO {
      * 是否为外链(1是 0否)
      */
     @TableField(value = "is_frame", jdbcType = JdbcType.TINYINT)
-    private Short isFrame;
+    private Integer isFrame;
 
     /**
      * 类型(-1平台 0模块 1菜单 2按钮 3接口)
      */
     @TableField(value = "type", jdbcType = JdbcType.TINYINT)
-    private Short type;
+    private Integer type;
 
     /**
      * 备注
@@ -91,6 +91,6 @@ public class PermissionPO extends BasePO {
     private String remark;
 
     @TableField(value = "status", jdbcType = JdbcType.TINYINT)
-    private Short status;
+    private Integer status;
 
 }

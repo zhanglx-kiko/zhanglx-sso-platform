@@ -10,14 +10,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PermissionTypeEnum implements IIntegerBaseEnum<String> {
 
-    PLATFORM((short) -1, "平台"),
-    MODULE((short) 0, "模块"),
-    MENU((short) 1, "菜单"),
-    BUTTON((short) 2, "按钮"),
-    API((short) 3, "接口");
+    PLATFORM(-1, "平台"),
+    MODULE(0, "模块"),
+    MENU(1, "菜单"),
+    BUTTON(2, "按钮"),
+    API(3, "接口");
 
     @JsonValue
-    private final Short code;
+    private final Integer code;
 
     private final String description;
 
@@ -26,7 +26,7 @@ public enum PermissionTypeEnum implements IIntegerBaseEnum<String> {
     }
 
     public boolean matches(Number value) {
-        return value != null && value.shortValue() == code;
+        return value != null && value.equals(code);
     }
 
 }

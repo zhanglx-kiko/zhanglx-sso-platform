@@ -26,8 +26,4 @@ public enum YesNoEnum implements IIntegerBaseEnum<String> {
         return value != null && value.intValue() == code;
     }
 
-    public Short toShortCode() {
-        return code.shortValue();
-    }
-
 }
