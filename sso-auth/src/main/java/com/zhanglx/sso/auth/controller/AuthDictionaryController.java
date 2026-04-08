@@ -10,6 +10,7 @@ import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.service.DictionaryService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -45,6 +46,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:type:add")
+    @OperationLog(module = "字典管理", feature = "字典类型", operationType = "CREATE", operationName = "新增字典类型", operationDesc = "新增系统字典类型", includeResponseBody = true)
     public DictTypeDTO createType(@RequestBody @Valid DictTypeDTO dto) {
         dto.setId(null);
         return dictionaryService.createType(dto);
@@ -55,6 +57,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:type:edit")
+    @OperationLog(module = "字典管理", feature = "字典类型", operationType = "UPDATE", operationName = "修改字典类型", operationDesc = "修改系统字典类型", includeResponseBody = true)
     public DictTypeDTO updateType(@PathVariable String id, @RequestBody @Valid DictTypeDTO dto) {
         return dictionaryService.updateType(RequestIdUtils.parseId(id, "dictTypeId"), dto);
     }
@@ -64,6 +67,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:type:remove")
+    @OperationLog(module = "字典管理", feature = "字典类型", operationType = "DELETE", operationName = "删除字典类型", operationDesc = "删除系统字典类型", includeResponseBody = false)
     public void deleteType(@PathVariable String id) {
         dictionaryService.deleteType(RequestIdUtils.parseId(id, "dictTypeId"));
     }
@@ -88,6 +92,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:type:status")
+    @OperationLog(module = "字典管理", feature = "字典类型", operationType = "STATUS", operationName = "修改字典类型状态", operationDesc = "启停系统字典类型", includeResponseBody = true)
     public DictTypeDTO updateTypeStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return dictionaryService.updateTypeStatus(RequestIdUtils.parseId(id, "dictTypeId"), dto.getStatus());
     }
@@ -97,6 +102,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:add")
+    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "CREATE", operationName = "新增字典数据", operationDesc = "新增系统字典数据", includeResponseBody = true)
     public DictDataDTO createData(@RequestBody @Valid DictDataDTO dto) {
         dto.setId(null);
         return dictionaryService.createData(dto);
@@ -107,6 +113,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:edit")
+    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "UPDATE", operationName = "修改字典数据", operationDesc = "修改系统字典数据", includeResponseBody = true)
     public DictDataDTO updateData(@PathVariable String id, @RequestBody @Valid DictDataDTO dto) {
         return dictionaryService.updateData(RequestIdUtils.parseId(id, "dictDataId"), dto);
     }
@@ -116,6 +123,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:remove")
+    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "DELETE", operationName = "删除字典数据", operationDesc = "删除系统字典数据", includeResponseBody = false)
     public void deleteData(@PathVariable String id) {
         dictionaryService.deleteData(RequestIdUtils.parseId(id, "dictDataId"));
     }
@@ -148,6 +156,7 @@ public class AuthDictionaryController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:status")
+    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "STATUS", operationName = "修改字典数据状态", operationDesc = "启停系统字典数据", includeResponseBody = true)
     public DictDataDTO updateDataStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return dictionaryService.updateDataStatus(RequestIdUtils.parseId(id, "dictDataId"), dto.getStatus());
     }

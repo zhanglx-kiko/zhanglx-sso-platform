@@ -8,6 +8,7 @@ import com.zhanglx.sso.auth.service.AppService;
 import com.zhanglx.sso.auth.service.DeptService;
 import com.zhanglx.sso.auth.service.PostService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -40,6 +41,7 @@ public class AuthAssignmentController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("user:assign-app")
+    @OperationLog(module = "关系绑定", feature = "用户应用绑定", operationType = "BIND", operationName = "绑定用户应用", operationDesc = "维护用户与应用的绑定关系", includeResponseBody = true)
     public List<AppDTO> bindUserApps(@PathVariable String userId, @RequestBody List<String> appCodes) {
         return appService.bindUserApps(RequestIdUtils.parseId(userId, "用户ID"), appCodes);
     }
@@ -56,6 +58,7 @@ public class AuthAssignmentController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("user:assign-post")
+    @OperationLog(module = "关系绑定", feature = "用户岗位绑定", operationType = "BIND", operationName = "绑定用户岗位", operationDesc = "维护用户与岗位的绑定关系", includeResponseBody = true)
     public List<PostDTO> bindUserPosts(@PathVariable String userId, @RequestBody List<String> postIds) {
         return postService.bindUserPosts(
                 RequestIdUtils.parseId(userId, "用户ID"),
@@ -75,6 +78,7 @@ public class AuthAssignmentController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:assign-dept")
+    @OperationLog(module = "关系绑定", feature = "角色部门绑定", operationType = "BIND", operationName = "绑定角色部门", operationDesc = "维护角色数据范围部门", includeResponseBody = true)
     public List<DeptDTO> bindRoleDepts(@PathVariable String roleId, @RequestBody List<String> deptIds) {
         return deptService.bindRoleDepts(
                 RequestIdUtils.parseId(roleId, "角色ID"),

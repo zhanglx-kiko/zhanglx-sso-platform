@@ -1,6 +1,7 @@
 package com.zhanglx.sso.gateway.filter;
 
 import com.zhanglx.sso.common.net.ClientIpUtils;
+import com.zhanglx.sso.common.trace.TraceConstants;
 import com.zhanglx.sso.gateway.config.GatewayClientIpProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +34,11 @@ public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String requestId = resolveRequestId(exchange.getRequest());
+        String traceId = resolveTraceId(exchange.getRequest(), requestId);
         String clientIp = resolveClientIp(exchange.getRequest());
         ServerHttpRequest request = exchange.getRequest().mutate()
-                .header("X-Request-Id", requestId)
+                .header(TraceConstants.REQUEST_ID_HEADER, requestId)
+                .header(TraceConstants.TRACE_ID_HEADER, traceId)
                 .header("X-Client-Ip", clientIp)
                 .build();
 
@@ -49,7 +52,8 @@ public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
             ServerHttpResponse response = modifiedExchange.getResponse();
             int statusCode = Optional.ofNullable(response.getStatusCode()).orElse(HttpStatusCode.valueOf(500)).value();
             long costTime = System.currentTimeMillis() - startTime;
-            log.info("gateway_access requestId={} clientIp={} method={} path={} query={} status={} costMs={}",
+            log.info("gateway_access traceId={} requestId={} clientIp={} method={} path={} query={} status={} costMs={}",
+                    traceId,
                     requestId,
                     clientIp,
                     method,
@@ -61,8 +65,13 @@ public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
     }
 
     private String resolveRequestId(ServerHttpRequest request) {
-        String requestId = request.getHeaders().getFirst("X-Request-Id");
+        String requestId = request.getHeaders().getFirst(TraceConstants.REQUEST_ID_HEADER);
         return StringUtils.hasText(requestId) ? requestId.trim() : UUID.randomUUID().toString();
+    }
+
+    private String resolveTraceId(ServerHttpRequest request, String requestId) {
+        String traceId = request.getHeaders().getFirst(TraceConstants.TRACE_ID_HEADER);
+        return StringUtils.hasText(traceId) ? traceId.trim() : requestId;
     }
 
     private String resolveClientIp(ServerHttpRequest request) {

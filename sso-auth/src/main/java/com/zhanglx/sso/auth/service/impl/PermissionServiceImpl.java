@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
+import com.zhanglx.sso.auth.constants.PermissionCacheConstants;
 import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.excel.ResolvedNode;
@@ -72,7 +73,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "PermissionTree", allEntries = true)
+    @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO addPermission(PermissionDTO permissionDTO) {
         // 查询全局是否存在重复的权限标识。
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
@@ -137,7 +138,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "PermissionTree", allEntries = true)
+    @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO delPermission(Long id) {
         AssertUtils.notNull(id, "business.data.invalid");
 
@@ -191,7 +192,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "PermissionTree", allEntries = true)
+    @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public List<PermissionDTO> batchDelPermission(List<Long> idList) {
         AssertUtils.notEmpty(idList, "business.data.invalid");
 
@@ -214,7 +215,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "PermissionTree", allEntries = true)
+    @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO updatePermission(Long id, PermissionDTO permissionDTO) {
         PermissionPO permissionPO = permissionMapper.selectById(id);
         AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
@@ -283,7 +284,11 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    @Cacheable(value = "PermissionTree", key = "T(cn.dev33.satoken.stp.StpUtil).getRoleList().toString()", unless = "#result == null or #result.size() == 0")
+    @Cacheable(
+            value = PermissionCacheConstants.PERMISSION_TREE_CACHE,
+            key = "T(cn.dev33.satoken.stp.StpUtil).getRoleList().toString() + ':' + #searchKey",
+            unless = "#result == null or #result.size() == 0"
+    )
     public List<PermissionDTO> selPermission(String searchKey) {
         List<PermissionDTO> permissionDTOS = new ArrayList<>(permissionMapper.selectCount().intValue());
 
@@ -393,7 +398,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "PermissionTree", allEntries = true)
+    @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public void delMappingByRoleId(List<Long> roleId) {
         if (CollectionUtils.isNotEmpty(roleId)) {
             rolePermissionRelationshipMappingMapper.deleteByRoleIds(roleId);
@@ -411,7 +416,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "PermissionTree", allEntries = true)
+    @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO updateStatus(Long id, EnableStatusEnum status) {
         AssertUtils.notNull(id, "business.data.invalid");
         AssertUtils.notNull(status, "business.data.invalid");

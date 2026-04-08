@@ -11,6 +11,7 @@ import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -46,6 +47,7 @@ public class AuthUserManageController {
     @RepeatSubmit
     @SaCheckPermission("user:add")
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "用户管理", feature = "用户", operationType = "CREATE", operationName = "新增用户", operationDesc = "新增后台系统用户", includeResponseBody = false)
     public void create(@RequestBody @Valid UserDTO dto) {
         dto.setId(null);
         userService.addUser(dto);
@@ -56,6 +58,7 @@ public class AuthUserManageController {
     @RepeatSubmit
     @SaCheckPermission("user:edit")
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "用户管理", feature = "用户", operationType = "UPDATE", operationName = "修改用户", operationDesc = "修改后台系统用户", includeResponseBody = false)
     public void update(@PathVariable String userId, @RequestBody @Valid UserBaseDTO dto) {
         dto.setId(RequestIdUtils.parseId(userId, "userId"));
         userService.updateUserInfo(dto);
@@ -66,6 +69,7 @@ public class AuthUserManageController {
     @RepeatSubmit
     @SaCheckPermission("user:remove")
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "用户管理", feature = "用户", operationType = "DELETE", operationName = "删除用户", operationDesc = "删除单个后台用户", includeResponseBody = false)
     public void delete(@PathVariable String userId) {
         Long parsedUserId = RequestIdUtils.parseId(userId, "userId");
         authOperationGuard.checkDeleteUserNotSelf(parsedUserId);
@@ -77,6 +81,7 @@ public class AuthUserManageController {
     @RepeatSubmit
     @SaCheckPermission("user:batch-remove")
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "用户管理", feature = "用户", operationType = "DELETE", operationName = "批量删除用户", operationDesc = "批量删除后台用户", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> userIds) {
         AssertUtils.notEmpty(userIds, "userIds cannot be empty");
         List<Long> parsedUserIds = RequestIdUtils.parseIds(userIds, "userId");
@@ -104,6 +109,7 @@ public class AuthUserManageController {
     @RepeatSubmit
     @SaCheckPermission("user:status")
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "用户管理", feature = "用户", operationType = "STATUS", operationName = "修改用户状态", operationDesc = "启停后台系统用户", includeResponseBody = false)
     public void updateStatus(@PathVariable String userId, @RequestBody @Valid UserStatusUpdateDTO dto) {
         Long parsedUserId = RequestIdUtils.parseId(userId, "userId");
         if (UserStatusEnum.DISABLED.matches(dto.getStatus())) {

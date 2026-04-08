@@ -12,6 +12,7 @@ import com.zhanglx.sso.auth.service.RoleService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -46,6 +47,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:add")
+    @OperationLog(module = "角色管理", feature = "角色", operationType = "CREATE", operationName = "新增角色", operationDesc = "新增后台角色", includeResponseBody = true)
     public RoleDTO create(@RequestBody @Valid RoleDTO dto) {
         dto.setId(null);
         return roleService.addRole(dto);
@@ -56,6 +58,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:edit")
+    @OperationLog(module = "角色管理", feature = "角色", operationType = "UPDATE", operationName = "修改角色", operationDesc = "修改后台角色", includeResponseBody = true)
     public RoleDTO update(@PathVariable String id, @RequestBody @Valid RoleDTO dto) {
         return roleService.updateRole(RequestIdUtils.parseId(id, "roleId"), dto);
     }
@@ -65,6 +68,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:remove")
+    @OperationLog(module = "角色管理", feature = "角色", operationType = "DELETE", operationName = "删除角色", operationDesc = "删除单个后台角色", includeResponseBody = false)
     public RoleDTO delete(@PathVariable String id) {
         return roleService.delRole(RequestIdUtils.parseId(id, "roleId"));
     }
@@ -74,6 +78,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:remove")
+    @OperationLog(module = "角色管理", feature = "角色", operationType = "DELETE", operationName = "批量删除角色", operationDesc = "批量删除后台角色", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> ids) {
         AssertUtils.notEmpty(ids, "角色 ID 列表不能为空");
         roleService.batchDelRole(RequestIdUtils.parseIds(ids, "roleId"));
@@ -99,6 +104,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:status")
+    @OperationLog(module = "角色管理", feature = "角色", operationType = "STATUS", operationName = "修改角色状态", operationDesc = "启停后台角色", includeResponseBody = true)
     public RoleDTO updateStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return roleService.updateStatus(RequestIdUtils.parseId(id, "roleId"), dto.getStatus());
     }
@@ -115,6 +121,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:bind-user")
+    @OperationLog(module = "角色管理", feature = "角色用户绑定", operationType = "BIND", operationName = "绑定角色用户", operationDesc = "维护角色与用户的绑定关系", includeResponseBody = true)
     public RoleInfoVO bindUsers(@PathVariable String roleId, @RequestBody List<String> userIds) {
         return roleService.bindUsers(
                 RequestIdUtils.parseId(roleId, "roleId"),
@@ -127,6 +134,7 @@ public class AuthRoleManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:assign-permission")
+    @OperationLog(module = "角色管理", feature = "角色权限绑定", operationType = "BIND", operationName = "绑定角色权限", operationDesc = "维护角色与权限的绑定关系", includeResponseBody = true)
     public RoleDTO bindPermissions(@PathVariable String roleId,
                                    @RequestBody List<RolePermissionRelationshipMappingDTO> permissions) {
         return roleService.associatePermissions(RequestIdUtils.parseId(roleId, "roleId"), permissions);

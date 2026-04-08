@@ -1,9 +1,6 @@
 server:
-  port: 8080
+  port: 21800
   max-http-request-header-size: 16KB
-  error:
-    include-message: always
-    include-binding-errors: always
 
 spring:
   profiles:
@@ -44,7 +41,7 @@ spring:
           routes:
             - id: sso-auth-route
               order: 1
-              uri: http://localhost:9000
+              uri: http://localhost:21900
               predicates:
                 - Path=/apis/v1/**,/oauth2/**
                 - Method=GET,POST,DELETE,PUT,PATCH
@@ -52,7 +49,7 @@ spring:
                 - PreserveHostHeader
             - id: sso-auth-swagger
               order: 100
-              uri: http://localhost:9000
+              uri: http://localhost:21900
               predicates:
                 - Path=/swagger-ui.html,/doc.html,/v3/api-docs/**,/webjars/**
           default-filters:
@@ -66,13 +63,17 @@ spring:
             cors-configurations:
               '[/**]':
                 allowed-origins:
-                  - http://localhost:8080
-                  - http://localhost:9000
+                  - http://localhost:21800
+                  - http://localhost:21900
                   - http://localhost:5173
                 allowed-methods: "*"
                 allowed-headers: "*"
                 allow-credentials: true
                 max-age: 3600
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
 
 sa-token:
   token-name: token

@@ -13,6 +13,7 @@ import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AuthService;
+import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
@@ -30,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+    private final AuthLoginAuditSupport authLoginAuditSupport;
     private final AuthOperationGuard authOperationGuard;
 
     @Value("${default.password:123456}")
@@ -67,6 +69,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         StpUtil.login(userPO.getId(), userLoginDTO.getDevice());
+        authLoginAuditSupport.storeAdminSession(
+                userPO.getUsername(),
+                StringUtils.hasText(userPO.getNickname()) ? userPO.getNickname() : userPO.getUsername(),
+                AuthLoginAuditSupport.CLIENT_TYPE_SYS_PASSWORD
+        );
 
         if (argon2PasswordEncoder.needUpgrade(userPO.getPassword())) {
             log.info("检测到用户 [{}] 密码参数需要升级", userPO.getUsername());

@@ -15,6 +15,7 @@ import com.zhanglx.sso.auth.mapper.MemberUserMapper;
 import com.zhanglx.sso.auth.service.MemberAuthService;
 import com.zhanglx.sso.auth.service.MemberUserService;
 import com.zhanglx.sso.auth.service.MemberVerificationCodeService;
+import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final MemberUserService memberUserService;
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final MemberVerificationCodeService memberVerificationCodeService;
+    private final AuthLoginAuditSupport authLoginAuditSupport;
 
     @Override
     public LoginVO login(MemberLoginDTO memberLoginDTO) {
@@ -58,6 +60,11 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         StpMemberUtil.login(memberUserPO.getId(), memberLoginDTO.getDevice());
+        authLoginAuditSupport.storeMemberSession(
+                memberUserPO.getPhoneNumber(),
+                memberUserPO.getPhoneNumber(),
+                AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD
+        );
         if (argon2PasswordEncoder.needUpgrade(memberUserPO.getPassword())) {
             log.info("Password params need upgrade for member [{}]", memberUserPO.getId());
             upgradeUserPassword(memberUserPO, memberLoginDTO.getPassword());
@@ -89,6 +96,11 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         memberUserMapper.insert(memberUserPO);
 
         StpMemberUtil.login(memberUserPO.getId(), memberRegisterDTO.getDevice());
+        authLoginAuditSupport.storeMemberSession(
+                memberUserPO.getPhoneNumber(),
+                memberUserPO.getPhoneNumber(),
+                AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD
+        );
         memberUserService.touchLastLoginTime(memberUserPO.getId());
         return assembleLoginVO(memberUserPO);
     }

@@ -3,7 +3,7 @@
 
     <!-- 定义变量 -->
     <property name="LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}/%X{requestId:-}] %logger{50} - %msg%n"/>
     <property name="LOG_PATH" value="logs"/>
     <property name="APP_NAME" value="sso-auth"/>
 

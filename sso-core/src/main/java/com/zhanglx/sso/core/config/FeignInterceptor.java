@@ -2,6 +2,8 @@ package com.zhanglx.sso.core.config;
 
 import cn.dev33.satoken.same.SaSameUtil;
 import cn.dev33.satoken.stp.StpUtil;
+import com.zhanglx.sso.common.trace.TraceConstants;
+import com.zhanglx.sso.core.trace.TraceContextHolder;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,16 @@ public class FeignInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         // 1. 传递 Same-Token（防绕过网关），这个在任何线程都能生成
         template.header(SaSameUtil.SAME_TOKEN, SaSameUtil.getToken());
+
+        String traceId = TraceContextHolder.getTraceId();
+        if (traceId != null) {
+            template.header(TraceConstants.TRACE_ID_HEADER, traceId);
+        }
+
+        String requestId = TraceContextHolder.getRequestId();
+        if (requestId != null) {
+            template.header(TraceConstants.REQUEST_ID_HEADER, requestId);
+        }
 
         // 2. 传递 User-Token（用户身份验证）
         // 先判断当前是否在正常的 Web 上下文中，并且已经登录

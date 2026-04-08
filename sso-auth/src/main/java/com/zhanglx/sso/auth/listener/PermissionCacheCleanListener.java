@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.listener;
 
+import com.zhanglx.sso.auth.constants.PermissionCacheConstants;
 import com.zhanglx.sso.auth.event.PermissionChangedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -37,9 +38,9 @@ public class PermissionCacheCleanListener {
         log.info("收到权限变更事件，开始清理权限缓存，taskId={}", event.getTaskId());
 
         try {
-            if (cacheManager != null && cacheManager.getCache("PermissionTree") != null) {
-                Objects.requireNonNull(cacheManager.getCache("PermissionTree")).clear();
-                log.info("已清理 PermissionTree 缓存");
+            if (cacheManager != null && cacheManager.getCache(PermissionCacheConstants.PERMISSION_TREE_CACHE) != null) {
+                Objects.requireNonNull(cacheManager.getCache(PermissionCacheConstants.PERMISSION_TREE_CACHE)).clear();
+                log.info("已清理 {} 缓存", PermissionCacheConstants.PERMISSION_TREE_CACHE);
             }
 
             clearRedisKeysSafely("sso:auth:permission:*");

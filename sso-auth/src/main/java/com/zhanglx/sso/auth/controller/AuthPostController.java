@@ -8,6 +8,7 @@ import com.zhanglx.sso.auth.domain.dto.PostQueryDTO;
 import com.zhanglx.sso.auth.service.PostService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -42,6 +43,7 @@ public class AuthPostController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("post:add")
+    @OperationLog(module = "岗位管理", feature = "岗位", operationType = "CREATE", operationName = "新增岗位", operationDesc = "新增后台岗位", includeResponseBody = true)
     public PostDTO create(@RequestBody @Valid PostDTO dto) {
         dto.setId(null);
         return postService.create(dto);
@@ -52,6 +54,7 @@ public class AuthPostController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("post:edit")
+    @OperationLog(module = "岗位管理", feature = "岗位", operationType = "UPDATE", operationName = "修改岗位", operationDesc = "修改后台岗位", includeResponseBody = true)
     public PostDTO update(@PathVariable String id, @RequestBody @Valid PostDTO dto) {
         return postService.update(RequestIdUtils.parseId(id, "postId"), dto);
     }
@@ -61,6 +64,7 @@ public class AuthPostController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("post:remove")
+    @OperationLog(module = "岗位管理", feature = "岗位", operationType = "DELETE", operationName = "删除岗位", operationDesc = "删除单个后台岗位", includeResponseBody = false)
     public void delete(@PathVariable String id) {
         postService.delete(RequestIdUtils.parseId(id, "postId"));
     }
@@ -70,6 +74,7 @@ public class AuthPostController {
     @RepeatSubmit
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("post:remove")
+    @OperationLog(module = "岗位管理", feature = "岗位", operationType = "DELETE", operationName = "批量删除岗位", operationDesc = "批量删除后台岗位", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> ids) {
         AssertUtils.notEmpty(ids, "岗位 ID 列表不能为空");
         postService.batchDelete(RequestIdUtils.parseIds(ids, "postId"));
@@ -95,6 +100,7 @@ public class AuthPostController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("post:status")
+    @OperationLog(module = "岗位管理", feature = "岗位", operationType = "STATUS", operationName = "修改岗位状态", operationDesc = "启停后台岗位", includeResponseBody = true)
     public PostDTO updateStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return postService.updateStatus(RequestIdUtils.parseId(id, "postId"), dto.getStatus());
     }

@@ -37,10 +37,10 @@ public class OpenApiConfig {
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .servers(List.of(
-                        new Server().url("http://localhost:9000").description("本地环境"),
-                        new Server().url("http://dev-server:9000").description("开发环境"),
-                        new Server().url("http://test-server:9000").description("测试环境"),
-                        new Server().url("http://prod-server:9000").description("生产环境")
+                        new Server().url("http://localhost:21900").description("本地环境"),
+                        new Server().url("http://dev-server:21900").description("开发环境"),
+                        new Server().url("http://test-server:21900").description("测试环境"),
+                        new Server().url("http://prod-server:21900").description("生产环境")
                 ))
                 .schemaRequirement("token", new SecurityScheme()
                         .type(SecurityScheme.Type.APIKEY)

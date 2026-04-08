@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: 21900
 
 spring:
   profiles:
@@ -64,6 +64,15 @@ logging:
     com.zhanglx.sso: DEBUG
     com.baomidou.mybatisplus: DEBUG
     org.mybatis: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -175,6 +184,51 @@ knife4j:
 
 
 sso:
+  log:
+    login:
+      enabled: true
+      core-pool-size: 1
+      max-pool-size: 2
+      queue-capacity: 2000
+      keep-alive-seconds: 60
+    operation:
+      enable-operation-log: false
+      app-code: sso
+      app-name: SSO认证中心
+      platform-code: auth-admin
+      platform-name: 认证后台
+      source-system: sso-auth
+      request-body-max-length: 2048
+      response-summary-max-length: 2048
+      error-message-max-length: 1024
+      exception-stack-max-length: 4096
+      request-query-max-length: 1024
+      user-agent-max-length: 512
+      ext-max-entries: 16
+      ext-key-max-length: 64
+      ext-value-max-length: 256
+      collection-preview-size: 10
+      bean-property-preview-size: 20
+      search-default-days: 7
+      search-max-window: 10000
+      elasticsearch:
+        # 建议按实际环境覆盖为可用 ES 集群地址，默认值仅用于本地开发占位。
+        hosts:
+          - 127.0.0.1:9200
+        schema: http
+        connect-timeout: 2s
+        socket-timeout: 5s
+        index-prefix: operation-log
+        bulk-batch-size: 200
+        bulk-flush-interval-ms: 1000
+        bulk-max-bytes: 1048576
+        max-retry-count: 1
+      async:
+        core-pool-size: 1
+        max-pool-size: 2
+        queue-capacity: 5000
+        keep-alive-seconds: 60
+        rejection-policy: DROP_CURRENT
   client-ip:
     forwarded-for-header: X-Forwarded-For
     real-ip-header: X-Real-IP

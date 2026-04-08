@@ -6,6 +6,7 @@ import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
 import com.zhanglx.sso.auth.service.MemberUserService;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -38,6 +39,7 @@ public class AuthMemberProfileController {
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "会员中心", feature = "会员资料", operationType = "UPDATE", operationName = "修改会员资料", operationDesc = "会员修改当前账号资料", includeResponseBody = true)
     public MemberInfoVO update(@RequestBody @Valid MemberUpdateDTO dto) {
         return memberUserService.updateCurrentMember(StpMemberUtil.getLoginIdAsLong(), dto);
     }
@@ -47,6 +49,7 @@ public class AuthMemberProfileController {
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
     @RequestRateLimit(limit = 3, windowSeconds = 300, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI}, customKey = "#dto.phoneNumber")
+    @OperationLog(module = "会员中心", feature = "手机号绑定", operationType = "BIND", operationName = "绑定手机号", operationDesc = "会员绑定当前手机号", includeRequestBody = false, includeResponseBody = true)
     public MemberInfoVO bindPhone(@RequestBody @Valid MemberBindPhoneDTO dto) {
         return memberUserService.bindPhone(StpMemberUtil.getLoginIdAsLong(), dto);
     }
@@ -56,6 +59,7 @@ public class AuthMemberProfileController {
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
     @RequestRateLimit(limit = 2, windowSeconds = 300, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "会员中心", feature = "会员注销", operationType = "DELETE", operationName = "注销会员", operationDesc = "会员注销当前账号", includeResponseBody = false)
     public void cancel() {
         memberUserService.cancelCurrentMember(StpMemberUtil.getLoginIdAsLong());
     }

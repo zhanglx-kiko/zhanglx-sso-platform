@@ -1,0 +1,64 @@
+{
+  "index_patterns": [
+    "__INDEX_PREFIX__-*"
+  ],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "refresh_interval": "30s",
+      "mapping.total_fields.limit": 128
+    },
+    "mappings": {
+      "dynamic": false,
+      "properties": {
+        "logId": { "type": "keyword" },
+        "appCode": { "type": "keyword" },
+        "appName": { "type": "keyword", "ignore_above": 128 },
+        "platformCode": { "type": "keyword" },
+        "platformName": { "type": "keyword", "ignore_above": 128 },
+        "module": { "type": "keyword" },
+        "feature": { "type": "keyword" },
+        "operationType": { "type": "keyword" },
+        "operationName": { "type": "keyword", "ignore_above": 128 },
+        "operationDesc": {
+          "type": "text",
+          "fields": {
+            "keyword": { "type": "keyword", "ignore_above": 256 }
+          }
+        },
+        "userId": { "type": "keyword" },
+        "username": { "type": "keyword", "ignore_above": 128 },
+        "displayName": { "type": "keyword", "ignore_above": 128 },
+        "tenantId": { "type": "keyword" },
+        "requestMethod": { "type": "keyword" },
+        "requestPath": {
+          "type": "keyword",
+          "ignore_above": 512,
+          "fields": {
+            "text": { "type": "text" }
+          }
+        },
+        "requestQuery": { "type": "keyword", "index": false, "ignore_above": 2048 },
+        "requestBodySummary": { "type": "keyword", "index": false, "ignore_above": 4096 },
+        "responseSummary": { "type": "keyword", "index": false, "ignore_above": 4096 },
+        "resultStatus": { "type": "keyword" },
+        "errorCode": { "type": "keyword" },
+        "errorMessageSummary": { "type": "keyword", "index": false, "ignore_above": 2048 },
+        "exceptionType": { "type": "keyword", "ignore_above": 256 },
+        "exceptionStackSummary": { "type": "keyword", "index": false, "ignore_above": 8192 },
+        "clientIp": { "type": "ip" },
+        "userAgent": { "type": "keyword", "index": false, "ignore_above": 1024 },
+        "traceId": { "type": "keyword" },
+        "requestId": { "type": "keyword" },
+        "startTime": { "type": "date", "format": "yyyy-MM-dd HH:mm:ss||strict_date_optional_time||epoch_millis" },
+        "endTime": { "type": "date", "format": "yyyy-MM-dd HH:mm:ss||strict_date_optional_time||epoch_millis" },
+        "durationMs": { "type": "long" },
+        "sourceSystem": { "type": "keyword", "ignore_above": 128 },
+        "ext": { "type": "flattened" },
+        "ingestTime": { "type": "date", "format": "yyyy-MM-dd HH:mm:ss||strict_date_optional_time||epoch_millis" }
+      }
+    }
+  }
+}

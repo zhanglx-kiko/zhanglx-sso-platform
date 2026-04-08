@@ -382,45 +382,41 @@ DROP TABLE IF EXISTS `t_auth_login_log`;
 CREATE TABLE `t_auth_login_log`
 (
     `id`             bigint(20)  NOT NULL COMMENT '主键 ID',
+    `user_id`        bigint(20)           DEFAULT NULL COMMENT '用户ID',
     `app_code`       varchar(32)          DEFAULT NULL COMMENT '应用编码',
     `username`       varchar(64)          DEFAULT NULL COMMENT '登录账号',
+    `display_name`   varchar(128)         DEFAULT NULL COMMENT '展示名称',
+    `event_type`     varchar(16)  NOT NULL DEFAULT 'LOGIN' COMMENT '事件类型：LOGIN/LOGOUT',
+    `login_result`   varchar(16)  NOT NULL DEFAULT 'SUCCESS' COMMENT '登录结果：SUCCESS/FAILURE',
+    `fail_reason`    varchar(512)         DEFAULT NULL COMMENT '失败原因摘要',
     `login_ip`       varchar(128)         DEFAULT NULL COMMENT '登录 IP',
+    `user_agent`     varchar(512)         DEFAULT NULL COMMENT '用户代理摘要',
+    `device_type`    varchar(64)          DEFAULT NULL COMMENT '设备类型',
+    `trace_id`       varchar(64)          DEFAULT NULL COMMENT '链路追踪ID',
+    `request_id`     varchar(64)          DEFAULT NULL COMMENT '请求ID',
+    `client_type`    varchar(64)          DEFAULT NULL COMMENT '客户端类型',
     `login_location` varchar(255)         DEFAULT NULL COMMENT '登录地点',
     `browser`        varchar(64)          DEFAULT NULL COMMENT '浏览器',
     `os`             varchar(64)          DEFAULT NULL COMMENT '操作系统',
     `status`         tinyint(1)  NOT NULL DEFAULT 1 COMMENT '状态：1-成功，0-失败',
     `msg`            varchar(255)         DEFAULT NULL COMMENT '提示信息',
-    `login_time`     datetime    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '登录时间',
+    `login_time`     datetime             DEFAULT NULL COMMENT '登录时间',
+    `logout_time`    datetime             DEFAULT NULL COMMENT '登出时间',
+    `create_time`    datetime    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `ext_json`       text COMMENT '受控扩展字段JSON',
     PRIMARY KEY (`id`),
-    KEY `idx_login_app_time` (`app_code`, `login_time`),
-    KEY `idx_login_status_time` (`status`, `login_time`)
+    KEY `idx_login_app_time` (`app_code`, `create_time`),
+    KEY `idx_login_status_time` (`status`, `create_time`),
+    KEY `idx_login_user_time` (`user_id`, `create_time`),
+    KEY `idx_login_username_time` (`username`, `create_time`),
+    KEY `idx_login_event_time` (`event_type`, `create_time`),
+    KEY `idx_login_result_time` (`login_result`, `create_time`),
+    KEY `idx_login_ip_time` (`login_ip`, `create_time`),
+    KEY `idx_login_trace_id` (`trace_id`),
+    KEY `idx_login_request_id` (`request_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci COMMENT ='登录日志表';
-
-DROP TABLE IF EXISTS `t_auth_operate_log`;
-CREATE TABLE `t_auth_operate_log`
-(
-    `id`              bigint(20) NOT NULL COMMENT '主键 ID',
-    `app_code`        varchar(32)         DEFAULT NULL COMMENT '应用编码',
-    `module`          varchar(64)         DEFAULT NULL COMMENT '模块名称',
-    `operate_type`    varchar(32)         DEFAULT NULL COMMENT '操作类型',
-    `operate_user_id` bigint(20)          DEFAULT NULL COMMENT '操作人 ID',
-    `operate_ip`      varchar(128)        DEFAULT NULL COMMENT '操作 IP',
-    `request_url`     varchar(255)        DEFAULT NULL COMMENT '请求地址',
-    `request_method`  varchar(10)         DEFAULT NULL COMMENT '请求方法',
-    `cost_time`       int(11)             DEFAULT 0 COMMENT '耗时（毫秒）',
-    `request_param`   text COMMENT '请求参数',
-    `json_result`     text COMMENT '返回结果',
-    `status`          tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：1-成功，0-失败',
-    `error_msg`       text COMMENT '错误信息',
-    `operate_time`    datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
-    PRIMARY KEY (`id`),
-    KEY `idx_operate_user_time` (`operate_user_id`, `operate_time`),
-    KEY `idx_operate_module_time` (`module`, `operate_time`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_0900_ai_ci COMMENT ='操作日志表';
+  COLLATE = utf8mb4_0900_ai_ci COMMENT ='登录审计日志表';
 -- ========================================
 -- 初始化基础数据
 -- ========================================
@@ -696,3 +692,22 @@ SELECT 1900000000000000000 + ROW_NUMBER() OVER (ORDER BY `id`) AS `id`,
 FROM `t_auth_permission`
 WHERE `del_flag` = 0;
 
+
+-- 日志审计菜单与权限
+INSERT INTO `t_auth_permission`
+(`id`, `name`, `identification`, `parent_id`, `identity_lineage`, `com_path`, `path`, `icon_str`, `display_no`, `is_frame`, `type`, `remark`, `status`, `del_flag`, `create_by`, `update_by`)
+VALUES
+    (3000000000000000108, '日志审计', 'system:auth:log', 3000000000000000010, 'system.auth.log', 'system/auth/log/index', '/system/auth/log', 'DocumentChecked', 9, 0, 1, '登录日志与操作日志审计菜单', 1, 0, 1300000000000000001, 1300000000000000001),
+    (3000000000000001800, '查询登录日志', 'login-log:list', 3000000000000000108, 'system.auth.log.login.list', NULL, NULL, NULL, 1, 0, 2, '分页查询登录日志', 1, 0, 1300000000000000001, 1300000000000000001),
+    (3000000000000001801, '查看登录日志', 'login-log:view', 3000000000000000108, 'system.auth.log.login.view', NULL, NULL, NULL, 2, 0, 2, '查看登录日志详情', 1, 0, 1300000000000000001, 1300000000000000001),
+    (3000000000000001802, '查询操作日志', 'operation-log:list', 3000000000000000108, 'system.auth.log.operation.list', NULL, NULL, NULL, 3, 0, 2, '分页查询操作日志', 1, 0, 1300000000000000001, 1300000000000000001),
+    (3000000000000001803, '查看操作日志', 'operation-log:view', 3000000000000000108, 'system.auth.log.operation.view', NULL, NULL, NULL, 4, 0, 2, '查看操作日志详情', 1, 0, 1300000000000000001, 1300000000000000001);
+
+INSERT INTO `t_auth_role_permission`
+(`id`, `role_id`, `permission_id`, `del_flag`, `create_by`, `update_by`)
+VALUES
+    (1900000000000001800, 1400000000000000001, 3000000000000000108, 0, 1300000000000000001, 1300000000000000001),
+    (1900000000000001801, 1400000000000000001, 3000000000000001800, 0, 1300000000000000001, 1300000000000000001),
+    (1900000000000001802, 1400000000000000001, 3000000000000001801, 0, 1300000000000000001, 1300000000000000001),
+    (1900000000000001803, 1400000000000000001, 3000000000000001802, 0, 1300000000000000001, 1300000000000000001),
+    (1900000000000001804, 1400000000000000001, 3000000000000001803, 0, 1300000000000000001, 1300000000000000001);

@@ -15,6 +15,7 @@ import com.zhanglx.sso.auth.mapper.MemberUserMapper;
 import com.zhanglx.sso.auth.service.MemberUserService;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
+import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     private final MemberUserService memberUserService;
     private final MemberUserMapper memberUserMapper;
     private final MemberSocialMapper memberSocialMapper;
+    private final AuthLoginAuditSupport authLoginAuditSupport;
     private final RestClient restClient = RestClient.create();
 
     @Override
@@ -54,6 +56,11 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         }
 
         StpUtil.login(user.getId());
+        authLoginAuditSupport.storeAdminSession(
+                user.getUsername(),
+                StringUtils.hasText(user.getNickname()) ? user.getNickname() : user.getUsername(),
+                AuthLoginAuditSupport.CLIENT_TYPE_SYS_WECHAT
+        );
         return assembleLoginVO(user, StpUtil.getTokenInfo());
     }
 
@@ -91,6 +98,14 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         }
 
         StpMemberUtil.login(memberUserPO.getId());
+        String displayName = StringUtils.hasText(memberUserPO.getPhoneNumber())
+                ? memberUserPO.getPhoneNumber()
+                : "member_" + memberUserPO.getId();
+        authLoginAuditSupport.storeMemberSession(
+                displayName,
+                displayName,
+                AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_WECHAT
+        );
         memberUserService.touchLastLoginTime(memberUserPO.getId());
         return assembleMemberLoginVO(memberUserPO);
     }

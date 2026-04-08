@@ -1,11 +1,14 @@
 package com.zhanglx.sso.core.config;
 
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import java.util.Map;
 
 /**
  * @Author: Zhang L X
@@ -25,14 +28,21 @@ public class VirtualThreadConfig {
     public TaskDecorator contextCopyingDecorator() {
         return runnable -> {
             RequestAttributes context = RequestContextHolder.getRequestAttributes();
+            Map<String, String> mdcContext = MDC.getCopyOfContextMap();
             return () -> {
                 try {
                     if (context != null) {
                         RequestContextHolder.setRequestAttributes(context);
                     }
+                    if (mdcContext != null && !mdcContext.isEmpty()) {
+                        MDC.setContextMap(mdcContext);
+                    } else {
+                        MDC.clear();
+                    }
                     runnable.run();
                 } finally {
                     RequestContextHolder.resetRequestAttributes();
+                    MDC.clear();
                 }
             };
         };

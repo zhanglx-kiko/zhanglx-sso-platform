@@ -6,6 +6,7 @@ import com.zhanglx.sso.auth.domain.dto.ConfigDTO;
 import com.zhanglx.sso.auth.domain.dto.ConfigQueryDTO;
 import com.zhanglx.sso.auth.service.ConfigService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -30,6 +31,7 @@ public class AuthConfigController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:add")
+    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "CREATE", operationName = "新增参数", operationDesc = "新增系统参数", includeResponseBody = true)
     public ConfigDTO create(@RequestBody @Valid ConfigDTO dto) {
         dto.setId(null);
         return configService.create(dto);
@@ -40,6 +42,7 @@ public class AuthConfigController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:edit")
+    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "UPDATE", operationName = "修改参数", operationDesc = "修改系统参数", includeResponseBody = true)
     public ConfigDTO update(@PathVariable String id, @RequestBody @Valid ConfigDTO dto) {
         return configService.update(RequestIdUtils.parseId(id, "参数ID"), dto);
     }
@@ -49,6 +52,7 @@ public class AuthConfigController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:remove")
+    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "DELETE", operationName = "删除参数", operationDesc = "删除系统参数", includeResponseBody = false)
     public void delete(@PathVariable String id) {
         configService.delete(RequestIdUtils.parseId(id, "参数ID"));
     }

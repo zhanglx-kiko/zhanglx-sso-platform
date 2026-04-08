@@ -7,6 +7,7 @@ import com.zhanglx.sso.auth.domain.dto.DeptQueryDTO;
 import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.service.DeptService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -42,6 +43,7 @@ public class AuthDeptController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:add")
+    @OperationLog(module = "部门管理", feature = "部门", operationType = "CREATE", operationName = "新增部门", operationDesc = "新增组织部门", includeResponseBody = true)
     public DeptDTO create(@RequestBody @Valid DeptDTO dto) {
         dto.setId(null);
         return deptService.create(dto);
@@ -52,6 +54,7 @@ public class AuthDeptController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:edit")
+    @OperationLog(module = "部门管理", feature = "部门", operationType = "UPDATE", operationName = "修改部门", operationDesc = "修改组织部门", includeResponseBody = true)
     public DeptDTO update(@PathVariable String id, @RequestBody @Valid DeptDTO dto) {
         return deptService.update(RequestIdUtils.parseId(id, "deptId"), dto);
     }
@@ -61,6 +64,7 @@ public class AuthDeptController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:remove")
+    @OperationLog(module = "部门管理", feature = "部门", operationType = "DELETE", operationName = "删除部门", operationDesc = "删除组织部门", includeResponseBody = false)
     public void delete(@PathVariable String id) {
         deptService.delete(RequestIdUtils.parseId(id, "deptId"));
     }
@@ -93,6 +97,7 @@ public class AuthDeptController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:status")
+    @OperationLog(module = "部门管理", feature = "部门", operationType = "STATUS", operationName = "修改部门状态", operationDesc = "启停组织部门", includeResponseBody = true)
     public DeptDTO updateStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return deptService.updateStatus(RequestIdUtils.parseId(id, "deptId"), dto.getStatus());
     }

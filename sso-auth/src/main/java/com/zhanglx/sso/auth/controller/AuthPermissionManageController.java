@@ -8,6 +8,7 @@ import com.zhanglx.sso.auth.domain.vo.PermissionVO;
 import com.zhanglx.sso.auth.service.PermissionService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -43,6 +44,7 @@ public class AuthPermissionManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:add")
+    @OperationLog(module = "权限管理", feature = "权限", operationType = "CREATE", operationName = "新增权限", operationDesc = "新增权限节点", includeResponseBody = true)
     public PermissionDTO create(@RequestBody @Valid PermissionDTO dto) {
         dto.setId(null);
         return permissionService.addPermission(dto);
@@ -53,6 +55,7 @@ public class AuthPermissionManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:edit")
+    @OperationLog(module = "权限管理", feature = "权限", operationType = "UPDATE", operationName = "修改权限", operationDesc = "修改权限节点", includeResponseBody = true)
     public PermissionDTO update(@PathVariable String id, @RequestBody @Valid PermissionDTO dto) {
         return permissionService.updatePermission(RequestIdUtils.parseId(id, "permissionId"), dto);
     }
@@ -62,6 +65,7 @@ public class AuthPermissionManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:remove")
+    @OperationLog(module = "权限管理", feature = "权限", operationType = "DELETE", operationName = "删除权限", operationDesc = "删除单个权限节点", includeResponseBody = false)
     public PermissionDTO delete(@PathVariable String id) {
         return permissionService.delPermission(RequestIdUtils.parseId(id, "permissionId"));
     }
@@ -71,6 +75,7 @@ public class AuthPermissionManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:remove")
+    @OperationLog(module = "权限管理", feature = "权限", operationType = "DELETE", operationName = "批量删除权限", operationDesc = "批量删除权限节点", includeResponseBody = false)
     public List<PermissionDTO> batchDelete(@RequestBody List<String> ids) {
         AssertUtils.notEmpty(ids, "权限 ID 列表不能为空");
         return permissionService.batchDelPermission(RequestIdUtils.parseIds(ids, "permissionId"));
@@ -107,6 +112,7 @@ public class AuthPermissionManageController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:status")
+    @OperationLog(module = "权限管理", feature = "权限", operationType = "STATUS", operationName = "修改权限状态", operationDesc = "启停权限节点", includeResponseBody = true)
     public PermissionDTO updateStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return permissionService.updateStatus(RequestIdUtils.parseId(id, "permissionId"), dto.getStatus());
     }

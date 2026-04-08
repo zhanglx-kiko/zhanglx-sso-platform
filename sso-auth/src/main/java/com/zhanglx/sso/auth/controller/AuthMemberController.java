@@ -9,7 +9,9 @@ import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.service.MemberAuthService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
+import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
@@ -31,12 +33,32 @@ public class AuthMemberController {
 
     private final MemberAuthService memberAuthService;
     private final WechatAuthService wechatAuthService;
+    private final AuthLoginAuditSupport authLoginAuditSupport;
 
     @Operation(summary = "会员账号密码登录")
     @PostMapping("/login")
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.IP, RateLimitDimension.URI}, customKey = "#memberLoginDTO.phoneNumber")
     public LoginVO memberLogin(@RequestBody @Validated MemberLoginDTO memberLoginDTO) {
-        return memberAuthService.login(memberLoginDTO);
+        try {
+            LoginVO loginVO = memberAuthService.login(memberLoginDTO);
+            authLoginAuditSupport.recordLoginSuccess(
+                    loginVO.getId(),
+                    loginVO.getUsername(),
+                    loginVO.getNickname(),
+                    memberLoginDTO.getDevice(),
+                    AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD
+            );
+            return loginVO;
+        } catch (Exception e) {
+            authLoginAuditSupport.recordLoginFailure(
+                    memberLoginDTO.getPhoneNumber(),
+                    memberLoginDTO.getPhoneNumber(),
+                    memberLoginDTO.getDevice(),
+                    AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD,
+                    e
+            );
+            throw e;
+        }
     }
 
     @Operation(summary = "会员注册")
@@ -44,7 +66,15 @@ public class AuthMemberController {
     @RepeatSubmit
     @RequestRateLimit(limit = 3, windowSeconds = 300, dimensions = {RateLimitDimension.IP, RateLimitDimension.URI}, customKey = "#memberRegisterDTO.phoneNumber")
     public LoginVO register(@RequestBody @Validated MemberRegisterDTO memberRegisterDTO) {
-        return memberAuthService.register(memberRegisterDTO);
+        LoginVO loginVO = memberAuthService.register(memberRegisterDTO);
+        authLoginAuditSupport.recordLoginSuccess(
+                loginVO.getId(),
+                loginVO.getUsername(),
+                loginVO.getNickname(),
+                memberRegisterDTO.getDevice(),
+                AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD
+        );
+        return loginVO;
     }
 
     @Operation(summary = "发送会员验证码")
@@ -60,7 +90,26 @@ public class AuthMemberController {
     @RepeatSubmit
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.IP, RateLimitDimension.URI}, customKey = "#code")
     public LoginVO wechatLogin(@RequestParam String code) {
-        return wechatAuthService.loginMemberByWechatCode(code);
+        try {
+            LoginVO loginVO = wechatAuthService.loginMemberByWechatCode(code);
+            authLoginAuditSupport.recordLoginSuccess(
+                    loginVO.getId(),
+                    loginVO.getUsername(),
+                    loginVO.getNickname(),
+                    null,
+                    AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_WECHAT
+            );
+            return loginVO;
+        } catch (Exception e) {
+            authLoginAuditSupport.recordLoginFailure(
+                    "wechat",
+                    "wechat",
+                    null,
+                    AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_WECHAT,
+                    e
+            );
+            throw e;
+        }
     }
 
     @Operation(summary = "会员登出")
@@ -68,7 +117,15 @@ public class AuthMemberController {
     @SaCheckLogin(type = StpMemberUtil.TYPE)
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public void memberLogout() {
+        AuthLoginAuditSupport.SessionSnapshot snapshot = authLoginAuditSupport.currentMemberSnapshot();
         StpMemberUtil.logout();
+        authLoginAuditSupport.recordLogout(
+                snapshot.userId(),
+                snapshot.username(),
+                snapshot.displayName(),
+                null,
+                snapshot.clientType()
+        );
     }
 
     @Operation(summary = "会员修改密码")
@@ -76,6 +133,7 @@ public class AuthMemberController {
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
     @RequestRateLimit(limit = 3, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @OperationLog(module = "会员认证", feature = "密码", operationType = "UPDATE", operationName = "修改会员密码", operationDesc = "会员修改自己的登录密码", includeRequestBody = false, includeResponseBody = false)
     public void updatePassword(@RequestBody @Validated UserPasswordDTO passwordDTO) {
         passwordDTO.setUserId(StpMemberUtil.getLoginIdAsLong());
         memberAuthService.updatePassword(passwordDTO);
@@ -85,6 +143,7 @@ public class AuthMemberController {
     @PostMapping("/forgot-password")
     @RepeatSubmit
     @RequestRateLimit(limit = 3, windowSeconds = 300, dimensions = {RateLimitDimension.IP, RateLimitDimension.URI}, customKey = "#forgotPasswordDTO.phoneNumber")
+    @OperationLog(module = "会员认证", feature = "密码", operationType = "RESET", operationName = "会员忘记密码", operationDesc = "会员通过忘记密码流程重置密码", includeRequestBody = false, includeResponseBody = false)
     public void forgotPassword(@RequestBody @Validated MemberForgotPasswordDTO forgotPasswordDTO) {
         memberAuthService.forgotPassword(forgotPasswordDTO);
     }
