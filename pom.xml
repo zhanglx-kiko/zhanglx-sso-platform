@@ -16,6 +16,7 @@
         <module>sso-gateway</module>
         <module>sso-web</module>
         <module>sso-mybatis</module>
+        <module>sso-log</module>
     </modules>
 
     <parent>
@@ -120,6 +121,12 @@
             <dependency>
                 <groupId>com.zhanglx</groupId>
                 <artifactId>sso-mybatis</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.zhanglx</groupId>
+                <artifactId>sso-log</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
