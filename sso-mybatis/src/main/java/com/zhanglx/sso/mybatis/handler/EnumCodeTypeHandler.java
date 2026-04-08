@@ -38,20 +38,22 @@ public class EnumCodeTypeHandler<E extends Enum<?> & IBaseEnum> extends BaseType
 
     @Override
     public E getNullableResult(ResultSet rs, String columnName) throws SQLException {
-        Object code = rs.getObject(columnName);
-        return rs.wasNull() ? null : EnumUtils.codeOf(this.type, code);
+        // MySQL 驱动在 tinyint(1) 场景下可能把 0/1/2 等值按布尔语义返回，
+        // 使用 getString 可以保留数据库中的原始字面值，避免枚举 code 被错误压扁成 true/false。
+        String code = rs.getString(columnName);
+        return code == null ? null : EnumUtils.codeOf(this.type, code);
     }
 
     @Override
     public E getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-        Object code = rs.getObject(columnIndex);
-        return rs.wasNull() ? null : EnumUtils.codeOf(this.type, code);
+        String code = rs.getString(columnIndex);
+        return code == null ? null : EnumUtils.codeOf(this.type, code);
     }
 
     @Override
     public E getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-        Object code = cs.getObject(columnIndex);
-        return cs.wasNull() ? null : EnumUtils.codeOf(this.type, code);
+        String code = cs.getString(columnIndex);
+        return code == null ? null : EnumUtils.codeOf(this.type, code);
     }
 
 }

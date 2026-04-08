@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -21,6 +22,6 @@ public class PermissionQueryDTO {
     private List<String> identifications;
 
     @Schema(description = "权限项类型列表")
-    private List<String> permissionTypes;
+    private List<PermissionTypeEnum> permissionTypes;
 
 }

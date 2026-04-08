@@ -6,6 +6,8 @@ import com.zhanglx.sso.core.enums.IIntegerBaseEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 @Getter
 @RequiredArgsConstructor
 public enum ConfigTypeEnum implements IIntegerBaseEnum<String> {
@@ -22,12 +24,23 @@ public enum ConfigTypeEnum implements IIntegerBaseEnum<String> {
         return IBaseEnum.fromCode(code, ConfigTypeEnum.class);
     }
 
-    public boolean matches(Number value) {
-        return value != null && value.intValue() == code;
+    public boolean matches(Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof ConfigTypeEnum configTypeEnum) {
+            return this == configTypeEnum;
+        }
+        if (value instanceof Number number) {
+            return Objects.equals(code, number.intValue());
+        }
+        if (value instanceof String text) {
+            return Objects.equals(String.valueOf(code), text) || name().equalsIgnoreCase(text);
+        }
+        return false;
     }
 
-    public static boolean isBuiltIn(Number value) {
+    public static boolean isBuiltIn(Object value) {
         return BUILT_IN.matches(value);
     }
-
 }

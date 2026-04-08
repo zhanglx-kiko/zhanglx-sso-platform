@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.RoleDTO;
 import com.zhanglx.sso.auth.domain.dto.RolePermissionRelationshipMappingDTO;
 import com.zhanglx.sso.auth.domain.vo.RoleInfoVO;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 
 import java.util.List;
@@ -176,6 +177,6 @@ public interface RoleService {
      */
     List<RoleDTO> selectRolesForUser(Long userId);
 
-    RoleDTO updateStatus(Long roleId, Integer status);
+    RoleDTO updateStatus(Long roleId, EnableStatusEnum status);
 
 }

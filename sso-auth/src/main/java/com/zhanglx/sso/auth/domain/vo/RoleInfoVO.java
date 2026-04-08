@@ -1,5 +1,7 @@
 package com.zhanglx.sso.auth.domain.vo;
 
+import com.zhanglx.sso.auth.enums.DataScopeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.core.domain.vo.BaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -30,10 +32,10 @@ public class RoleInfoVO extends BaseVO {
     private String appCode;
 
     @Schema(description = "数据范围", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer dataScope;
+    private DataScopeEnum dataScope;
 
     @Schema(description = "状态", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer status;
+    private EnableStatusEnum status;
 
     @Schema(description = "角色类型兼容字段", accessMode = Schema.AccessMode.READ_ONLY)
     private String roleType;

@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.AppDTO;
 import com.zhanglx.sso.auth.domain.dto.AppQueryDTO;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface AppService {
 
     Page<AppDTO> pageQuery(AppQueryDTO queryDTO);
 
-    AppDTO updateStatus(Long id, Integer status);
+    AppDTO updateStatus(Long id, EnableStatusEnum status);
 
     List<AppDTO> listByUser(Long userId);
 

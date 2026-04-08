@@ -2,11 +2,13 @@ package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
 import com.zhanglx.sso.auth.domain.dto.ConfigDTO;
 import com.zhanglx.sso.auth.domain.dto.ConfigQueryDTO;
 import com.zhanglx.sso.auth.service.ConfigService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.web.annotation.RateLimitDimension;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ public class AuthConfigController {
     @Operation(summary = "新增参数")
     @PostMapping
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:add")
     public ConfigDTO create(@RequestBody @Valid ConfigDTO dto) {
         dto.setId(null);
@@ -35,6 +38,7 @@ public class AuthConfigController {
     @Operation(summary = "修改参数")
     @PutMapping("/{id}")
     @RepeatSubmit
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:edit")
     public ConfigDTO update(@PathVariable String id, @RequestBody @Valid ConfigDTO dto) {
         return configService.update(RequestIdUtils.parseId(id, "参数ID"), dto);
@@ -43,6 +47,7 @@ public class AuthConfigController {
     @Operation(summary = "删除参数")
     @DeleteMapping("/{id}")
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:remove")
     public void delete(@PathVariable String id) {
         configService.delete(RequestIdUtils.parseId(id, "参数ID"));
@@ -64,6 +69,7 @@ public class AuthConfigController {
 
     @Operation(summary = "分页查询参数")
     @PostMapping("/page")
+    @RequestRateLimit(limit = 60, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:list")
     public Page<ConfigDTO> pageQuery(@RequestBody ConfigQueryDTO queryDTO) {
         return configService.pageQuery(queryDTO);

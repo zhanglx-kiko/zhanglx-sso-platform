@@ -2,7 +2,11 @@ package com.zhanglx.sso.auth.domain.po;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.mybatis.domain.po.BasePO;
+import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -75,14 +79,14 @@ public class PermissionPO extends BasePO {
     /**
      * 是否为外链(1是 0否)
      */
-    @TableField(value = "is_frame", jdbcType = JdbcType.TINYINT)
-    private Integer isFrame;
+    @TableField(value = "is_frame", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private YesNoEnum isFrame;
 
     /**
      * 类型(-1平台 0模块 1菜单 2按钮 3接口)
      */
-    @TableField(value = "type", jdbcType = JdbcType.TINYINT)
-    private Integer type;
+    @TableField(value = "type", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private PermissionTypeEnum type;
 
     /**
      * 备注
@@ -90,7 +94,7 @@ public class PermissionPO extends BasePO {
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 
-    @TableField(value = "status", jdbcType = JdbcType.TINYINT)
-    private Integer status;
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private EnableStatusEnum status;
 
 }

@@ -6,6 +6,8 @@ import com.zhanglx.sso.core.enums.IIntegerBaseEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 @Getter
 @RequiredArgsConstructor
 public enum YesNoEnum implements IIntegerBaseEnum<String> {
@@ -22,8 +24,19 @@ public enum YesNoEnum implements IIntegerBaseEnum<String> {
         return IBaseEnum.fromCode(code, YesNoEnum.class);
     }
 
-    public boolean matches(Number value) {
-        return value != null && value.intValue() == code;
+    public boolean matches(Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof YesNoEnum yesNoEnum) {
+            return this == yesNoEnum;
+        }
+        if (value instanceof Number number) {
+            return Objects.equals(code, number.intValue());
+        }
+        if (value instanceof String text) {
+            return Objects.equals(String.valueOf(code), text) || name().equalsIgnoreCase(text);
+        }
+        return false;
     }
-
 }

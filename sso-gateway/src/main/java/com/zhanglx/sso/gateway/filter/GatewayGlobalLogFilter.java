@@ -1,5 +1,8 @@
 package com.zhanglx.sso.gateway.filter;
 
+import com.zhanglx.sso.common.net.ClientIpUtils;
+import com.zhanglx.sso.gateway.config.GatewayClientIpProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -8,24 +11,20 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.net.InetSocketAddress;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * @Author: Zhang L X
- * @Create: 2026/2/12 15:28
- * @ClassName: GatewayGlobalLogFilter
- * @Description: 网关全局日志过滤器 记录请求IP、方法、路径、参数、响应状态、耗时等核心信息
- */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
 
-    // 过滤器优先级（4.2.7建议设为HIGHEST_PRECEDENCE+10，优先于其他过滤器执行）
+    private final GatewayClientIpProperties clientIpProperties;
+
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE + 10;
@@ -33,45 +32,48 @@ public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 1. 生成请求ID并添加到请求头
-        String requestId = UUID.randomUUID().toString();
+        String requestId = resolveRequestId(exchange.getRequest());
+        String clientIp = resolveClientIp(exchange.getRequest());
         ServerHttpRequest request = exchange.getRequest().mutate()
                 .header("X-Request-Id", requestId)
+                .header("X-Client-Ip", clientIp)
                 .build();
 
         ServerWebExchange modifiedExchange = exchange.mutate().request(request).build();
-
-        // 2. 获取请求核心信息
-        String method = request.getMethod().name();
+        String method = request.getMethod() == null ? "UNKNOWN" : request.getMethod().name();
         String path = request.getPath().value();
-        String query = request.getQueryParams().toString();
-        String ip = getClientRealIp(request);
-
-        // 3. 记录请求开始时间
+        String query = request.getURI().getRawQuery();
         long startTime = System.currentTimeMillis();
 
-        // 4. 执行后续过滤器链，完成后记录响应日志
         return chain.filter(modifiedExchange).then(Mono.fromRunnable(() -> {
             ServerHttpResponse response = modifiedExchange.getResponse();
             int statusCode = Optional.ofNullable(response.getStatusCode()).orElse(HttpStatusCode.valueOf(500)).value();
             long costTime = System.currentTimeMillis() - startTime;
-
-            // 5. 输出结构化日志
-            log.info("Gateway Log | requestId: {}, ip: {}, method: {}, path: {}, query: {}, status: {}, cost: {}ms",
-                    requestId, ip, method, path, query, statusCode, costTime);
+            log.info("gateway_access requestId={} clientIp={} method={} path={} query={} status={} costMs={}",
+                    requestId,
+                    clientIp,
+                    method,
+                    path,
+                    StringUtils.hasText(query) ? query : "",
+                    statusCode,
+                    costTime);
         }));
     }
 
-    /**
-     * 获取客户端真实IP（适配4.2.7版本网关转发场景）
-     */
-    private String getClientRealIp(ServerHttpRequest request) {
-        return Optional.ofNullable(request.getHeaders().getFirst("X-Forwarded-For"))
-                .orElseGet(() -> Optional.ofNullable(request.getHeaders().getFirst("X-Real-IP"))
-                        .orElseGet(() -> {
-                            InetSocketAddress remoteAddress = request.getRemoteAddress();
-                            return remoteAddress != null ? remoteAddress.getHostString() : "unknown";
-                        }));
+    private String resolveRequestId(ServerHttpRequest request) {
+        String requestId = request.getHeaders().getFirst("X-Request-Id");
+        return StringUtils.hasText(requestId) ? requestId.trim() : UUID.randomUUID().toString();
     }
 
+    private String resolveClientIp(ServerHttpRequest request) {
+        String remoteAddress = request.getRemoteAddress() == null || request.getRemoteAddress().getAddress() == null
+                ? null
+                : request.getRemoteAddress().getAddress().getHostAddress();
+        return ClientIpUtils.resolveClientIp(
+                remoteAddress,
+                request.getHeaders().getFirst(clientIpProperties.getForwardedForHeader()),
+                request.getHeaders().getFirst(clientIpProperties.getRealIpHeader()),
+                clientIpProperties.getTrustedProxies()
+        );
+    }
 }

@@ -1,0 +1,26 @@
+package com.zhanglx.sso.gateway.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@Component
+@ConfigurationProperties(prefix = "sso.client-ip")
+public class GatewayClientIpProperties {
+
+    private String forwardedForHeader = "X-Forwarded-For";
+
+    private String realIpHeader = "X-Real-IP";
+
+    private List<String> trustedProxies = new ArrayList<>(List.of(
+            "127.0.0.1/32",
+            "::1/128",
+            "10.0.0.0/8",
+            "172.16.0.0/12",
+            "192.168.0.0/16"
+    ));
+}

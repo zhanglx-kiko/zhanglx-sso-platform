@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,5 +30,5 @@ public class DeptQueryDTO extends PageQuery {
     private String deptName;
 
     @Schema(description = "状态：1-启用，0-停用")
-    private Integer status;
+    private EnableStatusEnum status;
 }

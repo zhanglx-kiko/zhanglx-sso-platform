@@ -2,7 +2,10 @@ package com.zhanglx.sso.auth.domain.po;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zhanglx.sso.auth.enums.DataScopeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.mybatis.domain.po.BasePO;
+import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,11 +33,11 @@ public class RolePO extends BasePO {
     @TableField(value = "app_code", jdbcType = JdbcType.VARCHAR)
     private String appCode;
 
-    @TableField(value = "data_scope", jdbcType = JdbcType.TINYINT)
-    private Integer dataScope;
+    @TableField(value = "data_scope", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private DataScopeEnum dataScope;
 
-    @TableField(value = "status", jdbcType = JdbcType.TINYINT)
-    private Integer status;
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private EnableStatusEnum status;
 
     @TableField(exist = false)
     private String roleType;

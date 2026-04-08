@@ -1,11 +1,18 @@
 package com.zhanglx.sso.auth.mapper;
 
 import com.zhanglx.sso.auth.domain.po.PermissionPO;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
+import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.ResultType;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.mapping.ResultSetType;
 import org.apache.ibatis.session.ResultHandler;
@@ -28,9 +35,17 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
      *
      * @param handler MyBatis 流式结果处理器，每读取一行会回调一次
      */
+    @Results(id = "permissionPoResultMap", value = {
+            @Result(property = "isFrame", column = "is_frame", javaType = YesNoEnum.class,
+                    typeHandler = AutoEnumTypeHandler.class),
+            @Result(property = "type", column = "type", javaType = PermissionTypeEnum.class,
+                    typeHandler = AutoEnumTypeHandler.class),
+            @Result(property = "status", column = "status", javaType = EnableStatusEnum.class,
+                    typeHandler = AutoEnumTypeHandler.class)
+    })
     @Select("SELECT /*+ USE_INDEX(t_auth_permission idx_parent_display) */ " +
             "id, name, identification, parent_id, identity_lineage, com_path, path, " +
-            "icon_str, display_no, is_frame, type, remark, del_flag, create_by, create_time, update_by, update_time " +
+            "icon_str, display_no, is_frame, type, status, remark, del_flag, create_by, create_time, update_by, update_time " +
             "FROM t_auth_permission " +
             "WHERE del_flag = 0 " +
             "ORDER BY parent_id ASC, display_no ASC")
@@ -48,9 +63,10 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
      * @param permissionTypes 需要过滤的权限类型列表，可为空
      * @return 当前用户命中的权限列表
      */
+    @ResultMap("permissionPoResultMap")
     @Select("<script>" +
             "SELECT DISTINCT p.id, p.name, p.identification, p.parent_id, p.identity_lineage, " +
-            "       p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.remark " +
+            "       p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.status, p.remark " +
             "FROM t_auth_user_role urm " +
             "INNER JOIN t_auth_role_permission rpm ON urm.role_id = rpm.role_id " +
             "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
@@ -74,7 +90,7 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
             "</script>")
     List<PermissionPO> selectByUserWithIdentityAndType(@Param("userId") Long userId,
                                                        @Param("moduleIdentities") List<String> moduleIdentities,
-                                                       @Param("permissionTypes") List<String> permissionTypes);
+                                                       @Param("permissionTypes") List<PermissionTypeEnum> permissionTypes);
 
     /**
      * 根据角色 ID 查询角色已绑定的权限列表。
@@ -82,8 +98,9 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
      * @param roleId 角色 ID
      * @return 角色已绑定的权限列表
      */
+    @ResultMap("permissionPoResultMap")
     @Select("SELECT p.id, p.name, p.identification, p.parent_id, p.identity_lineage, " +
-            "p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.remark " +
+            "p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.status, p.remark " +
             "FROM t_auth_role_permission rpm " +
             "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
             "WHERE rpm.role_id = #{roleId} " +
@@ -100,8 +117,9 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
      * @param parentIdentity 父级权限标识
      * @return 子孙权限列表
      */
+    @ResultMap("permissionPoResultMap")
     @Select("SELECT id, name, identification, parent_id, identity_lineage, com_path, path, " +
-            "icon_str, display_no, is_frame, type, remark " +
+            "icon_str, display_no, is_frame, type, status, remark " +
             "FROM t_auth_permission " +
             "WHERE identity_lineage LIKE CONCAT(#{parentIdentity}, '%') " +
             "  AND del_flag = 0 " +

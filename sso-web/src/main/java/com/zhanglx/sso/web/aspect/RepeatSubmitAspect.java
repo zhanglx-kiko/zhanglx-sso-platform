@@ -1,11 +1,13 @@
-package com.zhanglx.sso.auth.aspect;
+package com.zhanglx.sso.web.aspect;
 
-import cn.dev33.satoken.stp.StpUtil;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
-import com.zhanglx.sso.auth.config.RepeatSubmitProperties;
-import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
+import com.zhanglx.sso.common.ResultCode;
 import com.zhanglx.sso.core.exception.BusinessException;
-import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.config.RepeatSubmitProperties;
+import com.zhanglx.sso.web.exception.WebRequestProtectionErrorCode;
+import com.zhanglx.sso.web.support.RequestIdentityAccessor;
+import com.zhanglx.sso.web.support.RequestProtectionStore;
+import com.zhanglx.sso.web.support.WebExpressionEvaluator;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,10 +19,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -42,9 +43,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @Aspect
@@ -53,11 +51,11 @@ import java.util.concurrent.ConcurrentMap;
 @RequiredArgsConstructor
 public class RepeatSubmitAspect {
 
-    private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
     private final RepeatSubmitProperties properties;
-
-    private final ConcurrentMap<String, Long> localLockCache = new ConcurrentHashMap<>();
+    private final RequestProtectionStore requestProtectionStore;
+    private final WebExpressionEvaluator webExpressionEvaluator;
+    private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Around("@annotation(repeatSubmit)")
     public Object around(ProceedingJoinPoint joinPoint, RepeatSubmit repeatSubmit) throws Throwable {
@@ -69,11 +67,23 @@ public class RepeatSubmitAspect {
         if (request == null) {
             return joinPoint.proceed();
         }
+        if (!webExpressionEvaluator.matchesCondition(repeatSubmit.condition(), joinPoint, request)) {
+            return joinPoint.proceed();
+        }
 
         Duration window = resolveWindow(repeatSubmit);
-        String lockKey = buildLockKey(joinPoint, request);
-        if (!tryAcquire(lockKey, request.getRequestURI(), window)) {
-            throw new BusinessException(AuthOperationErrorCode.REPEAT_SUBMIT);
+        String lockKey = buildLockKey(joinPoint, request, repeatSubmit);
+        boolean acquired = requestProtectionStore.tryAcquireRepeatSubmit(
+                lockKey,
+                window,
+                properties.isLocalFallbackEnabled()
+        );
+        if (!acquired) {
+            log.warn("repeat submit blocked, uri={}, actor={}, key={}",
+                    request.getRequestURI(),
+                    requestIdentityAccessor.resolveActorKey(request),
+                    lockKey);
+            throw repeatSubmitException(repeatSubmit);
         }
         return joinPoint.proceed();
     }
@@ -84,41 +94,21 @@ public class RepeatSubmitAspect {
     }
 
     private Duration resolveWindow(RepeatSubmit repeatSubmit) {
-        long seconds = repeatSubmit.windowSeconds() > 0
+        long seconds = repeatSubmit.windowSeconds() > 0L
                 ? repeatSubmit.windowSeconds()
                 : properties.getDefaultWindowSeconds();
         return Duration.ofSeconds(Math.max(1L, seconds));
     }
 
-    private boolean tryAcquire(String lockKey, String value, Duration window) {
-        try {
-            Boolean success = stringRedisTemplate.opsForValue().setIfAbsent(lockKey, value, window);
-            return Boolean.TRUE.equals(success);
-        } catch (Exception ex) {
-            log.warn("repeat submit redis unavailable, fallback to local cache, key={}", lockKey, ex);
-            return tryAcquireLocal(lockKey, window);
-        }
-    }
-
-    private boolean tryAcquireLocal(String lockKey, Duration window) {
-        long now = System.currentTimeMillis();
-        long expireAt = now + window.toMillis();
-        localLockCache.entrySet().removeIf(entry -> entry.getValue() <= now);
-        Long existingExpireAt = localLockCache.putIfAbsent(lockKey, expireAt);
-        if (existingExpireAt == null) {
-            return true;
-        }
-        return existingExpireAt <= now && localLockCache.replace(lockKey, existingExpireAt, expireAt);
-    }
-
-    private String buildLockKey(ProceedingJoinPoint joinPoint, HttpServletRequest request) {
-        String payload = buildCanonicalPayload(joinPoint);
+    private String buildLockKey(ProceedingJoinPoint joinPoint, HttpServletRequest request, RepeatSubmit repeatSubmit) {
+        String customKey = webExpressionEvaluator.evaluateAsString(repeatSubmit.key(), joinPoint, request);
+        String payload = StringUtils.hasText(customKey) ? customKey : buildCanonicalPayload(joinPoint);
         String fingerprint = DigestUtils.md5DigestAsHex(payload.getBytes(StandardCharsets.UTF_8));
         return String.join(":",
                 properties.getKeyPrefix(),
                 request.getMethod(),
                 request.getRequestURI(),
-                resolveActorKey(request),
+                requestIdentityAccessor.resolveActorKey(request),
                 fingerprint);
     }
 
@@ -154,9 +144,7 @@ public class RepeatSubmitAspect {
         }
         if (node.isObject()) {
             ObjectNode objectNode = objectMapper.createObjectNode();
-            List<String> fieldNames = new ArrayList<>();
-            fieldNames.addAll(node.propertyNames());
-            fieldNames.stream()
+            node.propertyNames().stream()
                     .sorted()
                     .forEach(fieldName -> objectNode.set(fieldName, canonicalize(node.get(fieldName))));
             return objectNode;
@@ -175,10 +163,10 @@ public class RepeatSubmitAspect {
         }
         return !(argument instanceof ServletRequest
                 || argument instanceof ServletResponse
+                || argument instanceof MultipartFile
                 || argument instanceof MultipartFile[]
                 || argument instanceof BindingResult
                 || argument instanceof Principal
-                || argument instanceof InputStreamSource
                 || argument instanceof Reader
                 || argument instanceof Writer
                 || argument instanceof InputStream
@@ -186,26 +174,16 @@ public class RepeatSubmitAspect {
                 || argument instanceof Locale);
     }
 
-    private String resolveActorKey(HttpServletRequest request) {
-        if (StpUtil.isLogin()) {
-            return "sys-" + Objects.toString(StpUtil.getLoginId(), "anonymous");
+    private BusinessException repeatSubmitException(RepeatSubmit repeatSubmit) {
+        if (StringUtils.hasText(repeatSubmit.messageKey())) {
+            return new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), repeatSubmit.messageKey().trim());
         }
-        if (StpMemberUtil.isLogin()) {
-            return "member-" + Objects.toString(StpMemberUtil.getLoginId(), "anonymous");
+        if (StringUtils.hasText(repeatSubmit.message())) {
+            return new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), repeatSubmit.message().trim());
         }
-        return "ip-" + resolveClientIp(request);
+        if (StringUtils.hasText(properties.getDefaultMessageKey())) {
+            return new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), properties.getDefaultMessageKey().trim());
+        }
+        return new BusinessException(WebRequestProtectionErrorCode.REPEAT_SUBMIT);
     }
-
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
-        }
-        return request.getRemoteAddr();
-    }
-
 }

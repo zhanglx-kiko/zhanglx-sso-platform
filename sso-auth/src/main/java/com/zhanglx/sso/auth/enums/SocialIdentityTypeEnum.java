@@ -6,6 +6,8 @@ import com.zhanglx.sso.core.enums.IStringBaseEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 @Getter
 @RequiredArgsConstructor
 public enum SocialIdentityTypeEnum implements IStringBaseEnum<String> {
@@ -22,4 +24,15 @@ public enum SocialIdentityTypeEnum implements IStringBaseEnum<String> {
         return IBaseEnum.fromCode(code, SocialIdentityTypeEnum.class);
     }
 
+    public boolean matches(Object value) {
+        if (value == null) {
+            return false;
+        }
+
+        if (value instanceof SocialIdentityTypeEnum identityTypeEnum) {
+            return this == identityTypeEnum;
+        }
+
+        return Objects.equals(code, String.valueOf(value)) || name().equalsIgnoreCase(String.valueOf(value));
+    }
 }

@@ -1,27 +1,38 @@
 package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
+import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
 import com.zhanglx.sso.auth.domain.dto.PermissionQueryDTO;
-import com.zhanglx.sso.auth.domain.dto.StatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
 import com.zhanglx.sso.auth.service.PermissionService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.web.annotation.RateLimitDimension;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @Validated
 @RequiredArgsConstructor
-@Tag(name = "权限管理", description = "B 端权限管理接口")
+@Tag(name = "权限管理", description = "后台权限管理接口")
 @RequestMapping("/apis/v1/auth/s/permissions")
 public class AuthPermissionManageController {
 
@@ -30,6 +41,7 @@ public class AuthPermissionManageController {
     @Operation(summary = "新增权限")
     @PostMapping
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:add")
     public PermissionDTO create(@RequestBody @Valid PermissionDTO dto) {
         dto.setId(null);
@@ -39,33 +51,36 @@ public class AuthPermissionManageController {
     @Operation(summary = "修改权限")
     @PutMapping("/{id}")
     @RepeatSubmit
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:edit")
     public PermissionDTO update(@PathVariable String id, @RequestBody @Valid PermissionDTO dto) {
-        return permissionService.updatePermission(RequestIdUtils.parseId(id, "权限ID"), dto);
+        return permissionService.updatePermission(RequestIdUtils.parseId(id, "permissionId"), dto);
     }
 
     @Operation(summary = "删除权限")
     @DeleteMapping("/{id}")
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:remove")
     public PermissionDTO delete(@PathVariable String id) {
-        return permissionService.delPermission(RequestIdUtils.parseId(id, "权限ID"));
+        return permissionService.delPermission(RequestIdUtils.parseId(id, "permissionId"));
     }
 
     @Operation(summary = "批量删除权限")
     @DeleteMapping
     @RepeatSubmit
+    @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:remove")
     public List<PermissionDTO> batchDelete(@RequestBody List<String> ids) {
         AssertUtils.notEmpty(ids, "权限 ID 列表不能为空");
-        return permissionService.batchDelPermission(RequestIdUtils.parseIds(ids, "权限ID"));
+        return permissionService.batchDelPermission(RequestIdUtils.parseIds(ids, "permissionId"));
     }
 
     @Operation(summary = "权限详情")
     @GetMapping("/{id}")
     @SaCheckPermission("permission:view")
     public PermissionDTO getById(@PathVariable String id) {
-        return permissionService.getPermission(RequestIdUtils.parseId(id, "权限ID"));
+        return permissionService.getPermission(RequestIdUtils.parseId(id, "permissionId"));
     }
 
     @Operation(summary = "查询权限树")
@@ -77,6 +92,7 @@ public class AuthPermissionManageController {
 
     @Operation(summary = "按标识查询权限")
     @PostMapping("/by-identification")
+    @RequestRateLimit(limit = 30, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:list")
     public List<PermissionVO> byIdentification(@RequestBody PermissionQueryDTO queryDTO) {
         return permissionService.selPermissionByIdentification(
@@ -89,8 +105,9 @@ public class AuthPermissionManageController {
     @Operation(summary = "更新权限状态")
     @PatchMapping("/{id}/status")
     @RepeatSubmit
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("permission:status")
-    public PermissionDTO updateStatus(@PathVariable String id, @RequestBody @Valid StatusUpdateDTO dto) {
-        return permissionService.updateStatus(RequestIdUtils.parseId(id, "权限ID"), dto.getStatus());
+    public PermissionDTO updateStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
+        return permissionService.updateStatus(RequestIdUtils.parseId(id, "permissionId"), dto.getStatus());
     }
 }

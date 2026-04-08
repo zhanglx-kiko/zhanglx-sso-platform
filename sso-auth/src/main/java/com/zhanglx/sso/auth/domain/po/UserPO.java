@@ -2,7 +2,12 @@ package com.zhanglx.sso.auth.domain.po;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.zhanglx.sso.auth.enums.GenderEnum;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.auth.enums.UserTypeEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.mybatis.domain.po.BasePO;
+import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,8 +35,8 @@ public class UserPO extends BasePO {
     @TableField(value = "password", jdbcType = JdbcType.VARCHAR)
     private String password;
 
-    @TableField(value = "user_type", jdbcType = JdbcType.TINYINT)
-    private Integer userType;
+    @TableField(value = "user_type", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private UserTypeEnum userType;
 
     @TableField(exist = false)
     private String openId;
@@ -45,8 +50,8 @@ public class UserPO extends BasePO {
     @TableField(value = "phone_number", jdbcType = JdbcType.VARCHAR)
     private String phoneNumber;
 
-    @TableField(value = "sex", jdbcType = JdbcType.TINYINT)
-    private Integer sex;
+    @TableField(value = "sex", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private GenderEnum sex;
 
     @TableField(exist = false)
     private LocalDate birthday;
@@ -54,8 +59,8 @@ public class UserPO extends BasePO {
     @TableField(value = "email", jdbcType = JdbcType.VARCHAR)
     private String email;
 
-    @TableField(value = "allow_concurrent_login", jdbcType = JdbcType.TINYINT)
-    private Integer allowConcurrentLogin;
+    @TableField(value = "allow_concurrent_login", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private YesNoEnum allowConcurrentLogin;
 
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;
@@ -63,8 +68,8 @@ public class UserPO extends BasePO {
     /**
      * 状态：1-正常，0-禁用
      */
-    @TableField(value = "status", jdbcType = JdbcType.TINYINT)
-    private Integer status;
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private UserStatusEnum status;
 
     @TableField(exist = false)
     private Integer userLevel;

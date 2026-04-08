@@ -84,7 +84,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         MemberUserPO memberUserPO = MemberUserPO.builder()
                 .phoneNumber(memberRegisterDTO.getPhoneNumber())
                 .password(argon2PasswordEncoder.encodeAsyncWithTimeout(memberRegisterDTO.getPassword()))
-                .status(UserStatusEnum.NORMAL.getCode())
+                .status(UserStatusEnum.NORMAL)
                 .build();
         memberUserMapper.insert(memberUserPO);
 

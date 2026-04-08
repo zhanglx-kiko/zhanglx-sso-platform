@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -23,5 +24,5 @@ public class ConfigQueryDTO extends PageQuery {
     private String configKey;
 
     @Schema(description = "是否系统内置：1-是，0-否")
-    private Integer configType;
+    private ConfigTypeEnum configType;
 }

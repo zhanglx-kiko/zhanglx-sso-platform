@@ -48,7 +48,7 @@ public class PostServiceImpl implements PostService {
             po.setSortNum(0);
         }
         if (po.getStatus() == null) {
-            po.setStatus(EnableStatusEnum.ENABLED.getCode());
+            po.setStatus(EnableStatusEnum.ENABLED);
         }
         postMapper.insert(po);
         return ISystemManageMapper.INSTANCE.toDTO(po);
@@ -110,7 +110,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PostDTO updateStatus(Long id, Integer status) {
+    public PostDTO updateStatus(Long id, EnableStatusEnum status) {
         PostPO exist = getPostOrThrow(id);
         exist.setStatus(status);
         postMapper.updateById(exist);

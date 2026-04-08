@@ -1,5 +1,8 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import com.zhanglx.sso.core.domain.tree.TreeNode;
@@ -83,14 +86,14 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
      */
     @Builder.Default
     @Schema(description = "是否为外链，1 是，0 否", name = "isFrame", example = "0", type = "Integer", defaultValue = "0", allowableValues = {"1", "0"}, requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Integer isFrame = 0;
+    private YesNoEnum isFrame = YesNoEnum.NO;
 
     /**
      * 类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口。
      */
     @NotNull(message = "类型不能为空")
     @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", allowableValues = {"-1", "0", "1", "2", "3"}, type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Integer type;
+    private PermissionTypeEnum type;
 
     /**
      * 备注。
@@ -106,5 +109,5 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
     private List<PermissionDTO> children = new ArrayList<>();
 
     @Schema(description = "状态", name = "status", example = "1", type = "Integer", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Integer status;
+    private EnableStatusEnum status;
 }

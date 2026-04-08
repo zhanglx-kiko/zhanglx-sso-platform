@@ -2,16 +2,18 @@ package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
-import com.zhanglx.sso.auth.domain.dto.StatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.dto.UserBaseDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
+import com.zhanglx.sso.auth.domain.dto.UserStatusUpdateDTO;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.web.annotation.RateLimitDimension;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,45 +34,49 @@ import java.util.List;
 @RestController
 @Validated
 @RequiredArgsConstructor
-@Tag(name = "User Management", description = "Admin user management APIs")
+@Tag(name = "用户管理", description = "后台用户管理接口")
 @RequestMapping("/apis/v1/auth/s/users")
 public class AuthUserManageController {
 
     private final UserService userService;
     private final AuthOperationGuard authOperationGuard;
 
-    @Operation(summary = "Create user")
+    @Operation(summary = "新增用户")
     @PostMapping
     @RepeatSubmit
     @SaCheckPermission("user:add")
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public void create(@RequestBody @Valid UserDTO dto) {
         dto.setId(null);
         userService.addUser(dto);
     }
 
-    @Operation(summary = "Update user")
+    @Operation(summary = "修改用户")
     @PutMapping("/{userId}")
     @RepeatSubmit
     @SaCheckPermission("user:edit")
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public void update(@PathVariable String userId, @RequestBody @Valid UserBaseDTO dto) {
         dto.setId(RequestIdUtils.parseId(userId, "userId"));
         userService.updateUserInfo(dto);
     }
 
-    @Operation(summary = "Delete user")
+    @Operation(summary = "删除用户")
     @DeleteMapping("/{userId}")
     @RepeatSubmit
     @SaCheckPermission("user:remove")
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public void delete(@PathVariable String userId) {
         Long parsedUserId = RequestIdUtils.parseId(userId, "userId");
         authOperationGuard.checkDeleteUserNotSelf(parsedUserId);
         userService.removeUserById(parsedUserId);
     }
 
-    @Operation(summary = "Batch delete users")
+    @Operation(summary = "批量删除用户")
     @DeleteMapping
     @RepeatSubmit
     @SaCheckPermission("user:batch-remove")
+    @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public void batchDelete(@RequestBody List<String> userIds) {
         AssertUtils.notEmpty(userIds, "userIds cannot be empty");
         List<Long> parsedUserIds = RequestIdUtils.parseIds(userIds, "userId");
@@ -78,25 +84,27 @@ public class AuthUserManageController {
         userService.batchRemoveUsers(parsedUserIds);
     }
 
-    @Operation(summary = "Get user detail")
+    @Operation(summary = "用户详情")
     @GetMapping("/{userId}")
     @SaCheckPermission("user:view")
     public UserDTO getById(@PathVariable String userId) {
         return userService.getUserDetail(RequestIdUtils.parseId(userId, "userId"));
     }
 
-    @Operation(summary = "Page query users")
+    @Operation(summary = "分页查询用户")
     @PostMapping("/page")
     @SaCheckPermission("user:list")
+    @RequestRateLimit(limit = 60, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public Page<UserDTO> pageQuery(@RequestBody UserPageQueryDTO queryDTO) {
         return userService.pageQuery(queryDTO);
     }
 
-    @Operation(summary = "Update user status")
+    @Operation(summary = "更新用户状态")
     @PatchMapping("/{userId}/status")
     @RepeatSubmit
     @SaCheckPermission("user:status")
-    public void updateStatus(@PathVariable String userId, @RequestBody @Valid StatusUpdateDTO dto) {
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    public void updateStatus(@PathVariable String userId, @RequestBody @Valid UserStatusUpdateDTO dto) {
         Long parsedUserId = RequestIdUtils.parseId(userId, "userId");
         if (UserStatusEnum.DISABLED.matches(dto.getStatus())) {
             authOperationGuard.checkDisableUserNotSelf(parsedUserId);

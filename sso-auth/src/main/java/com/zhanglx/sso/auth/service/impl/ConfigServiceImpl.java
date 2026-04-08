@@ -28,7 +28,7 @@ public class ConfigServiceImpl implements ConfigService {
         validateKeyUnique(dto.getConfigKey(), null);
         ConfigPO po = ISystemManageMapper.INSTANCE.toPO(dto);
         if (po.getConfigType() == null) {
-            po.setConfigType(ConfigTypeEnum.CUSTOM.getCode());
+            po.setConfigType(ConfigTypeEnum.CUSTOM);
         }
         configMapper.insert(po);
         return ISystemManageMapper.INSTANCE.toDTO(po);

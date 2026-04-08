@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.domain.vo;
 
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.core.domain.vo.BaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class MemberInfoVO extends BaseVO {
     private Boolean phoneBound;
 
     @Schema(description = "状态", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer status;
+    private UserStatusEnum status;
 
     @Schema(description = "注册 IP", accessMode = Schema.AccessMode.READ_ONLY)
     private String registerIp;

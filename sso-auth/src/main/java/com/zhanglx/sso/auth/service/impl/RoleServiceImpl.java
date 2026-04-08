@@ -71,10 +71,10 @@ public class RoleServiceImpl implements RoleService {
         RolePO role = IRoleMapper.INSTANCE.toPO(roleDTO);
         role.setAppCode(appCode);
         if (role.getDataScope() == null) {
-            role.setDataScope(DataScopeEnum.ALL.getCode());
+            role.setDataScope(DataScopeEnum.ALL);
         }
         if (role.getStatus() == null) {
-            role.setStatus(EnableStatusEnum.ENABLED.getCode());
+            role.setStatus(EnableStatusEnum.ENABLED);
         }
         roleMapper.insert(role);
         return IRoleMapper.INSTANCE.toDTO(role);
@@ -305,7 +305,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleDTO updateStatus(Long roleId, Integer status) {
+    public RoleDTO updateStatus(Long roleId, EnableStatusEnum status) {
         RolePO role = roleMapper.selectById(roleId);
         AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
         if (EnableStatusEnum.isDisabled(status)) {

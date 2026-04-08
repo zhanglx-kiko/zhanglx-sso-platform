@@ -1,7 +1,6 @@
 package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
 import com.zhanglx.sso.auth.domain.dto.AppDTO;
 import com.zhanglx.sso.auth.domain.dto.DeptDTO;
 import com.zhanglx.sso.auth.domain.dto.PostDTO;
@@ -9,6 +8,9 @@ import com.zhanglx.sso.auth.service.AppService;
 import com.zhanglx.sso.auth.service.DeptService;
 import com.zhanglx.sso.auth.service.PostService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.web.annotation.RateLimitDimension;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ public class AuthAssignmentController {
     @Operation(summary = "绑定用户应用")
     @PutMapping("/users/{userId}/apps")
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("user:assign-app")
     public List<AppDTO> bindUserApps(@PathVariable String userId, @RequestBody List<String> appCodes) {
         return appService.bindUserApps(RequestIdUtils.parseId(userId, "用户ID"), appCodes);
@@ -51,6 +54,7 @@ public class AuthAssignmentController {
     @Operation(summary = "绑定用户岗位")
     @PutMapping("/users/{userId}/posts")
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("user:assign-post")
     public List<PostDTO> bindUserPosts(@PathVariable String userId, @RequestBody List<String> postIds) {
         return postService.bindUserPosts(
@@ -69,6 +73,7 @@ public class AuthAssignmentController {
     @Operation(summary = "绑定角色数据范围部门")
     @PutMapping("/roles/{roleId}/depts")
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("role:assign-dept")
     public List<DeptDTO> bindRoleDepts(@PathVariable String roleId, @RequestBody List<String> deptIds) {
         return deptService.bindRoleDepts(

@@ -49,10 +49,10 @@ public class AppServiceImpl implements AppService {
 
         AppPO po = ISystemManageMapper.INSTANCE.toPO(appDTO);
         if (po.getStatus() == null) {
-            po.setStatus(EnableStatusEnum.ENABLED.getCode());
+            po.setStatus(EnableStatusEnum.ENABLED);
         }
         if (po.getUserType() == null) {
-            po.setUserType(UserTypeEnum.SYSTEM.getCode());
+            po.setUserType(UserTypeEnum.SYSTEM);
         }
         appMapper.insert(po);
         return ISystemManageMapper.INSTANCE.toDTO(po);
@@ -118,7 +118,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AppDTO updateStatus(Long id, Integer status) {
+    public AppDTO updateStatus(Long id, EnableStatusEnum status) {
         AppPO exist = getAppOrThrow(id);
         exist.setStatus(status);
         appMapper.updateById(exist);

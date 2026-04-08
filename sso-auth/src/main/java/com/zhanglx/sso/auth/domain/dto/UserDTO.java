@@ -1,6 +1,7 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,6 @@ public class UserDTO extends UserBaseDTO {
     private String deptName;
 
     @Schema(description = "状态", name = "status", example = "0禁用, 1正常", defaultValue = "1", allowableValues = {"0", "1"}, type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
-    private Integer status;
+    private UserStatusEnum status;
 
 }

@@ -1,9 +1,9 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.UserTypeEnum;
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,15 +27,11 @@ public class AppDTO extends BaseDTO {
     @Schema(description = "应用名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appName;
 
-    @Min(value = 0, message = "状态只能为 0 或 1")
-    @Max(value = 1, message = "状态只能为 0 或 1")
-    @Schema(description = "状态：1-启用，0-停用")
-    private Integer status;
+    @Schema(description = "启停状态")
+    private EnableStatusEnum status;
 
-    @Min(value = 1, message = "用户类型只能为 1 或 2")
-    @Max(value = 2, message = "用户类型只能为 1 或 2")
-    @Schema(description = "用户类型：1-系统用户，2-会员用户")
-    private Integer userType;
+    @Schema(description = "用户类型")
+    private UserTypeEnum userType;
 
     @Schema(description = "备注")
     private String remark;

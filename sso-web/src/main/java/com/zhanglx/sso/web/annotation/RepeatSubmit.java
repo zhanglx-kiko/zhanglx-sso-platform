@@ -1,4 +1,4 @@
-package com.zhanglx.sso.auth.annotation;
+package com.zhanglx.sso.web.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -13,4 +13,11 @@ public @interface RepeatSubmit {
 
     long windowSeconds() default -1L;
 
+    String key() default "";
+
+    String condition() default "";
+
+    String message() default "";
+
+    String messageKey() default "";
 }

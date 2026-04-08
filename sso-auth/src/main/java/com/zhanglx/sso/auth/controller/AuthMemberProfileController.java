@@ -1,12 +1,14 @@
 package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
 import com.zhanglx.sso.auth.domain.dto.MemberBindPhoneDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
 import com.zhanglx.sso.auth.service.MemberUserService;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.web.annotation.RateLimitDimension;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ public class AuthMemberProfileController {
     @Operation(summary = "查询当前会员信息")
     @GetMapping("/current")
     @SaCheckLogin(type = StpMemberUtil.TYPE)
+    @RequestRateLimit(limit = 60, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public MemberInfoVO current() {
         return memberUserService.getCurrentMemberInfo(StpMemberUtil.getLoginIdAsLong());
     }
@@ -34,6 +37,7 @@ public class AuthMemberProfileController {
     @PutMapping("/current")
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public MemberInfoVO update(@RequestBody @Valid MemberUpdateDTO dto) {
         return memberUserService.updateCurrentMember(StpMemberUtil.getLoginIdAsLong(), dto);
     }
@@ -42,6 +46,7 @@ public class AuthMemberProfileController {
     @PostMapping("/current/bind-phone")
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
+    @RequestRateLimit(limit = 3, windowSeconds = 300, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI}, customKey = "#dto.phoneNumber")
     public MemberInfoVO bindPhone(@RequestBody @Valid MemberBindPhoneDTO dto) {
         return memberUserService.bindPhone(StpMemberUtil.getLoginIdAsLong(), dto);
     }
@@ -50,6 +55,7 @@ public class AuthMemberProfileController {
     @DeleteMapping("/current")
     @RepeatSubmit
     @SaCheckLogin(type = StpMemberUtil.TYPE)
+    @RequestRateLimit(limit = 2, windowSeconds = 300, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     public void cancel() {
         memberUserService.cancelCurrentMember(StpMemberUtil.getLoginIdAsLong());
     }

@@ -56,7 +56,7 @@ public class DeptServiceImpl implements DeptService {
             po.setSortNum(0);
         }
         if (po.getStatus() == null) {
-            po.setStatus(EnableStatusEnum.ENABLED.getCode());
+            po.setStatus(EnableStatusEnum.ENABLED);
         }
         deptMapper.insert(po);
         return ISystemManageMapper.INSTANCE.toDTO(po);
@@ -129,8 +129,9 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     public List<DeptDTO> treeQuery(String deptName, Integer status) {
+        EnableStatusEnum statusEnum = EnableStatusEnum.fromCode(status);
         List<DeptPO> all = deptMapper.selectList(new LambdaQueryWrapperX<DeptPO>()
-                .eqIfPresent(DeptPO::getStatus, status)
+                .eqIfPresent(DeptPO::getStatus, statusEnum)
                 .orderByAsc(DeptPO::getSortNum)
                 .orderByDesc(DeptPO::getCreateTime));
         List<DeptDTO> allDtos = ISystemManageMapper.INSTANCE.toDeptDTOList(all);
@@ -151,7 +152,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DeptDTO updateStatus(Long id, Integer status) {
+    public DeptDTO updateStatus(Long id, EnableStatusEnum status) {
         DeptPO exist = getDeptOrThrow(id);
         if (EnableStatusEnum.isEnabled(status) && exist.getParentId() != null && exist.getParentId() > 0) {
             DeptPO parent = getDeptOrThrow(exist.getParentId());
@@ -168,7 +169,7 @@ public class DeptServiceImpl implements DeptService {
                             && (item.getAncestors().equals(currentPath) || item.getAncestors().startsWith(currentPath + ",")))
                     .toList();
             for (DeptPO child : children) {
-                child.setStatus(EnableStatusEnum.DISABLED.getCode());
+                child.setStatus(EnableStatusEnum.DISABLED);
                 deptMapper.updateById(child);
             }
         }

@@ -6,29 +6,34 @@ spring:
     active: dev
   application:
     name: sso-auth
+  main:
+    allow-bean-definition-overriding: true
+  threads:
+    virtual:
+      enabled: true
   messages:
     # 逗号分隔所有的 basename
     basename: i18n/common,i18n/auth-messages,i18n/sso-messages
     encoding: UTF-8
-  # Redis 配置 (请修改为你的实际地址)
+  # Redis 配置
   data:
     redis:
       host: 192.168.3.131
       port: 6379
       database: 0
       password: P@ssw0rd!23  # 替换为你的Redis密码（空密码则注释）
-      timeout: 5000ms          # Redis连接超时
+      timeout: 5s          # Redis连接超时
       # 连接池配置（必加，提升Redis连接效率）
       lettuce:
         pool:
           max-active: 8        # 最大连接数
           max-idle: 8          # 最大空闲连接
           min-idle: 2          # 最小空闲连接
-          max-wait: 1000ms     # 连接等待超时
+          max-wait: 1s     # 连接等待超时
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # rewriteBatchedStatements=true 批处理
-    url: jdbc:mysql://192.168.3.131:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    url: jdbc:mysql://192.168.3.131:3306/sso_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&tinyInt1isBit=false&transformedBitIsBoolean=false
     username: root
     password: P@ssw0rd!23
     # HikariCP 连接池配置优化 (JDK 25 虚拟线程下高并发优化)
@@ -39,22 +44,10 @@ spring:
       pool-name: SsoHikariCP
       max-lifetime: 1800000
       connection-timeout: 5000
-  #sql:
-    #init:
-      #schema-locations: classpath:db/schema-h2.sql
-      #data-locations: classpath:db/data-h2.sql
-  # 全局启用虚拟线程支持（Spring Boot4.0+ 核心配置）
-  threads:
-    virtual:
-      enabled: true
   web:
     error:
       include-message: always  # 显示错误信息
       include-binding-errors: always  # 显示参数校验错误信息
-  main:
-    allow-bean-definition-overriding: true
-
-# Flyway 配置
 flyway:
   enabled: false
   baseline-on-migrate: true
@@ -71,17 +64,17 @@ logging:
     com.zhanglx.sso: DEBUG
     com.baomidou.mybatisplus: DEBUG
     org.mybatis: DEBUG
-    org.springframework.boot: DEBUG
-    org.springframework.context: DEBUG
 
 # MyBatis Plus 配置
 mybatis-plus:
   #mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.zhanglx.sso.auth.domain.po
   configuration:
-    map-underscore-to-camel-case: true # 开启下划线转驼峰
+    # 开启下划线转驼峰
+    map-underscore-to-camel-case: true
     auto-mapping-behavior: FULL
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开发环境开启SQL日志
+    # 开发环境开启SQL日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       # 【核心修改】改为 NOT_NULL，防止 updateById 时将未赋值的字段强行覆盖为 NULL
@@ -129,10 +122,8 @@ member:
 # Argon2加密配置
 security:
   argon2:
-    # 单次哈希最大耗时（高并发建议300-500ms，平衡安全和性能）
-    max-hash-time-ms: 500
-    # 初始内存（log2值，16=65536KB，即64MB）
-    initial-memory: 16
+    # 内存开销（单位：KiB，65536 = 64MB）
+    memory: 65536
     # 并行度（建议等于CPU核心数）
     parallelism: 4
     # 哈希输出长度（字节）
@@ -184,8 +175,35 @@ knife4j:
 
 
 sso:
+  client-ip:
+    forwarded-for-header: X-Forwarded-For
+    real-ip-header: X-Real-IP
+    tenant-header: X-Tenant-Id
+    trusted-proxies:
+      - 127.0.0.1/32
+      - ::1/128
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
   repeat-submit:
     enabled: true
     default-window-seconds: 5
     key-prefix: sso:repeat-submit
-
+    default-message-key: repeat.submit
+    local-fallback-enabled: true
+  rate-limit:
+    enabled: true
+    default-limit: 60
+    default-window-seconds: 60
+    key-prefix: sso:rate-limit
+    default-message-key: request.rate.limit.exceeded
+    local-fallback-enabled: true
+    write-response-headers: true
+    whitelist-ips:
+      - 127.0.0.1
+      - ::1
+    whitelist-paths:
+      - /actuator/health
+      - /swagger-ui.html
+      - /doc.html
+      - /v3/api-docs

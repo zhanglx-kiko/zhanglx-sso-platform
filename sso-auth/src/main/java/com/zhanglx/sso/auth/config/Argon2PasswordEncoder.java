@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,7 +47,7 @@ public class Argon2PasswordEncoder {
     private ExecutorService cryptoExecutor;
 
     // 配置项（从配置中心或 application.yml 读取，确保集群一致）
-    @Value("${security.argon2.memory:16}")
+    @Value("${security.argon2.memory:65536}")
     private int memory;
     @Value("${security.argon2.iterations:3}")
     private int iterations;
@@ -93,12 +94,24 @@ public class Argon2PasswordEncoder {
     /**
      * 加密密码（同步）
      */
+    /**
+     * 加密密码（同步）
+     */
     public String encode(CharSequence rawPassword) {
         Assert.notNull(rawPassword, "original.password.cannot.be.blank");
         try {
+            // 1. 生成纯净的随机二进制盐
             byte[] saltBytes = SaltGenerator.generate(saltLength);
-            String saltStr = new String(saltBytes, StandardCharsets.UTF_8);
-            Hash hashResult = argon2Function.hash(rawPassword, saltStr, pepper);
+
+            // 2. 将密码也转为安全的 byte[]，避免 String 常驻内存池
+            byte[] passwordBytes = rawPassword.toString().getBytes(StandardCharsets.UTF_8);
+
+            // 3. 直接调用全 byte[] 参数的底层重载方法！
+            Hash hashResult = argon2Function.hash(passwordBytes, saltBytes, pepper);
+
+            // 4. 用完立刻清空内存中的密码字节数组（增强安全性）
+            Arrays.fill(passwordBytes, (byte) 0);
+
             return hashResult.getResult();
         } catch (Exception e) {
             log.error("Argon2加密失败", e);

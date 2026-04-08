@@ -1,10 +1,10 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,10 +31,9 @@ public class ConfigDTO extends BaseDTO {
     @Schema(description = "参数值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String configValue;
 
-    @Min(value = 0, message = "内置标记只能为 0 或 1")
-    @Max(value = 1, message = "内置标记只能为 0 或 1")
-    @Schema(description = "是否系统内置：1-是，0-否")
-    private Integer configType;
+    @NotNull(message = "参数类型不能为空")
+    @Schema(description = "参数类型")
+    private ConfigTypeEnum configType;
 
     @Schema(description = "备注")
     private String remark;

@@ -2,25 +2,36 @@ package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zhanglx.sso.auth.annotation.RepeatSubmit;
 import com.zhanglx.sso.auth.domain.dto.DeptDTO;
 import com.zhanglx.sso.auth.domain.dto.DeptQueryDTO;
-import com.zhanglx.sso.auth.domain.dto.StatusUpdateDTO;
+import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.service.DeptService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
+import com.zhanglx.sso.web.annotation.RateLimitDimension;
+import com.zhanglx.sso.web.annotation.RepeatSubmit;
+import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @Validated
 @RequiredArgsConstructor
-@Tag(name = "部门管理", description = "B 端部门树与数据范围管理接口")
+@Tag(name = "部门管理", description = "后台部门管理接口")
 @RequestMapping("/apis/v1/auth/s/depts")
 public class AuthDeptController {
 
@@ -29,6 +40,7 @@ public class AuthDeptController {
     @Operation(summary = "新增部门")
     @PostMapping
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:add")
     public DeptDTO create(@RequestBody @Valid DeptDTO dto) {
         dto.setId(null);
@@ -38,28 +50,31 @@ public class AuthDeptController {
     @Operation(summary = "修改部门")
     @PutMapping("/{id}")
     @RepeatSubmit
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:edit")
     public DeptDTO update(@PathVariable String id, @RequestBody @Valid DeptDTO dto) {
-        return deptService.update(RequestIdUtils.parseId(id, "部门ID"), dto);
+        return deptService.update(RequestIdUtils.parseId(id, "deptId"), dto);
     }
 
     @Operation(summary = "删除部门")
     @DeleteMapping("/{id}")
     @RepeatSubmit
+    @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:remove")
     public void delete(@PathVariable String id) {
-        deptService.delete(RequestIdUtils.parseId(id, "部门ID"));
+        deptService.delete(RequestIdUtils.parseId(id, "deptId"));
     }
 
     @Operation(summary = "部门详情")
     @GetMapping("/{id}")
     @SaCheckPermission("dept:view")
     public DeptDTO getById(@PathVariable String id) {
-        return deptService.getById(RequestIdUtils.parseId(id, "部门ID"));
+        return deptService.getById(RequestIdUtils.parseId(id, "deptId"));
     }
 
     @Operation(summary = "分页查询部门")
     @PostMapping("/page")
+    @RequestRateLimit(limit = 60, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:list")
     public Page<DeptDTO> pageQuery(@RequestBody DeptQueryDTO queryDTO) {
         return deptService.pageQuery(queryDTO);
@@ -76,8 +91,9 @@ public class AuthDeptController {
     @Operation(summary = "更新部门状态")
     @PatchMapping("/{id}/status")
     @RepeatSubmit
+    @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dept:status")
-    public DeptDTO updateStatus(@PathVariable String id, @RequestBody @Valid StatusUpdateDTO dto) {
-        return deptService.updateStatus(RequestIdUtils.parseId(id, "部门ID"), dto.getStatus());
+    public DeptDTO updateStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
+        return deptService.updateStatus(RequestIdUtils.parseId(id, "deptId"), dto.getStatus());
     }
 }

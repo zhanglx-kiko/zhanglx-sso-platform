@@ -1,7 +1,5 @@
 package com.zhanglx.sso.gateway.filter;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.zhanglx.sso.common.ResultCode;
 import com.zhanglx.sso.common.result.Result;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -39,7 +39,6 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
                 if (getStatusCode() == null || !getStatusCode().isError()) {
                     return super.writeWith(body);
                 }
-
                 return Flux.from(body)
                         .collectList()
                         .flatMap(dataBuffers -> rewriteErrorBody(getDelegate(), currentStatusCode(), dataBuffers));
@@ -55,7 +54,6 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
                 if (getStatusCode() == null || !getStatusCode().isError() || isCommitted()) {
                     return super.setComplete();
                 }
-
                 return writeNormalizedError(getDelegate(), currentStatusCode(), extractErrorMessage(null, currentStatusCode()));
             }
 
@@ -70,24 +68,21 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
     private Mono<Void> rewriteErrorBody(ServerHttpResponse targetResponse, int statusCode, List<? extends DataBuffer> dataBuffers) {
         byte[] originalBytes = readBodyBytes(dataBuffers);
         String originalBody = new String(originalBytes, StandardCharsets.UTF_8);
-
         if (isStandardResultBody(originalBody)) {
             targetResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
             return writeBytes(targetResponse, originalBytes);
         }
-
         return writeNormalizedError(targetResponse, statusCode, extractErrorMessage(originalBody, statusCode));
     }
 
     private Mono<Void> writeNormalizedError(ServerHttpResponse targetResponse, int statusCode, String message) {
         Result<Void> normalized = Result.error(statusCode, message);
-
         try {
             byte[] normalizedBytes = objectMapper.writeValueAsBytes(normalized);
             targetResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
             return writeBytes(targetResponse, normalizedBytes);
         } catch (Exception e) {
-            log.error("网关统一错误响应构造失败", e);
+            log.error("gateway normalized error response build failed", e);
             return targetResponse.setComplete();
         }
     }
@@ -114,7 +109,6 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
         if (body == null || body.isBlank()) {
             return false;
         }
-
         try {
             JsonNode jsonNode = objectMapper.readTree(body);
             return jsonNode.isObject() && jsonNode.has("code") && jsonNode.has("msg") && jsonNode.has("data");
@@ -140,7 +134,7 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
                     return jsonNode.get("detail").asText();
                 }
             } catch (Exception e) {
-                log.debug("网关错误响应不是JSON，直接回退默认消息");
+                log.debug("gateway error body is not json, fallback to status message");
             }
         }
 
@@ -164,6 +158,4 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
     public int getOrder() {
         return -1;
     }
-
 }
-

@@ -1,9 +1,14 @@
 package com.zhanglx.sso.auth.mapper;
 
 import com.zhanglx.sso.auth.domain.po.RolePO;
+import com.zhanglx.sso.auth.enums.DataScopeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
+import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -23,6 +28,12 @@ public interface RoleMapper extends IBaseMapperX<RolePO> {
      * @param userAccount 用户账号
      * @return 当前账号绑定的角色列表
      */
+    @Results(id = "rolePoResultMap", value = {
+            @Result(property = "dataScope", column = "data_scope", javaType = DataScopeEnum.class,
+                    typeHandler = AutoEnumTypeHandler.class),
+            @Result(property = "status", column = "status", javaType = EnableStatusEnum.class,
+                    typeHandler = AutoEnumTypeHandler.class)
+    })
     @Select("SELECT r.id, r.app_code, r.role_name, r.role_code, r.data_scope, r.status, r.remark, " +
             "r.create_by, r.create_time, r.update_by, r.update_time " +
             "FROM t_sys_user u " +

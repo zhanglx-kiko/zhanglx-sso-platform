@@ -83,13 +83,13 @@ public class UserServiceImpl implements UserService {
         userMapper.insert(userPO);
 
         SysUserSocialPO existSocial = sysUserSocialMapper.selectOne(
-                SysUserSocialPO::getIdentityType, SocialIdentityTypeEnum.WECHAT_OPEN.getCode(),
+                SysUserSocialPO::getIdentityType, SocialIdentityTypeEnum.WECHAT_OPEN,
                 SysUserSocialPO::getIdentifier, openId
         );
         if (existSocial == null) {
             SysUserSocialPO userSocialPO = SysUserSocialPO.builder()
                     .userId(userPO.getId())
-                    .identityType(SocialIdentityTypeEnum.WECHAT_OPEN.getCode())
+                    .identityType(SocialIdentityTypeEnum.WECHAT_OPEN)
                     .identifier(openId)
                     .build();
             sysUserSocialMapper.insert(userSocialPO);
@@ -198,7 +198,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserByOpenId(String openId) {
         AssertUtils.notBlank(openId, "user.openId.cannot.be.blank");
         SysUserSocialPO userSocialPO = sysUserSocialMapper.selectOne(
-                SysUserSocialPO::getIdentityType, SocialIdentityTypeEnum.WECHAT_OPEN.getCode(),
+                SysUserSocialPO::getIdentityType, SocialIdentityTypeEnum.WECHAT_OPEN,
                 SysUserSocialPO::getIdentifier, openId
         );
         if (userSocialPO == null) {
@@ -227,7 +227,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateStatus(Long userId, Integer status) {
+    public void updateStatus(Long userId, UserStatusEnum status) {
         if (UserStatusEnum.DISABLED.matches(status)) {
             authOperationGuard.checkDisableUserNotSelf(userId);
         }
@@ -247,13 +247,13 @@ public class UserServiceImpl implements UserService {
         userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword));
 
         if (userPO.getStatus() == null) {
-            userPO.setStatus(UserStatusEnum.NORMAL.getCode());
+            userPO.setStatus(UserStatusEnum.NORMAL);
         }
         if (userPO.getAllowConcurrentLogin() == null) {
-            userPO.setAllowConcurrentLogin(YesNoEnum.YES.getCode());
+            userPO.setAllowConcurrentLogin(YesNoEnum.YES);
         }
         if (userPO.getUserType() == null) {
-            userPO.setUserType(userType.getCode());
+            userPO.setUserType(userType);
         }
     }
 

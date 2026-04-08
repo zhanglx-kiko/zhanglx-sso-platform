@@ -2,6 +2,8 @@ package com.zhanglx.sso.auth.service;
 
 import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
 
 import java.util.List;
 
@@ -92,7 +94,7 @@ public interface PermissionService {
      * @param permissionTypes 权限项类型列表（可为空，不过滤）
      * @return List<PermissionVO> 以传入权限项分组的权限项列表
      */
-    List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<String> permissionTypes);
+    List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<PermissionTypeEnum> permissionTypes);
 
     /**
      * 根据角色 id 查询已绑定的权限项列表
@@ -175,6 +177,6 @@ public interface PermissionService {
 
     PermissionDTO getPermission(Long id);
 
-    PermissionDTO updateStatus(Long id, Integer status);
+    PermissionDTO updateStatus(Long id, EnableStatusEnum status);
 
 }

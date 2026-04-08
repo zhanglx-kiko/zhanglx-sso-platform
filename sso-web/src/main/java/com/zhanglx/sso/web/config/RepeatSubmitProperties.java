@@ -1,4 +1,4 @@
-package com.zhanglx.sso.auth.config;
+package com.zhanglx.sso.web.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,4 +15,7 @@ public class RepeatSubmitProperties {
 
     private String keyPrefix = "sso:repeat-submit";
 
+    private String defaultMessageKey = "repeat.submit";
+
+    private boolean localFallbackEnabled = true;
 }

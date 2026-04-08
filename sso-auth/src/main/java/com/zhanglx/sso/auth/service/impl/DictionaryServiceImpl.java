@@ -36,7 +36,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         validateTypeUnique(dto.getDictType(), null);
         DictTypePO po = ISystemManageMapper.INSTANCE.toPO(dto);
         if (po.getStatus() == null) {
-            po.setStatus(EnableStatusEnum.ENABLED.getCode());
+            po.setStatus(EnableStatusEnum.ENABLED);
         }
         dictTypeMapper.insert(po);
         return ISystemManageMapper.INSTANCE.toDTO(po);
@@ -106,7 +106,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DictTypeDTO updateTypeStatus(Long id, Integer status) {
+    public DictTypeDTO updateTypeStatus(Long id, EnableStatusEnum status) {
         DictTypePO exist = getTypeOrThrow(id);
         exist.setStatus(status);
         dictTypeMapper.updateById(exist);
@@ -132,7 +132,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             po.setDictSort(0);
         }
         if (po.getStatus() == null) {
-            po.setStatus(EnableStatusEnum.ENABLED.getCode());
+            po.setStatus(EnableStatusEnum.ENABLED);
         }
         dictDataMapper.insert(po);
         return ISystemManageMapper.INSTANCE.toDTO(po);
@@ -197,7 +197,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DictDataDTO updateDataStatus(Long id, Integer status) {
+    public DictDataDTO updateDataStatus(Long id, EnableStatusEnum status) {
         DictDataPO exist = getDataOrThrow(id);
         exist.setStatus(status);
         dictDataMapper.updateById(exist);
@@ -205,7 +205,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public List<DictDataDTO> listDataByType(String dictType, Integer status) {
+    public List<DictDataDTO> listDataByType(String dictType, EnableStatusEnum status) {
         AssertUtils.notBlank(dictType, "dict type cannot be blank");
         List<DictDataPO> list = dictDataMapper.selectList(new LambdaQueryWrapperX<DictDataPO>()
                 .eq(DictDataPO::getDictType, dictType)

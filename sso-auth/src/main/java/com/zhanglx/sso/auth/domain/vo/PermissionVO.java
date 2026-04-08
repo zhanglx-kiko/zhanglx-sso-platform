@@ -1,5 +1,8 @@
 package com.zhanglx.sso.auth.domain.vo;
 
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.domain.vo.BaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -81,14 +84,14 @@ public class PermissionVO extends BaseVO {
      * 是否为外链，0 否，1 是。
      */
     @Schema(description = "是否为外链，0 否，1 是", name = "isFrame", example = "", type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer isFrame;
+    private YesNoEnum isFrame;
 
     /**
      * 类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口。
      */
     @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", example = "", type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     @NotNull(message = "类型不能为空")
-    private Integer type;
+    private PermissionTypeEnum type;
 
     /**
      * 备注。
@@ -97,5 +100,5 @@ public class PermissionVO extends BaseVO {
     private String remark;
 
     @Schema(description = "状态", name = "status", example = "", type = "Integer", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer status;
+    private EnableStatusEnum status;
 }

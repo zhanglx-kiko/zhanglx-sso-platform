@@ -65,7 +65,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         String unionId = response.has("unionid") ? response.get("unionid").asText() : null;
 
         MemberSocialPO socialPO = memberSocialMapper.selectOne(
-                MemberSocialPO::getIdentityType, SocialIdentityTypeEnum.WX_MINI.getCode(),
+                MemberSocialPO::getIdentityType, SocialIdentityTypeEnum.WX_MINI,
                 MemberSocialPO::getIdentifier, openId
         );
 
@@ -76,7 +76,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             memberUserPO = memberUserMapper.selectById(socialPO.getMemberId());
             if (memberUserPO == null) {
                 memberUserPO = MemberUserPO.builder()
-                        .status(UserStatusEnum.NORMAL.getCode())
+                        .status(UserStatusEnum.NORMAL)
                         .build();
                 memberUserMapper.insert(memberUserPO);
 
@@ -128,13 +128,13 @@ public class WechatAuthServiceImpl implements WechatAuthService {
 
     private MemberUserPO createWechatMember(String openId, String unionId) {
         MemberUserPO memberUserPO = MemberUserPO.builder()
-                .status(UserStatusEnum.NORMAL.getCode())
+                .status(UserStatusEnum.NORMAL)
                 .build();
         memberUserMapper.insert(memberUserPO);
 
         MemberSocialPO memberSocialPO = MemberSocialPO.builder()
                 .memberId(memberUserPO.getId())
-                .identityType(SocialIdentityTypeEnum.WX_MINI.getCode())
+                .identityType(SocialIdentityTypeEnum.WX_MINI)
                 .identifier(openId)
                 .unionId(unionId)
                 .build();

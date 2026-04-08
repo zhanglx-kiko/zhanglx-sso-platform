@@ -1,5 +1,8 @@
 package com.zhanglx.sso.core.enums;
 
+import com.zhanglx.sso.core.config.IBaseEnumJsonDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -10,6 +13,7 @@ import java.util.Objects;
  * @ClassName: IBaseEnum
  * @Description:
  */
+@JsonDeserialize(using = IBaseEnumJsonDeserializer.class)
 public interface IBaseEnum<K, V> {
     static <E extends Enum<E>> IBaseEnum valueOf(String enumCode, Class<E> clazz) {
         return (IBaseEnum) Enum.valueOf(clazz, enumCode);

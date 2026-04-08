@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.DeptDTO;
 import com.zhanglx.sso.auth.domain.dto.DeptQueryDTO;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public interface DeptService {
 
     List<DeptDTO> treeQuery(String deptName, Integer status);
 
-    DeptDTO updateStatus(Long id, Integer status);
+    DeptDTO updateStatus(Long id, EnableStatusEnum status);
 
     List<DeptDTO> listByRole(Long roleId);
 

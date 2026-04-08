@@ -1,6 +1,8 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
+import com.zhanglx.sso.auth.enums.DataScopeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -32,10 +34,10 @@ public class RoleDTO extends BaseDTO {
     private String appCode;
 
     @Schema(description = "数据范围", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "1")
-    private Integer dataScope;
+    private DataScopeEnum dataScope;
 
     @Schema(description = "状态", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "1")
-    private Integer status;
+    private EnableStatusEnum status;
 
     @Schema(description = "角色类型兼容字段", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String roleType;

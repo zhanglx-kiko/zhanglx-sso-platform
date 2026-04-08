@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.UserBaseDTO;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
 
 import java.util.List;
 
@@ -27,5 +28,5 @@ public interface UserService {
 
     void batchRemoveUsers(List<Long> userIds);
 
-    void updateStatus(Long userId, Integer status);
+    void updateStatus(Long userId, UserStatusEnum status);
 }

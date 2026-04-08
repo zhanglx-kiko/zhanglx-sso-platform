@@ -1,5 +1,7 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.UserTypeEnum;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -23,8 +25,8 @@ public class AppQueryDTO extends PageQuery {
     private String appName;
 
     @Schema(description = "状态：1-启用，0-停用")
-    private Integer status;
+    private EnableStatusEnum status;
 
     @Schema(description = "用户类型：1-系统用户，2-会员用户")
-    private Integer userType;
+    private UserTypeEnum userType;
 }

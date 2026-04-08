@@ -9,6 +9,7 @@ import com.zhanglx.sso.auth.domain.po.PermissionPO;
 import com.zhanglx.sso.auth.domain.vo.PermissionExcelVO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
 import com.zhanglx.sso.auth.event.PermissionChangedEvent;
 import com.zhanglx.sso.auth.listener.excel.BestEffortImportListener;
 import com.zhanglx.sso.auth.mapper.PermissionMapper;
@@ -360,7 +361,7 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<String> permissionTypes) {
+    public List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<PermissionTypeEnum> permissionTypes) {
         AssertUtils.notBlank(username, "business.data.invalid");
 
         UserDTO user = userService.findUserByUsername(username);
@@ -411,15 +412,14 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = "PermissionTree", allEntries = true)
-    public PermissionDTO updateStatus(Long id, Integer status) {
+    public PermissionDTO updateStatus(Long id, EnableStatusEnum status) {
         AssertUtils.notNull(id, "business.data.invalid");
-        EnableStatusEnum statusEnum = EnableStatusEnum.fromCode(status);
-        AssertUtils.notNull(statusEnum, "business.data.invalid");
+        AssertUtils.notNull(status, "business.data.invalid");
 
         PermissionPO permissionPO = permissionMapper.selectById(id);
         AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
 
-        permissionPO.setStatus(statusEnum.getCode());
+        permissionPO.setStatus(status);
         permissionMapper.updateById(permissionPO);
         return IPermissionMapper.INSTANCE.toDTO(permissionPO);
     }
