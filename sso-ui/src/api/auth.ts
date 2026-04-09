@@ -1,0 +1,22 @@
+import request from '@/utils/request'
+import type { ForgotPasswordDTO, LoginDTO, LoginVO, UserPasswordDTO } from '@/types/auth'
+
+export const loginApi = (data: LoginDTO) => {
+  return request.post<unknown, LoginVO>('/apis/v1/auth/s/login', data)
+}
+
+export const logoutApi = () => {
+  return request.post<unknown, void>('/apis/v1/auth/s/logout')
+}
+
+export const updatePasswordApi = (data: UserPasswordDTO) => {
+  return request.post<unknown, void>('/apis/v1/auth/s/user/update/password', data)
+}
+
+export const forgotPasswordApi = (data: ForgotPasswordDTO) => {
+  return request.post<unknown, void>('/apis/v1/auth/s/forgot-password', data)
+}
+
+export const resetPasswordApi = (userId: string) => {
+  return request.post<unknown, void>(`/apis/v1/auth/s/user/reset-password/${userId}`)
+}
