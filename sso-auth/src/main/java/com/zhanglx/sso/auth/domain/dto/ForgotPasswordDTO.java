@@ -1,5 +1,7 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.xss.annotation.XssPolicy;
+import com.zhanglx.sso.xss.support.XssPolicyMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -26,6 +28,7 @@ public class ForgotPasswordDTO implements Serializable {
 
     @NotBlank(message = "新密码不能为空")
     @Schema(description = "新密码", name = "newPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED)
+    @XssPolicy(XssPolicyMode.NONE)
     private String newPassword;
 
     @NotBlank(message = "验证码不能为空")

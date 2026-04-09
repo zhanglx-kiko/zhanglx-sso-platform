@@ -39,3 +39,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 本地 Maven 临时仓库
+.m2/

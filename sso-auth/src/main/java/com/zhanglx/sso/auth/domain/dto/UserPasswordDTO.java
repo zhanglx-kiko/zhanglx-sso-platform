@@ -4,6 +4,8 @@ import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
+import com.zhanglx.sso.xss.annotation.XssPolicy;
+import com.zhanglx.sso.xss.support.XssPolicyMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -35,10 +37,12 @@ public class UserPasswordDTO implements Serializable {
 
     @NotBlank(message = "旧密码不能为空")
     @Schema(description = "旧密码", name = "oldPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @XssPolicy(XssPolicyMode.NONE)
     private String oldPassword;
 
     @NotBlank(message = "新密码不能为空")
     @Schema(description = "新密码", name = "newPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @XssPolicy(XssPolicyMode.NONE)
     private String newPassword;
 
 }

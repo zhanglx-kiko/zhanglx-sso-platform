@@ -2,6 +2,8 @@ package com.zhanglx.sso.auth.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.xss.annotation.XssPolicy;
+import com.zhanglx.sso.xss.support.XssPolicyMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -31,6 +33,7 @@ public class UserDTO extends UserBaseDTO {
     // 添加了@JsonIgnore后MapStruct会自动过滤字段，不需要额外在转换方法中加@Mapping(target = "password", ignore = true)
     @JsonIgnore
     @Schema(description = "密码", name = "password", example = "", type = "String", hidden = true, requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @XssPolicy(XssPolicyMode.NONE)
     private String password;
 
     @JsonIgnore

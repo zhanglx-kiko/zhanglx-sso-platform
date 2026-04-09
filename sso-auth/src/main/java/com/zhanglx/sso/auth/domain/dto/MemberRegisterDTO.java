@@ -1,5 +1,7 @@
 package com.zhanglx.sso.auth.domain.dto;
 
+import com.zhanglx.sso.xss.annotation.XssPolicy;
+import com.zhanglx.sso.xss.support.XssPolicyMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -23,6 +25,7 @@ public class MemberRegisterDTO {
     @Size(min = 6, max = 32, message = "{member.password.length.invalid}")
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d).+$", message = "{member.password.pattern.invalid}")
     @Schema(description = "密码", requiredMode = Schema.RequiredMode.REQUIRED, example = "Zhanglx123")
+    @XssPolicy(XssPolicyMode.NONE)
     private String password;
 
     @NotBlank(message = "{member.verification.code.cannot.be.blank}")

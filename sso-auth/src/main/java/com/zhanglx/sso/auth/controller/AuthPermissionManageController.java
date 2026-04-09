@@ -12,6 +12,8 @@ import com.zhanglx.sso.log.annotation.OperationLog;
 import com.zhanglx.sso.web.annotation.RateLimitDimension;
 import com.zhanglx.sso.web.annotation.RepeatSubmit;
 import com.zhanglx.sso.web.annotation.RequestRateLimit;
+import com.zhanglx.sso.xss.annotation.XssPolicy;
+import com.zhanglx.sso.xss.support.XssPolicyMode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -91,7 +93,10 @@ public class AuthPermissionManageController {
     @Operation(summary = "查询权限树")
     @GetMapping("/tree")
     @SaCheckPermission("permission:list")
-    public List<PermissionDTO> tree(@RequestParam(required = false, defaultValue = "") String searchKey) {
+    public List<PermissionDTO> tree(
+            @XssPolicy(XssPolicyMode.SEARCH)
+            @RequestParam(required = false, defaultValue = "") String searchKey
+    ) {
         return permissionService.selPermission(searchKey);
     }
 

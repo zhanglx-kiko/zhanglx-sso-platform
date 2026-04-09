@@ -1,6 +1,8 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
+import com.zhanglx.sso.xss.annotation.XssPolicy;
+import com.zhanglx.sso.xss.support.XssPolicyMode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -23,6 +25,7 @@ public class MemberLoginDTO extends BaseDTO {
 
     @NotBlank(message = "{member.password.cannot.be.blank}")
     @Schema(description = "密码", requiredMode = Schema.RequiredMode.REQUIRED, example = "Zhanglx123")
+    @XssPolicy(XssPolicyMode.NONE)
     private String password;
 
     @Schema(description = "登录设备标识", example = "H5", requiredMode = Schema.RequiredMode.NOT_REQUIRED)

@@ -21,6 +21,11 @@
 
         <dependency>
             <groupId>com.zhanglx</groupId>
+            <artifactId>sso-xss</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zhanglx</groupId>
             <artifactId>sso-mybatis</artifactId>
         </dependency>
 

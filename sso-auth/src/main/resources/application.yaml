@@ -15,6 +15,9 @@ spring:
     # 逗号分隔所有的 basename
     basename: i18n/common,i18n/auth-messages,i18n/sso-messages
     encoding: UTF-8
+  cache:
+    # 明确告诉 Spring 缓存用 Redis
+    type: redis
   # Redis 配置
   data:
     redis:
@@ -261,3 +264,37 @@ sso:
       - /swagger-ui.html
       - /doc.html
       - /v3/api-docs
+  xss:
+    enabled: true
+    global-enabled: true
+    log-hit: false
+    mode: RELAXED
+    whitelist-paths: [ ]
+    whitelist-fields:
+      - password
+      - oldPassword
+      - newPassword
+      - confirmPassword
+      - credential
+      - token
+      - accessToken
+      - refreshToken
+      - secret
+      - clientSecret
+      - authorization
+    search-fields:
+      - searchKey
+      - keyword
+      - query
+      - q
+    rich-text-fields: [ ]
+    sanitize-header-names:
+      - User-Agent
+      - Referer
+      - X-Requested-With
+    ignored-content-types:
+      - application/octet-stream
+      - application/pdf
+      - image/*
+      - audio/*
+      - video/*
