@@ -20,20 +20,13 @@ import org.apache.ibatis.session.ResultHandler;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 15:04
- * @ClassName: PermissionMapper
- * @Description: 权限数据访问层
+ * 权限数据访问层。
  */
 @Mapper
 public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
 
     /**
-     * 以流式方式遍历所有权限节点。
-     *
-     * <p>适用于权限树构建和大批量导出场景，可避免一次性加载全量权限数据导致的内存压力。</p>
-     *
-     * @param handler MyBatis 流式结果处理器，每读取一行会回调一次
+     * 以流式方式遍历全部权限节点，适用于权限树构建和大批量导出。
      */
     @Results(id = "permissionPoResultMap", value = {
             @Result(property = "isFrame", column = "is_frame", javaType = YesNoEnum.class,
@@ -55,13 +48,6 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
 
     /**
      * 按用户、权限标识和权限类型查询用户拥有的权限列表。
-     *
-     * <p>该方法会通过用户角色映射和角色权限映射进行联表查询，支持按模块标识和权限类型做可选过滤。</p>
-     *
-     * @param userId 用户 ID
-     * @param moduleIdentities 需要过滤的权限标识列表，可为空
-     * @param permissionTypes 需要过滤的权限类型列表，可为空
-     * @return 当前用户命中的权限列表
      */
     @ResultMap("permissionPoResultMap")
     @Select("<script>" +
@@ -94,9 +80,6 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
 
     /**
      * 根据角色 ID 查询角色已绑定的权限列表。
-     *
-     * @param roleId 角色 ID
-     * @return 角色已绑定的权限列表
      */
     @ResultMap("permissionPoResultMap")
     @Select("SELECT p.id, p.name, p.identification, p.parent_id, p.identity_lineage, " +
@@ -110,12 +93,7 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
     List<PermissionPO> selPermissionByRoleId(@Param("roleId") Long roleId);
 
     /**
-     * 根据父级权限标识查询其所有子孙权限。
-     *
-     * <p>该查询基于 {@code identityLineage} 前缀匹配，常用于权限标识变更后的级联更新。</p>
-     *
-     * @param parentIdentity 父级权限标识
-     * @return 子孙权限列表
+     * 根据父级权限标识查询其全部子孙权限。
      */
     @ResultMap("permissionPoResultMap")
     @Select("SELECT id, name, identification, parent_id, identity_lineage, com_path, path, " +
@@ -127,19 +105,14 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
     List<PermissionPO> selChildrenPerm(@Param("parentIdentity") String parentIdentity);
 
     /**
-     * 根据用户 ID 查询用户拥有的权限编码集合。
-     *
-     * <p>仅返回按钮和接口级权限编码，用于 Sa-Token 鉴权缓存以及前端按钮权限控制。</p>
-     *
-     * @param userId 用户 ID
-     * @return 权限编码列表
+     * 根据用户 ID 查询用户拥有的全部权限标识集合。
+     * 前端如果只需要按钮/接口权限，会在调用侧再按类型筛选。
      */
     @Select("SELECT DISTINCT p.identification " +
             "FROM t_auth_user_role urm " +
             "INNER JOIN t_auth_role_permission rpm ON urm.role_id = rpm.role_id " +
             "INNER JOIN t_auth_permission p ON rpm.permission_id = p.id " +
             "WHERE urm.user_id = #{userId} " +
-            "  AND p.type >= 2 " +
             "  AND p.del_flag = 0 " +
             "  AND rpm.del_flag = 0 " +
             "  AND urm.del_flag = 0 " +

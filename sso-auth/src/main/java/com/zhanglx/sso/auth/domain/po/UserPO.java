@@ -16,7 +16,6 @@ import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * 系统用户持久化对象，对应 V2 表 `t_sys_user`。
@@ -38,6 +37,9 @@ public class UserPO extends BasePO {
     @TableField(value = "user_type", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private UserTypeEnum userType;
 
+    /**
+     * 后台用户的微信 openId 独立维护在 `t_sys_user_social` 中，这里仅作为业务装配字段使用。
+     */
     @TableField(exist = false)
     private String openId;
 
@@ -53,7 +55,7 @@ public class UserPO extends BasePO {
     @TableField(value = "sex", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private GenderEnum sex;
 
-    @TableField(exist = false)
+    @TableField(value = "birthday", jdbcType = JdbcType.DATE)
     private LocalDate birthday;
 
     @TableField(value = "email", jdbcType = JdbcType.VARCHAR)
@@ -70,22 +72,4 @@ public class UserPO extends BasePO {
      */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private UserStatusEnum status;
-
-    @TableField(exist = false)
-    private Integer userLevel;
-
-    @TableField(exist = false)
-    private Long points;
-
-    @TableField(exist = false)
-    private Integer memberType;
-
-    @TableField(exist = false)
-    private Integer realNameStatus;
-
-    @TableField(exist = false)
-    private LocalDateTime lastLoginTime;
-
-    @TableField(exist = false)
-    private String lastLoginIp;
 }

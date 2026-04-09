@@ -19,12 +19,6 @@ public interface IUserDomainMapper {
 
     @Mapping(target = "delFlag", ignore = true)
     @Mapping(target = "userType", ignore = true)
-    @Mapping(target = "userLevel", ignore = true)
-    @Mapping(target = "points", ignore = true)
-    @Mapping(target = "memberType", ignore = true)
-    @Mapping(target = "realNameStatus", ignore = true)
-    @Mapping(target = "lastLoginTime", ignore = true)
-    @Mapping(target = "lastLoginIp", ignore = true)
     UserPO toPO(UserDTO userDTO);
 
     List<UserDTO> toDTOList(List<UserPO> userPOList);

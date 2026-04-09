@@ -1,6 +1,7 @@
 package com.zhanglx.sso.auth.service.impl;
 
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
+import com.zhanglx.sso.auth.constants.MemberVerificationCodeScenes;
 import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
@@ -18,11 +19,15 @@ import com.zhanglx.sso.auth.service.MemberVerificationCodeService;
 import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.web.support.RequestIdentityAccessor;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Locale;
 
@@ -36,6 +41,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private final Argon2PasswordEncoder argon2PasswordEncoder;
     private final MemberVerificationCodeService memberVerificationCodeService;
     private final AuthLoginAuditSupport authLoginAuditSupport;
+    private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Override
     public LoginVO login(MemberLoginDTO memberLoginDTO) {
@@ -60,16 +66,19 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         StpMemberUtil.login(memberUserPO.getId(), memberLoginDTO.getDevice());
+        String displayName = resolveDisplayName(memberUserPO);
         authLoginAuditSupport.storeMemberSession(
-                memberUserPO.getPhoneNumber(),
-                memberUserPO.getPhoneNumber(),
+                displayName,
+                displayName,
                 AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD
         );
+
         if (argon2PasswordEncoder.needUpgrade(memberUserPO.getPassword())) {
             log.info("Password params need upgrade for member [{}]", memberUserPO.getId());
             upgradeUserPassword(memberUserPO, memberLoginDTO.getPassword());
         }
-        memberUserService.touchLastLoginTime(memberUserPO.getId());
+
+        memberUserService.touchLastLoginInfo(memberUserPO.getId());
         return assembleLoginVO(memberUserPO);
     }
 
@@ -82,33 +91,33 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         memberVerificationCodeService.verifyCode(
-                MemberVerificationCodeServiceImpl.SCENE_REGISTER,
+                MemberVerificationCodeScenes.REGISTER,
                 memberRegisterDTO.getPhoneNumber(),
                 memberRegisterDTO.getCode(),
                 null
         );
 
-        MemberUserPO memberUserPO = MemberUserPO.builder()
-                .phoneNumber(memberRegisterDTO.getPhoneNumber())
-                .password(argon2PasswordEncoder.encodeAsyncWithTimeout(memberRegisterDTO.getPassword()))
-                .status(UserStatusEnum.NORMAL)
-                .build();
+        MemberUserPO memberUserPO = buildDefaultMember();
+        memberUserPO.setPhoneNumber(memberRegisterDTO.getPhoneNumber());
+        memberUserPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(memberRegisterDTO.getPassword()));
+        memberUserPO.setNickname(maskPhoneNickname(memberRegisterDTO.getPhoneNumber()));
         memberUserMapper.insert(memberUserPO);
 
         StpMemberUtil.login(memberUserPO.getId(), memberRegisterDTO.getDevice());
+        String displayName = resolveDisplayName(memberUserPO);
         authLoginAuditSupport.storeMemberSession(
-                memberUserPO.getPhoneNumber(),
-                memberUserPO.getPhoneNumber(),
+                displayName,
+                displayName,
                 AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_PASSWORD
         );
-        memberUserService.touchLastLoginTime(memberUserPO.getId());
+        memberUserService.touchLastLoginInfo(memberUserPO.getId());
         return assembleLoginVO(memberUserPO);
     }
 
     @Override
     public void sendVerificationCode(MemberVerificationCodeSendDTO sendDTO, Long memberId) {
         String scene = sendDTO.getScene() == null ? null : sendDTO.getScene().trim().toUpperCase(Locale.ROOT);
-        if (MemberVerificationCodeServiceImpl.SCENE_REGISTER.equals(scene)) {
+        if (MemberVerificationCodeScenes.REGISTER.equals(scene)) {
             if (memberUserService.findByPhoneNumber(sendDTO.getPhoneNumber()) != null) {
                 throw BusinessException.conflict("member.phone.already.bound");
             }
@@ -116,7 +125,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             return;
         }
 
-        if (MemberVerificationCodeServiceImpl.SCENE_FORGOT_PASSWORD.equals(scene)) {
+        if (MemberVerificationCodeScenes.FORGOT_PASSWORD.equals(scene)) {
             if (memberUserService.findByPhoneNumber(sendDTO.getPhoneNumber()) == null) {
                 throw new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND);
             }
@@ -124,7 +133,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             return;
         }
 
-        if (MemberVerificationCodeServiceImpl.SCENE_BIND_PHONE.equals(scene)) {
+        if (MemberVerificationCodeScenes.BIND_PHONE.equals(scene)) {
             if (memberId == null) {
                 throw BusinessException.unauthorized("login.required");
             }
@@ -169,7 +178,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         memberVerificationCodeService.verifyCode(
-                MemberVerificationCodeServiceImpl.SCENE_FORGOT_PASSWORD,
+                MemberVerificationCodeScenes.FORGOT_PASSWORD,
                 forgotPasswordDTO.getPhoneNumber(),
                 forgotPasswordDTO.getVerificationCode(),
                 null
@@ -183,9 +192,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private LoginVO assembleLoginVO(MemberUserPO memberUserPO) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(memberUserPO.getId());
-        String displayName = StringUtils.hasText(memberUserPO.getPhoneNumber())
-                ? memberUserPO.getPhoneNumber()
-                : "member_" + memberUserPO.getId();
+        String displayName = resolveDisplayName(memberUserPO);
         loginVO.setUsername(displayName);
         loginVO.setNickname(displayName);
         loginVO.setTokenName(StpMemberUtil.getStpLogic().getTokenName());
@@ -202,5 +209,40 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         } catch (Exception e) {
             log.error("Failed to upgrade password for member [{}]", memberUserPO.getId(), e);
         }
+    }
+
+    private MemberUserPO buildDefaultMember() {
+        MemberUserPO memberUserPO = MemberUserPO.builder()
+                .status(UserStatusEnum.NORMAL)
+                .build();
+        memberUserPO.setUserLevel(1);
+        memberUserPO.setPoints(0L);
+        memberUserPO.setMemberType(0);
+        memberUserPO.setRealNameStatus(0);
+        memberUserPO.setRegisterIp(resolveCurrentClientIp());
+        return memberUserPO;
+    }
+
+    private String resolveDisplayName(MemberUserPO memberUserPO) {
+        if (StringUtils.hasText(memberUserPO.getNickname())) {
+            return memberUserPO.getNickname();
+        }
+        if (StringUtils.hasText(memberUserPO.getPhoneNumber())) {
+            return memberUserPO.getPhoneNumber();
+        }
+        return "member_" + memberUserPO.getId();
+    }
+
+    private String maskPhoneNickname(String phoneNumber) {
+        if (!StringUtils.hasText(phoneNumber) || phoneNumber.length() < 7) {
+            return null;
+        }
+        return "会员" + phoneNumber.substring(phoneNumber.length() - 4);
+    }
+
+    private String resolveCurrentClientIp() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes == null ? null : attributes.getRequest();
+        return requestIdentityAccessor.resolveClientIp(request);
     }
 }

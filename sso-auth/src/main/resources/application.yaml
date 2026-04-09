@@ -124,13 +124,6 @@ sa-token:
 default:
   password: 123456
 
-member:
-  verification-code:
-    expire-seconds: 300
-    resend-interval-seconds: 60
-    code-length: 6
-    mock-send-enabled: true
-
 # Argon2加密配置
 security:
   argon2:
@@ -298,3 +291,23 @@ sso:
       - image/*
       - audio/*
       - video/*
+  sms:
+    verification-code:
+      expire-seconds: 300
+      resend-interval-seconds: 60
+      code-length: 6
+      mock-send-enabled: false
+      phone-window-seconds: 1800
+      phone-window-max-sends: 10
+      ip-daily-max-sends: 20
+      scene-templates:
+        REGISTER: "\u3010\u5f20LX\u3011\u6ce8\u518c\u9a8c\u8bc1\u7801\uff1a%s\uff0c%d\u5206\u949f\u5185\u6709\u6548\u3002"
+        FORGOT_PASSWORD: "\u3010\u5f20LX\u3011\u627e\u56de\u5bc6\u7801\u9a8c\u8bc1\u7801\uff1a%s\uff0c%d\u5206\u949f\u5185\u6709\u6548\u3002"
+        BIND_PHONE: "\u3010\u5f20LX\u3011\u7ed1\u5b9a\u624b\u673a\u53f7\u9a8c\u8bc1\u7801\uff1a%s\uff0c%d\u5206\u949f\u5185\u6709\u6548\u3002"
+    sms-chinese:
+      enabled: true
+      uid: ${SMSCHINESE_UID:}
+      key: ${SMSCHINESE_KEY:d41d8cd98f00b204e980}
+      send-url: https://utf8api.smschinese.cn/
+      connect-timeout-millis: 5000
+      read-timeout-millis: 5000

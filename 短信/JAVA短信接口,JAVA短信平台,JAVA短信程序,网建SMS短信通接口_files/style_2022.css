@@ -1,0 +1,471 @@
+@charset "utf-8";
+body{margin-left: 0px;margin-top: 0px;margin-right: 0px;margin-bottom: 30px; text-align:left; font-size:12px; font-family:'微软雅黑', Arial, Helvetica, sans-serif; background-color:#EAEAEA;}
+A:link,A:visited {color: #075198; text-decoration: none;}
+A:active,A:hover {color:#000066; text-decoration: underline;}
+.InputStyle{ background-image:url(Input.jpg); border:1px solid;border-color:#999999; height:18px; padding:2px 0 0 2px;}
+.textarea{ background-image:url(Input.jpg); background-repeat:no-repeat; border:1px solid;border-color:#999999; height:90px; padding:5px; line-height:180%;}
+
+.top_h1,.H2,.H2 ul,.H3,.H3_a,.bottom{Margin-Right: auto; Margin-Left: auto; overflow:hidden;}
+/*头部*/
+.top{ width:100%; height:59px; background-image:url(top_bj.gif); margin-top:0px; padding-top:20px;overflow:hidden;}
+.top_h1{ height:50px; width:950px; text-align:left;}
+.top_h1 dl{ margin:0 auto; width:100%;}
+.top_h1 dl dt{ float:left; margin:0; padding-left:20px; overflow:hidden;}
+.top_h1 dl dt a{ background-image:url(logo.gif); display:block; height:40px; width:180px;}
+.top_h1 dl dd{ float:right; }
+.top_h1 dl dd div{ float:right;  font-size:14px;}
+.Top_Login{ padding-top:3px;}
+.Top_Login a{ display:block; color:#000; width:120px; height:35px; line-height:35px;  text-align:center; float:left; background-color:#c7e6fd; text-decoration: none; border-radius:5px 0  0  5px;}
+.Top_Login a:active,.Top_Login a:hover {color:#fff; background-color:#4bb6fd;}
+.Top_Login a.Top_Login1{ background-color:#1595d6; color:#FFF; border-radius:0 5px 5px 0;}
+.Top_Login a.Top_Login1:active,.Top_Login a.Top_Login1:hover {color:#fff; background-color:#0078c8;}
+.Top_Tel{ padding:12px 50px 0 0;}
+/*导航*/
+.H2{ background-image:url(bj.gif); width:970px; overflow:hidden}
+.H2 ul{ width:100%;  margin:0; padding:0; }
+/*.H2 ul li{ background-image:url(ico.png); height:32px; list-style-type:none; }*/
+.H2 ul li{ float:left; width:11.1111%; margin:0; padding:0;  list-style-type:none; background: url(navigation_ico.png);}
+.H2 ul li a{ color:#FFFFFF; font-size:14px; font-weight:bold; display:block; width:99%; text-align:center; float:left; height:36px; line-height:36px;text-shadow: 1px 1px 3px #666;}
+.H2 ul li a:link,.H2 ul li a:visited {}
+.H2 ul li a:active,.H2 ul li a:hover {background: url(navigation_ico.png) no-repeat -2px -35px; text-decoration: none;}
+.H2 ul li a.Hd_housea:link,.H2 ul li a.Hd_house:visited {background: url(navigation_ico.png) no-repeat -2px -35px; text-decoration: none;}
+.H2 ul li span{ float:left; display:block; width:1%; height:30px; background: url(navigation_ico.png) no-repeat 0 -35px;}
+.H2Nr{width:950px; margin:0 auto; background-color:#1595d6;  background-image:url(top_img_New.png); background-position:center top; background-repeat:no-repeat;}
+.H2Nr dl{ margin:0 auto; width:900px; padding:80px 0 0 0; height:140px; color:#FFF; overflow:hidden;}
+.H2Nr dl dd{ margin:0; padding:0 0 0 230px; overflow:hidden; height:50px;}
+.H2Nr dl dd div{ float:left; font-size:16px; font-weight:bold;width:200px; text-align:left; text-shadow: 2px 2px 5px #666;}
+.H2Nr dl dd div i{ width:15px; height:15px; background-image:url(top_img_ico.png); display:block; margin-top:5px; float:left; }
+.H2Nr dl dd div i.img1{ background-position:0 -15px;}
+.H2Nr dl dd div i.img2{ background-position:0 -30px;}
+.H2Nr dl dd div span{ display:inline-block; margin-left:5px;}
+.H2Nr dl dt{ font-size:24px; text-align:left; padding:0 0 0 220px; text-shadow: 2px 2px 5px #555;}
+.H2Nr dl dt span{ font-size:12px;} 
+.H2Nr dl dt i{ width:33px; height:34px; display:block; background-image:url(top_img_ico.png); background-position:-15px 0;float:left;}
+.H2Nr dl dt div{ float:left; margin-left:10px;}
+/*中部*/
+.H3{background-image:url(bj.gif); width:970px; overflow:hidden;}
+.H3_a{ width:950px; background-color:#FFFFFF; overflow:hidden; min-height:500px;}
+
+
+/*bottom*/
+.bottom{ width:100%; height:59px;}
+.bottom dl{ margin:0 auto;height:59px;width:970px; background: url(bottom.gif) left -120px;}
+.bottom dl dt{ width:15px; height:59px;background: url(bottom.gif) left 0; float:left; margin:0;}
+.bottom dl dd{ width:15px; height:59px;background: url(bottom.gif) left -60px; float:right; margin:0;}
+.bottom dl dt.bottom_txt{ background:none;float:left; width:940px; margin:0; padding-top:22px; height:18px; color:#929292;}
+.bottom dl dt.bottom_txt a{color:#929292;}
+
+.index{width:95%; margin:auto; color:#555;}
+.index1{ width:90%; margin:80px auto 10px auto;  overflow:hidden;}
+.index1 dl{ margin:0;}
+.index1 dl dd{ float:left; line-height:350%; padding-top:50px; margin:0; padding-left:20px;}
+.index1 dl dd h1{ font-size:50px; margin-bottom:100px;}
+.index1 dl dd div{  margin-bottom:50px; overflow:hidden;}
+.index1 dl dd div span{ padding-top:8px; display:block; float:left; margin-right:25px; font-size:26px;}
+.index1 dl dd div a{ display:block; float:left;  background-image: linear-gradient(#F90, #F50); font-size:14px; padding:2px 50px; color:#fff; border-radius:5px;}
+.index1 dl dd div a:active,.index1 dl dd div a:hover { background-image: linear-gradient(#Fd0, #F70); }
+.index1 dl dd span{ font-size:18px;}
+.index1 dl dd span font{font-size:38px; font-family:Arial, Helvetica, sans-serif; margin:0 10px;}
+.index1 dl dt{ float:right; background-image:url(mofang.png); width:40%; height:480px; background-size:100%; background-repeat:no-repeat;}
+
+.index2,.index3,.index4,.index5,.index6{ overflow:hidden;  width:95%; padding-top:80px; padding-bottom:80px; border-top:1px dashed; margin:auto; border-color:#ccc;}
+.index2 ul{ width:90%; margin:0 auto; padding:0;}
+.index2 ul li{ width:33.33%; float:left; list-style:none; margin:20px 0;}
+.index2 ul li dl{ margin:0; padding:0; text-align:center;}
+.index2 ul li dl dd{ margin:0 auto 20px auto; padding: 0; text-align:center;}
+.index2 ul li dl dd .div { width: 130px; height: 130px; border:5px solid; margin:auto; border-radius:130px; border-color:#B5E7FF; line-height:165px;  background-image: linear-gradient(#fff, #E8F4FF);}
+.index2 ul li dl dd .div i{ margin:auto; font-size:60px; color:#1595d6;}
+.index2 ul li dl dt{ margin:0; padding:0; font-size:14px; line-height:200%; color:#888;}
+.index2 ul li dl dt h2{ margin:0 0 20px 0; font-size:28px; color:#333;}
+
+.index3{}
+.index3 dl{ margin:0; padding:0;}
+.index3 dl dd{ float:left; width:50%; margin:0; padding:0;  overflow:hidden; padding-top:80px; font-size:14px;}
+.index3 dl dd h1{ margin-left:50px; font-size:48px;}
+.index3 dl dd div{ margin-left:50px;  color:#888;}
+.index3 dl dd ul{ padding:40px 0 0 50px; height:50px;}
+.index3 dl dd ul a{ background-color:#F60; padding:13px 25px; border-radius:5px; overflow:hidden; color:#FFF; margin-right:8px; background-image: linear-gradient(#F90, #F50);  text-decoration: none;}
+.index3 dl dd ul a:active,.index3 dl dd ul a:hover {background-image: linear-gradient(#Fd0, #F70);}
+.index3 dl dt{ float:right; width:50%;  margin:0; padding:0; overflow:hidden; height:370px;; background-image:url(sms_product.png);background-size:100%;}
+
+.index4{ background-image:url(qiqiu.png); background-repeat:no-repeat; background-position:70px -20px; padding-top:30px;}
+.index4 dl{ margin:0 0 0 55%; padding:0;}
+.index4 dl dd{ margin:0;}
+.index4 dl dd h1{font-size:50px;}
+.index4 dl dt{ font-size:22px; line-height:180%; color:#888;}
+.index4 dl dt div{ color:#06C; font-size:38px; padding-top:20px; margin-bottom:30px;}
+.index4 dl dt div b{ font-size:70px;}
+.index4 dl dt a{ background-color:#F60; padding:13px 45px; border-radius:5px; overflow:hidden; color:#FFF; margin-right:8px; background-image: linear-gradient(#F90, #F50);  text-decoration: none; font-size:16px; }
+.index4 dl dt a:active,.index4 dl dt a:hover {background-image: linear-gradient(#Fd0, #F70);}
+.index4 dl dt a.hous{ background-image: linear-gradient(#0cF, #1595d6);}
+.index4 dl dt a.hous:active,.index4 dl dt a.hous:hover { background-image: linear-gradient(#B5E7FF, #09F); }
+
+.index5{ }
+.index5 h1{ margin:0 auto; padding:0; font-size:40px; text-align:center;}
+.index5 p{ margin:0 auto; padding:35px 0;  list-style:none; text-align:center; }
+.index5 p a{background-image: linear-gradient(#0cF, #1595d6); margin:0 2px; padding:8px 20px; border-radius:5px; color:#FFF; font-size:16px;  text-decoration: none;}
+.index5 p a:active,.index5 p a:hover { background-image: linear-gradient(#B5E7FF, #09F); }
+.index5 ul{ margin:0; padding-top:20px; overflow:hidden;}
+.index5 ul li{ margin:0; padding:30px 0; float:left; width:49.5%; list-style:none; text-align:center; border-top:1px solid; border-left:1px solid; border-color:#eee;}
+.index5 ul li.li1{ border:0px solid;}
+.index5 ul li.li2{ border-top:0px solid;}
+.index5 ul li.li3{ border-left:0px solid;}
+.index5 ul li dl{ margin:0; padding:0;}
+.index5 ul li dl dd{ margin:0 auto; padding:0; font-size:60px; width:130px; color:#1595d6; height:130px; border:5px solid; border-radius:130px; border-color:#ddd; line-height:130px;  background-image: linear-gradient(#fff, #eee); border-color:#B5E7FF;  background-image: linear-gradient(#fff, #E8F4FF);}
+.index5 ul li dl dd i{}
+.index5 ul li dl dt{ margin:0; padding:20px 0; font-size:14px; line-height:250%;}
+.index5 ul li dl dt span{ font-size:28px; font-weight:bold;}
+
+
+.index6{}
+.index6 ul{ margin:0; padding:0;}
+.index6 ul li{ margin:0; padding:0; float:left; width:24.9%; list-style:none; border-right:1px solid; border-color:#eee;}
+.index6 ul li dl{ text-align:center; margin:0; padding:0;}
+.index6 ul li dl dd{ font-size:80px; margin:0; padding:0; color:#666;}
+.index6 ul li dl dt{ line-height:250%; font-size:14px;}
+.index6 ul li dl dt span{font-size:28px; font-weight:bold;}
+.index6 ul li.hous{border:0px solid;}
+
+.err{ text-align:center; margin:0; padding:100px;}
+.err dd{ font-size:260px; margin:0; padding:0; font-weight:bold; color:#999; color: linear-gradient(#B5E7FF, #09F);}
+.err dt{ margin:0; font-size:18px; padding:30px;}
+
+/*Down*/
+.Down_Top{ width:90%; height:150px; margin:auto; text-align:center;  border-bottom:1px solid;border-color:#ccc; overflow:hidden;}
+.Down_Top ul{ width:60%; margin:auto; padding:30px 0 0 0;}
+.Down_Top ul li{ width:50%; float:left; list-style:none; margin:0; padding:0; text-align:center; line-height:220%;}
+.Down_Top ul li a{ color:#333; text-decoration: none; font-size:14px;  color:#666;}
+.Down_Top ul li a div{ height:60px; padding-top:3px;}
+.Down_Top ul li a:active,.Down_Top ul li a:hover{ }
+.Down_Top ul li a:active div,.Down_Top ul li a:hover div{height:63px; padding-top:0; }
+.Down_Top ul li .click{ color:#f60;}
+.Down_Top ul li i{ font-size:55px;}
+.Down_Nr{ min-height:500px; overflow:hidden; padding:50px 0;}
+.Down_Nr dl{ width:90%; margin:auto;}
+.Down_Nr dl dd{ float:left; width:45%;}
+.Down_Nr dl dd .Top strong{ font-size:26px; font-weight:normal; line-height:300%;}
+.Down_Nr dl dd .Top span{ color:#666;}
+.Down_Nr dl dd .down{ }
+.Down_Nr dl dd .down dl{ margin:0; padding:30px 0 0 0; overflow:hidden;}
+.Down_Nr dl dd .down dd{ float:left; margin:0; padding:0; line-height:200%; color:#666; width:auto; text-align:center; padding-right:30px;}
+.Down_Nr dl dd .down dd img{ width:140px;  border:1px solid;border-color:#ccc;}
+.Down_Nr dl dd .down dt{ float:left; color:#999; padding-top:90px;}
+.Down_Nr dl dd .down .H{ padding-top:10px;}
+.Down_Nr dl dd .down dt a{ display:block; width:160px; height:40px; background-color:#F60; text-align:center; line-height:40px; color:#FFF;border-radius:5px; text-decoration:none;}
+.Down_Nr dl dd .down dt a:active,.Down_Nr dl dd .down dt a:hover{ background-color:#f40;}
+.Down_Nr dl dd .down dt a i{ font-size:14px;}
+.Down_Nr dl dd .down p{ padding-top:20px; line-height:200%; font-size:14px;}
+.Down_Nr dl dt{ float:right; width:50%;}
+.Down_Nr dl dt img{ width:100%;}
+.Down_Bottom{border-top:1px solid;border-color:#ccc; width:90%; margin:auto;}
+
+.PageL3{ width:90%; margin:auto; overflow:hidden;}
+.PageL3 ul{  overflow:hidden; border-bottom:2px solid; border-color:#eee; line-height:200%; padding:0;}
+.PageL3 li{ width:33.333%; float:left; text-align:center; list-style:none; margin:0; padding:0;}
+.PageL3 li a{ font-size:14px; color:#333; display:block;  text-decoration: none; border-bottom:4px solid; border-color:#fff; padding:10px 0;}
+.PageL3 li a:link,.PageL3 li a:visited {}
+.PageL3 li a:active,.PageL3 li a:hover {color:#0585c6;}
+.PageL3 li .click{ font-weight:bold; color:#0585c6;  border-color:#0585c6; background-color:#eef4fe; }
+
+.Contact{  width:90%; padding-bottom:50px; margin:auto; overflow:hidden;}
+.Contact ul{ margin:10px 0; padding:30px 0; overflow:hidden; background-color:#f9f9f9; border-radius: 10px;}
+.Contact ul li{ width:33.3%; margin:0; padding:10px 0; float:left; overflow:hidden;}
+.Contact ul li dl{ overflow:hidden;}
+.Contact ul li dl dd{ float:left; border:1px solid; border-color:#ccc; width:90px;  height:90px; border-radius: 45px; text-align:center;}
+.Contact ul li dl dd i{ font-size:40px; color:#666; line-height:90px;}
+.Contact ul li dl dt{  font-size:14px; padding-top:8px; padding-left:20px;line-height:30px; overflow:hidden;}
+
+.Contact ul li .wx dd{ background-image:url(wxqrcode.png); border-radius: 0px;}
+.Contact ul li .wx dt {line-height:30px;  padding-top:8px;}
+.Contact .Add{ width:98%; margin:auto; padding:20px 0;}
+.Contact .Add div { font-size:30px;  }
+.Contact .Add div span{border-bottom:1px solid; border-color:#ccc;line-height:220%; padding-bottom:15px;}
+.Contact .Add dl{ margin:0; padding:20px 0 0 0; }
+.Contact .Add dl dt{ width:40%; font-size:14px; float:left; margin:0; padding:0; line-height:300%; color:#666;}
+.Contact .Add dl dt strong{ font-size:16px; color:#333;}
+.Contact .Add dl dd{ width:55%;float:right; margin:0; padding:0;}
+.Contact .Add dl dd img{ width:100%;}
+
+.plug_Txt,.IndexTxt,.about,.Payment{ width:90%; margin:20px auto; overflow:hidden; padding:10px 0; line-height:180%; font-size:14px;}
+.Payment dt{ width:92%; margin:auto;}
+.about dl{ margin:0; padding:0;}
+.about dl dd{ float:left; width:60%; margin:0; color:#666}
+.about dl dd div{ font-size:28px; color:#000; padding:20px 0;}
+.about dl dt{ float:right; width:40%; margin:0; text-align:center; padding-top:100px; }
+.about dl dt img{border:1px solid; border-color:#ccc; padding:50px; background-color:#f9f9f9;}
+.IndexTxt h2{ margin:0; padding:0;}
+.IndexTxt h2 span{ border-bottom:2px solid; border-color:#0585c6;line-height:220%; padding-bottom:12px; margin-bottom:15px;}
+.IndexTxt b{}
+.IndexTxt b a{ font-size:12px; font-weight:normal; margin-left:30px;}
+
+.IndexTxt li{ padding-bottom:10px; }
+.IndexTxt .ul li{ list-style:none}
+.IndexTxt p img{border:10px solid; border-color:#eee;}
+.IndexTxt p{ overflow:hidden;}
+.IndexTxt table{ margin-top:20px;  text-align:center; background-color:#CCC; width:100%;}
+.IndexTxt table tr th{ background-color:#FFF; padding:8px;}
+.IndexTxt table tr{ background-color:#FFF; }
+.IndexTxt table tr td{ padding:8px;}
+.IndexTxt table tr:active,.IndexTxt table tr:hover{background-color:#d1e6ff;}
+.IndexTxt .code { padding: 0px 0 0px 40px; top:1px;  background-color: #000; font-family: "Lucida Console", Consolas, Monaco;  white-space: pre-wrap; word-wrap: break-word;   position: relative; overflow: hidden;line-height:150%; }
+.IndexTxt .code::before {content: '01.\A 02.\A 03.\A 04.\A 05.\A 06.\A 07.\A 08.\A 09.\A 10.\A 11.\A 12.\A 13.\A 14.\A 15.\A 16.\A 17.\A 18.\A 19.\A 20.\A 21.\A 22.\A 23.\A 24.\A 25.\A 26.\A 27.\A 28.\A 29.\A 30.\A 31.\A 32.\A 33.\A 34.\A 35.\A 36.\A 37.\A 38.\A 39.\A 40.\A 41.\A 42.\A 43.\A 44.\A 45.\A 46.\A 47.\A 48.\A 49.\A 50.\A 51.\A 52.\A 53.\A 54.\A 55.\A 56.\A 57.\A 58.\A 59.\A 60.\A 61.\A 62.\A 63.\A 64.\A 65.\A 66.\A 67.\A 68.\A 69.\A 70.\A 71.\A 72.\A 73.\A 74.\A 75.\A 76.\A 77.\A 78.\A 79.\A 80.\A 81.\A 82.\A 83.\A 84.\A 85.\A 86.\A 87.\A 88.\A 89.\A 90.\A 91.\A 92.\A 93.\A 94.\A 95.\A 96.\A 97.\A 98.\A 99'; position: absolute; top: 10px; bottom: 10px;  left: 0;  text-align:center;  background-color: #000;    color: #eee;  outline: 100px solid #000;  clip: rect(-100px 2em 9999px 0); font-size:12px; padding-left:8px; /* IE9+ */   clip: rect(-100px 3.5ch 9999px 0);  overflow: hidden; ser-select: none;}
+
+.plugTxt p{ padding:20px 0;  overflow:hidden;}
+.plugTxt p span{ background-color:#B5E7FF; padding:5px;  border-radius: 5px;}
+.plugTxt img{border:10px solid; border-color:#eee;}
+.plug_Down{ overflow:hidden; padding-top:30px;}
+.plug_Down dt,.plug_Down dd{ float:left; margin:0 5px 10px 0; padding:0; height:50px;}
+.plug_Down dt a,.plug_Down dd a{ padding:15px 40px; font-size:14px; background-color:#F60; background-image: linear-gradient(#F90,#F60); text-align:center; color:#FFF; text-decoration:none;  border-radius:5px; overflow:hidden;}
+.plug_Down dd a:active,.plug_Down dd a:hover {background-image: linear-gradient(#F90,#F80);}
+.plug_Down dt a{ background-color:#09F; background-image: linear-gradient(#0cF,#09F); }
+.plug_Down dt a:active,.plug_Down dt a:hover {background-image: linear-gradient(#0dF,#0bF);}
+
+.IndexTxt .code pre{ padding:0; margin:-7px 0 0 0;}
+
+.plug_1{ width:96%; margin:auto; overflow:hidden;}
+.plug_left{  margin-right:220px; overflow:hidden; }
+.plug_left .IndexTxt{ width:98%; padding-left:10px;}
+.plug_right{ float:right; width:210px; margin-top:25px; margin-bottom:25px;}
+.plug_Right_search input{ width:89%; padding:0 5% 0 5%; height:40px; line-height:40px; border-radius:5px; outline: none; border:1px solid; border-color:#ccc;}
+.plug_Right_search button{ position:absolute; margin-left:-50px; height:42px; width:50px; font-size:20px; border-radius:0 5px 5px 0  ; border:1px solid; border-color:#ccc; cursor:pointer;}
+.plug_Right_list{ margin-top:15px;}
+.plug_Right_list dl{ margin:0;}
+.plug_Right_list dl dd{ margin:0; border-radius:5px 5px 0 0; border:1px solid; border-color:#e1e1e1; font-size:14px; padding:12px 10px 12px 15px; background-image: linear-gradient(#fff, #f0f0f0); color:#666; font-weight:bold;} 
+.plug_Right_list dl dd i{ margin-right:6px;}
+.plug_Right_list dl dt{ margin:0; border:1px solid; border-color:#e1e1e1; border-top:0px solid; min-height:100px;}
+.plug_Right_list dl dt div{ cursor:pointer; padding:15px;  border-top:1px solid; border-color:#e1e1e1;  font-size:14px; background-color:#f6f6f6;}
+.plug_Right_list dl dt span ul{ display:none;}
+.plug_Right_ul{ margin:0; padding:0;}
+.plug_Right_ul li{ list-style:none; border-top:1px dashed; border-color:#e1e1e1;}
+.plug_Right_ul li a{ font-size:14px; display:block; padding:15px 15px;  margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.plug_Right_ul li a:active,.plug_Right_ul li a:hover {background-color:#d1e6ff; text-decoration:none;}
+.plug_Right_list dl dt span.plug_Right_ul_hover ul{ display:block;}
+.plug_Right_ul_hover div i:before{content: "\f147";}
+
+.plug_Right_list .Contact{ width:99%; padding-top:10px; padding-bottom:10px;}
+.plug_Right_list .Contact dl{ padding:10px 0 10px 20px; margin:0; overflow:hidden;}
+.plug_Right_list .Contact dl dd{ float:left; width:40px; height:31px; margin:0; line-height:0px; text-align:center; padding:0; padding-top:9px; border:0px solid; background-color:eee;  border-radius:20px; font-size:20px;}
+.plug_Right_list .Contact dl dd i{ margin:0; padding:0;}
+.plug_Right_list .Contact dl dt{ float:left; padding:0; border:0px solid; margin:0; padding-left:10px; font-size:16px; min-height:inherit; line-height:150%;}
+.plug_Right_list .Contact dl dt h3{ margin:0; font-size:12px; color:#666; font-weight:normal}
+.plug_Right_list .Contact dl dt span{ background-image:url(wxqrcode.png); width:100px; height:100px; display:block; background-size:100%; }
+.plug_Right_list .Contact dl dt font{ font-size:12px; display:block; color:#777;}
+
+.plug_left_Top{ font-size:16px; padding-bottom:20px; border-bottom:2px solid; border-color:#e1e1e1; width:98%; padding-left:10px; margin:24px 0  20px 0;}
+.plug_left_list{ width:97%; padding-left:10px; margin:0 0  50px 0;}
+.plug_left_list ul{ border-bottom:1px solid; border-color:#e1e1e1; margin:0; padding:0;}
+.plug_left_list ul:active,.plug_left_list ul:hover {background-color:#ebf4fe;}
+.plug_left_list ul li{ list-style:none; margin:0; padding:0; }
+.plug_left_list ul li a{ text-decoration:none;}
+.plug_left_list ul li dl{ margin:0; padding:30px 20px 20px 20px; overflow:hidden;}
+.plug_left_list ul li dl dd{ float:left; margin:0; width:25%; overflow:hidden;}
+.plug_left_list ul li dl dd img{ width:90%; text-align:center;}
+.plug_left_list ul li dl dt{ float:left;  margin:0; width:75%; overflow:hidden; font-size:14px; line-height:180%; color:#666;}
+.plug_left_list ul li dl dt a{ background-color:#666}
+.plug_left_list ul li dl dt h2{ margin:0; padding:0;}
+/*.plug_left_list ul li dl dt div{ color:#999; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:10px 0;}*/
+.plug_left_list ul li dl dt div{ color:#888; margin:0; overflow:hidden; margin:10px 0;}
+.plug_left_list ul li dl dt div a{ display:block; float:left; padding:0px 15px; background-color:#eee; border-radius:5px; font-size:12px; color:#333; margin:10px 10px 0 0;}
+.plug_left_list ul li dl dt div a:active,.plug_left_list ul li dl dt div a:hover {background-color:#0099ff; color:#FFF; }
+.plug_left_list ul li dl dt div a.red{ background-color:#F60; color:#FFF;}
+.plug_left_list ul li dl dt div a.red:active,.plug_left_list ul li dl dt div a.red:hover {background-color:#F00; }
+
+.apiDh{width:90%;  margin:0 auto ; height:85px;  overflow:hidden; padding-top:10px;}
+#apiDh_{ position:absolute;  left:50%; margin:auto; text-align:center; z-index:999;}
+.APIL6{ overflow:hidden; background-color:#FFF; width:93%; margin:auto;}
+.APIL6 ul{ width:99%;  overflow:hidden; border-bottom:2px solid; border-color:#eee; line-height:200%; padding:0; box-shadow: 3px 3px 10px #ddd;}
+.APIL6 li{ width:11.11%; float:left; text-align:center; list-style:none; margin:0; padding:0; background-color:#F4FDFF}
+.APIL6 li a{ font-size:12px; color:#333; display:block;  text-decoration: none; border-bottom:4px solid; border-color:#fff; padding:10px 0;}
+.APIL6 li a span{ display:block; border-left:1px solid; border-color:#ddd;}
+.APIL6 li a:link,.APIL6 li a:visited {}
+.APIL6 li a:active,.APIL6 li a:hover {color:#0585c6; background-color:#eef4fe;  border-color:#eef4fe;}
+.APIL6 .click a { font-weight:bold; color:#0585c6;  border-color:#0585c6; background-color:#eef4fe; }
+
+.Login{ width:90%; margin:auto; padding:50px 0; overflow:hidden;}
+.Loginleft{ float:left; width:50%;}
+.Loginleft div{ background-image:url(login_bj.png); width:350px; height:330px; margin-left:20px; margin-top:70px; background-size:100%; background-repeat:no-repeat; background-position:center;}
+.LoginRight{ float:right; width:50%;}
+.LoginRight2{border:1px solid; border-color:#ddd; overflow:hidden; border-radius:5px; padding:20px 0;}
+.inputStyle h1{ text-align:center;}
+.inputStyle dl{ margin:20px 0 20px 0; }
+.inputStyle dl dd,.inputStyle dl dt,.inputStyle div div{ margin:auto; padding:0; width:70%;  overflow:hidden; background-color:#fff}
+.inputStyle dl dd img{ position:absolute; margin-left:-130px; margin-top:0.6%; height:35px; cursor:pointer;}
+.inputStyle dl dd i{ position:absolute; font-size:16px; color:#999; margin:0 0 0 15px; line-height:45px;}
+.inputStyle dl dd input{ width:79%; padding:0 5% 0 15%; height:45px; line-height:45px; border-radius:5px; -webkit-border-radius:5px; outline: none; border:1px solid; border-color:#ccc;}
+.inputStyle dl dd input:active,.inputStyle dl dd input:hover {border-color:#4e93f7;}
+.inputStyle dl dd.inputErr input{ border-color:#f60;}
+.inputStyle dl dd.inputErr input:link,.inputStyle dl dd.inputErr input:visited {border-color:#f60;}
+.inputStyle dl dd.inputErr input:active,.inputStyle dl dd.inputErr input:hover {border-color:#4e93f7;}
+.inputStyle dl dd.inputErr i{ color:#f60}
+.inputStyle dl dd.inputOk input{ border-color:;}
+.inputStyle dl dd.inputOk i{ color:}
+.inputStyle dl dt{ padding:10px 0 0 0; color:#f60; display:none;}
+.inputStyle div{ width:70%; margin:auto;}
+.inputStyle div button{ width:100%; font-size:14px; height:45px; line-height:45px;  border-radius:5px; border:0px solid; background-color:#4e93f7; color:#FFF; font-weight:bold;}
+.inputStyle div button:active,.inputStyle div button:hover { background-color:#265cb8; cursor:pointer; }
+.inputStyle div ul{ text-align:right; padding:30px 0 30px 0; width:100%;}
+.inputStyle div ul li{ text-align:center;list-style:none; margin-left:20px; font-size:14px; line-height:280%;}
+.inputStyle div div{ text-align:right; width:95%; padding-bottom:20px; font-size:14px;}
+
+.reg dl dt{ display:block; color:#999; padding-left:30px;}
+.reg dl dt i{ margin-right:5px; color:#bbb;}
+.reg dl dt font,.reg dl dt font i{ color:#f70;}
+.reg dl dt span,.reg dl dt span i{ color:#390;}
+
+.resetTop{ width:70%; margin:auto; overflow:hidden; padding:50px 0;}
+.resetTop dl{ float:left; width:16%; overflow:hidden; margin:0; text-align:center; }
+.resetTop dl dd{ height:80px; width:80px; border:1px solid; border-color:#aaa;  margin:0 auto; font-size:30px; line-height:80px; border-radius:40px;}
+.resetTop dl dt{margin:0; font-size:14px; margin-top:20px;  }
+.resetTop .hover dd{ background-color:#4e93f7;  border-color:#4e93f7; color:#FFF;}
+.resetTop div{ float:left; width:26%; height:40px; border-bottom:1px solid; border-color:#bbb;}
+.reset{ margin:auto auto 50px auto; width:60%;}
+.inputStyle div button.regStyle{ background-color:#ccc}
+
+#CengStyle{ position:fixed; top:36%; left:0; z-index:100; width:100%; display:none;}
+#CengStyle dl{ width:700px; height:300px; background-color:#fff; margin:auto; border:2px solid; border-color:#ddd; overflow:hidden; border-radius:10px; box-shadow: 1px 1px 10px #eee;}
+#CengStyle dl dd{ float:left; width:170px; font-size:120px; text-align:right; padding-top:60px; color:#0C0}
+#CengStyle dl dt{ float:left; padding:40px 0 0 50px; width:300px; font-size:14px; line-height:230%;}
+#CengStyle dl dt h1{  border-bottom:1px solid; border-color:#ccc; padding-bottom:20px; font-size:36px;}
+
+#verifycodeStyle{ display:none}
+
+.pageList{ font-size:14px; text-align:right; padding:20px 0;}
+.pageList a{ padding:6px 9px; border:1px solid #b5daff; }
+.pageList a:link,.pageList a:visited {} 
+.pageList a:active,.pageList a:hover {background-color:#d8ebfe} 
+.pageList font{ padding:6px 11px; border:1px solid #f30; background-color:#f60; color:#FFF;}
+.pageList span{ background-color:#b5daff; padding:6px 11px; border:1px solid #b5daff; margin-left:5px;}
+
+ 
+/* 当浏览器的可视区域小于1200px 大于 980px */
+@media screen and (min-width: 0px) and (max-width:1200px){ 
+	.top_h1,#apiDh_{width:950px;}
+	#apiDh_{margin-left:-485px;}
+	.APIL6{ width:90%;}
+	.H2,.H3{background-image:url(bj.gif); width:970px;}
+	.H2Nr,.H3_a{width:950px;}
+	.bottom dl{ width:970px;}
+	.bottom dl dt.bottom_txt{width:940px;}
+	.IndexTxt p img{ width:97%;}
+	.index2 ul li dl dd .div { width: 100px; height: 100px; 0border-radius:100px; line-height:165px; line-height:125px;}
+	.index2 ul li dl dd .div i{ font-size:46px;}
+	.index3 dl dd{  padding-top:0px; font-size:12px; width:55%;}
+	.index3 dl dd h1{ margin:10px 0 20px 50px;}
+	.index3 dl dt{ height:230px; width:45%;}
+	
+	.index1 dl dt{ width:40%; height:330px; background-size:100%;}
+	.index1 dl dd{ float:left; line-height:350%; padding-top:20px; margin:0; padding-left:20px;}
+	.index1 dl dd h1{ font-size:40px; margin-bottom:60px;}
+	.index1 dl dd div{  margin-bottom:30px; overflow:hidden;}
+	.index1 dl dd div span{  font-size:20px;}
+	.index1 dl dd div a{ display:block; float:left;  background-image: linear-gradient(#0cF, #1595d6); font-size:12px; padding:0px 30px; color:#fff; border-radius:5px;}
+	.index1 dl dd div a:active,.index1 dl dd div a:hover { background-image: linear-gradient(#B5E7FF, #09F); }
+	.index1 dl dd span{ font-size:14px;}
+	.index1 dl dd span font{font-size:32px;  margin:0 10px;}
+	.index1 dl dd span e{ display:none;}
+	
+	.index4{  background-position:50px -60px; background-size:40%;}
+	.index4 dl{ margin:0 0 0 50%; }
+	.index4 dl dd h1{ margin-bottom:20px;}
+	.index4 dl dt{ font-size:18px; line-height:150%;}
+	.index4 dl dt div{ font-size:30px; padding-top:30px;}
+	.index4 dl dt div b{ font-size:50px;}
+	.index4 dl dt a{font-size:14px; }
+	
+	.index5 p a{ font-size:12px;}
+	
+	.index6 ul li dl dd{ font-size:60px;}
+	.index6 ul li dl dt{ font-size:12px;}
+	
+	.err{  padding:40px;}
+	.err dt{font-size:12px;}
+	.err dd{font-size:200px;}
+} 
+
+
+/* 当浏览器的可视区域大于1200px */
+@media screen and (min-width: 1200px) and (max-width:1580px){ 
+	.top_h1,#apiDh_{width:1150px;}
+	#apiDh_{margin-left:-575px;}
+	.H2,.H3{  background-image:url(bj_1200.gif); width:1200px;}
+	.H2Nr,.H3_a{width:1180px;}
+	.bottom dl{ width:1200px;}
+	.bottom dl dt.bottom_txt{width:1170px;}
+	.H2 ul li a{ font-size:15px;}
+	.H2 ul li a:active,.H2 ul li a:hover {background: url(navigation_ico.png) no-repeat -106px -35px; }
+	
+	.PageL3 li a{ font-size:16px; padding:15px 0;}
+	.APIL6 li a{ font-size:14px; padding:15px 0;}
+	.Contact ul li dl dt{ font-size:16px;}
+	.IndexTxt,.about,.Payment{ font-size:16px;}
+	
+	.Loginleft div{ width:500px; height:400px; background-size:90%; margin-top:50px; margin-left:40px; }
+	.LoginRight{width:40%;}
+	.inputStyle dl dd i{ line-height:50px;}
+	.inputStyle dl dd input,.inputStyle div button{ font-size:14px; height:50px; line-height:50px;}
+	.inputStyle dl dd i{ font-size:18px;}
+	.plug_left_list ul li dl dt{ font-size:14px; line-height:180%;}
+	.index2 ul li dl dd .div { width: 115px; height: 115px; 0border-radius:115px; line-height:165px; line-height:145px;}
+	.index2 ul li dl dd .div i{ font-size:53px;}
+	.index3 dl dd{  padding-top:50px;}
+	.index3 dl dt{ height:310px;}
+	.index1 dl dt{  height:420px; background-size:100%; }
+	.index1 dl dd h1{ font-size:40px; margin-bottom:70px;}
+	
+	.index4{  background-position:50px 0px; background-size:30%;}
+	.index4 dl{ margin:0 0 0 50%; }
+	.index4 dl dd h1{ margin-bottom:20px;}
+	.index4 dl dt div{ font-size:30px; padding-top:30px;}
+	.index4 dl dt div b{ font-size:50px;}
+	
+	.index5 p a{ font-size:14px;}
+	
+	.index6 ul li dl dd{ font-size:70px;}
+	
+	.err{  padding:50px;}
+	.err dt{font-size:14px;}
+	.err dd{font-size:220px;}
+	
+	
+	
+} 
+
+/* 当浏览器的可视区域大于1580px */
+@media screen and (min-width: 1580px) and (max-width:5000px){ 
+	.top_h1,#apiDh_{width:1350px;}
+	#apiDh_{margin-left:-675px;}
+	.H2,.H3{  background-image:url(bj_1400.gif); width:1400px;}
+	.H2Nr,.H3_a{width:1380px;}
+	.bottom dl{ width:1400px;}
+	.bottom dl dt.bottom_txt{width:1370px;}
+	.H2 ul li{ background: url(navigation_ico.png) no-repeat 0 -81px; }
+	.H2 ul li a{ font-size:16px; height:40px; line-height:40px;}
+	.H2 ul li a:active,.H2 ul li a:hover {background: url(navigation_ico.png) no-repeat -1px -130px;}
+	
+	/*Down*/
+	.Down_Nr dl dd .Top strong{ font-size:32px;}
+	.Down_Nr dl dd .down p{  font-size:16px;}
+	
+	.PageL3 li a{ font-size:18px; padding:20px 0;}
+	.APIL6 li a{ font-size:16px; padding:20px 0;}
+	.Contact ul li dl dt{ font-size:18px;}
+	.IndexTxt,.about,.Payment{ font-size:18px;}
+	.IndexTxt table{ width:80%;}
+	
+	.Loginleft div{ width:580px; height:450px; background-size:90%; margin-top:30px;  margin-left:50px;}
+	.LoginRight{width:40%;}
+	.inputStyle dl dd img{ }
+	.inputStyle dl dd i{ line-height:56px;}
+	.inputStyle dl dd input,.inputStyle div button{ font-size:16px; height:56px; line-height:56px;}
+	.inputStyle dl dd i{ font-size:24px;}
+	.plug_left_list ul li dl dt{ font-size:16px; line-height:200%;}
+	.plug_left_list ul li dl dt h2{ font-size:28px;}
+	
+} 
+
+@media screen and (max-width:980px){ 
+	#apiDh_{left:0px; margin-left:0px;}
+} 
+
+.QQOnline{ padding:10px 20px 30px 0;}
+.QQOnline a{ display:block; width:92px; height:22px; background-image:url(qq.png); float:right;}

@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -196,21 +197,30 @@ public class RoleServiceImpl implements RoleService {
             return IRoleMapper.INSTANCE.toDTO(roleResultPO);
         }
 
-        List<Long> newPermissionIds = permissions.stream()
-                .map(RolePermissionRelationshipMappingDTO::getPermissionId)
+        Map<Long, RolePermissionRelationshipMappingDTO> permissionRequestMap = permissions.stream()
                 .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+                .filter(item -> item.getPermissionId() != null)
+                .collect(Collectors.toMap(
+                        RolePermissionRelationshipMappingDTO::getPermissionId,
+                        item -> item,
+                        (existing, replacement) -> replacement
+                ));
+        List<Long> newPermissionIds = permissionRequestMap.keySet().stream().toList();
+        AssertUtils.notEmpty(newPermissionIds, "role.permission.id.cannot.be.blank");
         List<PermissionPO> permissionList = permissionMapper.selectByIds(newPermissionIds);
         AssertUtils.isTrue(permissionList.size() == newPermissionIds.size(), "瀛樺湪鏃犳晥鐨勬潈闄?ID");
 
-        List<Long> existingPermissionIds = rolePermissionRelationshipMappingMapper.selectList(
+        List<RolePermissionRelationshipMappingPO> existingMappings = rolePermissionRelationshipMappingMapper.selectList(
                 new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
                         .eq(RolePermissionRelationshipMappingPO::getRoleId, roleId)
-        ).stream().map(RolePermissionRelationshipMappingPO::getPermissionId).toList();
+        );
+        List<Long> existingPermissionIds = existingMappings.stream()
+                .map(RolePermissionRelationshipMappingPO::getPermissionId)
+                .toList();
 
         CollectionDiffUtils.DiffResult<Long> diff = CollectionDiffUtils.compare(existingPermissionIds, newPermissionIds);
         if (!diff.hasChanges()) {
+            syncPermissionExpireTime(existingMappings, permissionRequestMap);
             return IRoleMapper.INSTANCE.toDTO(roleResultPO);
         }
 
@@ -228,11 +238,13 @@ public class RoleServiceImpl implements RoleService {
                     RolePermissionRelationshipMappingPO.builder()
                             .roleId(roleId)
                             .permissionId(permissionId)
+                            .expireTime(permissionRequestMap.get(permissionId).getExpireTime())
                             .build()
             ));
             rolePermissionRelationshipMappingMapper.insert(insertList);
         }
 
+        syncPermissionExpireTime(existingMappings, permissionRequestMap);
         eventPublisher.publishEvent(new RolePermissionChangedEvent(roleId));
         return IRoleMapper.INSTANCE.toDTO(roleResultPO);
     }
@@ -365,5 +377,27 @@ public class RoleServiceImpl implements RoleService {
         if (currentUserRoleIds.stream().anyMatch(targetRoleIds::contains)) {
             throw new BusinessException(errorCode);
         }
+    }
+
+    /**
+     * 过期时间虽然当前未参与鉴权，但需要先持久化到关系表，避免后续能力上线时补历史数据。
+     */
+    private void syncPermissionExpireTime(List<RolePermissionRelationshipMappingPO> existingMappings,
+                                          Map<Long, RolePermissionRelationshipMappingDTO> permissionRequestMap) {
+        if (CollectionUtils.isEmpty(existingMappings) || permissionRequestMap == null || permissionRequestMap.isEmpty()) {
+            return;
+        }
+
+        existingMappings.stream()
+                .filter(Objects::nonNull)
+                .filter(item -> permissionRequestMap.containsKey(item.getPermissionId()))
+                .filter(item -> !Objects.equals(
+                        item.getExpireTime(),
+                        permissionRequestMap.get(item.getPermissionId()).getExpireTime()
+                ))
+                .forEach(item -> {
+                    item.setExpireTime(permissionRequestMap.get(item.getPermissionId()).getExpireTime());
+                    rolePermissionRelationshipMappingMapper.updateById(item);
+                });
     }
 }

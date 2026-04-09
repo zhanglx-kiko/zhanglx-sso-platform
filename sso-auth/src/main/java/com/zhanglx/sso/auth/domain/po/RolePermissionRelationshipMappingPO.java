@@ -41,8 +41,6 @@ public class RolePermissionRelationshipMappingPO extends BasePO {
     /**
      * 授权过期时间
      */
-    @TableField(exist = false)
+    @TableField(value = "expire_time", jdbcType = JdbcType.TIMESTAMP)
     private LocalDateTime expireTime;
-
-
 }

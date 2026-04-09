@@ -239,7 +239,8 @@ public class PermissionServiceImpl implements PermissionService {
                     children.stream().sorted(Comparator.comparingInt(PermissionPO::getDisplayNo)).toList()
             );
 
-            List<PermissionDTO> childrenTree = treeBuilder.buildTree(childrenDTOs, TreeFilterStrategy.STRICT_BRANCH_HIDE, false);
+            // 这里是维护权限定义本身，不能再套当前登录人的权限过滤，否则重命名父节点时会漏掉无权查看的子节点。
+            List<PermissionDTO> childrenTree = treeBuilder.buildTree(childrenDTOs, TreeFilterStrategy.NO_FILTER, false);
 
             List<PermissionDTO> updatedPermission = recursiveUpdateIdentityLineage(
                     updateMenu.getIdentification(), updateMenu.getIdentityLineage(), childrenTree);
@@ -326,7 +327,9 @@ public class PermissionServiceImpl implements PermissionService {
             return Lists.newArrayList();
         }
 
-        return treeBuilder.buildTree(results, TreeFilterStrategy.STRICT_BRANCH_HIDE, true);
+        // 权限管理页查询的是“权限定义树”，接口本身已通过 @SaCheckPermission 做入口鉴权，
+        // 这里仅负责组树，不再按当前登录人的权限集二次裁剪。
+        return treeBuilder.buildTree(results, TreeFilterStrategy.NO_FILTER, true);
     }
 
     /**

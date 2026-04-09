@@ -168,7 +168,7 @@ public interface PermissionService {
      * <p>
      * 业务逻辑：
      * 1. 根据用户角色映射表和角色权限映射表，关联查出所有权限
-     * 2. 仅过滤返回 type >= 2 (按钮/接口) 的 identification
+     * 2. 返回当前用户已获授权的全部 identification，供鉴权缓存与树形场景共用
      *
      * @param userId 用户 ID
      * @return List<String> 权限标识列表 (如 "user:add", "role:edit")

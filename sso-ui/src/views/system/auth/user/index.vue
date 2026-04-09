@@ -76,6 +76,11 @@
         <el-table-column prop="nickname" label="昵称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="phoneNumber" label="手机号" min-width="140" />
         <el-table-column prop="email" label="邮箱" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="birthday" label="生日" min-width="120">
+          <template #default="{ row }">
+            {{ row.birthday || '--' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="deptName" label="所属部门" min-width="160" show-overflow-tooltip />
         <el-table-column label="并发登录" width="120" align="center">
           <template #default="{ row }">
@@ -156,6 +161,9 @@
             <el-descriptions-item label="性别">
               {{ getGenderLabel(detailData.sex) }}
             </el-descriptions-item>
+            <el-descriptions-item label="生日">
+              {{ detailData.birthday || '--' }}
+            </el-descriptions-item>
             <el-descriptions-item label="并发登录">
               {{ detailData.allowConcurrentLogin === 1 ? '允许并发' : '禁止并发' }}
             </el-descriptions-item>
@@ -224,12 +232,12 @@
           <el-form-item label="头像地址" prop="avatar">
             <el-input v-model="formModel.avatar" placeholder="可选：头像 URL" />
           </el-form-item>
-          <el-form-item label="出生日期" prop="birthday">
+          <el-form-item label="生日" prop="birthday">
             <el-date-picker
               v-model="formModel.birthday"
               type="date"
               value-format="YYYY-MM-DD"
-              placeholder="当前后端未真正持久化"
+              placeholder="请选择生日"
             />
           </el-form-item>
         </div>

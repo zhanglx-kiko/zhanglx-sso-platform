@@ -1,0 +1,52 @@
+﻿function IndexSun(){
+
+	var xmlhttp;
+	try{xmlhttp=new ActiveXObject("Msxml2.XMLHTTP");}
+	catch(e){
+		try{xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");}
+		catch (e){ 
+			try{xmlhttp=new XMLHttpRequest();}
+			catch (e){}		}
+	}
+	var Posthttp="";
+	xmlhttp.open("post","/program/smsNum/?t=" + new Date().getTime());
+	xmlhttp.onreadystatechange=function()
+	{
+		if(4==xmlhttp.readyState)
+		{
+			if(200==xmlhttp.status)
+			{
+			aa=xmlhttp.responseText;
+			if(aa=="No"){
+				window.location.href="http://www.smschinese.cn";
+				return false;
+			}
+			document.getElementById("sms_sl").innerHTML=aa;
+			return false;
+			}
+			else
+			{ //alert("网络链接失败！");;
+			return false;}	
+		}
+	}
+	xmlhttp.setRequestHeader("CONTENT-TYPE","application/x-www-form-urlencoded");
+	xmlhttp.send();
+	return false;
+
+}
+
+function IndexSunHmtl(){
+	setInterval(function(){IndexSun();}, 1000);
+}
+
+function plugOnClick(id){
+    var inputs=document.getElementsByName("plugName");
+    for(var i=0;i<inputs.length;i++){
+        var input=inputs[i];
+        input.className = "";
+		if(i == id){
+			input.className = "plug_Right_ul_hover";
+		}
+    }
+}
+

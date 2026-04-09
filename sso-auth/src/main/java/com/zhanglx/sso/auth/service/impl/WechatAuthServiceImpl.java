@@ -18,12 +18,16 @@ import com.zhanglx.sso.auth.service.WechatAuthService;
 import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.web.support.RequestIdentityAccessor;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import tools.jackson.databind.JsonNode;
 
 @Slf4j
@@ -37,6 +41,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     private final MemberUserMapper memberUserMapper;
     private final MemberSocialMapper memberSocialMapper;
     private final AuthLoginAuditSupport authLoginAuditSupport;
+    private final RequestIdentityAccessor requestIdentityAccessor;
     private final RestClient restClient = RestClient.create();
 
     @Override
@@ -82,9 +87,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         } else {
             memberUserPO = memberUserMapper.selectById(socialPO.getMemberId());
             if (memberUserPO == null) {
-                memberUserPO = MemberUserPO.builder()
-                        .status(UserStatusEnum.NORMAL)
-                        .build();
+                memberUserPO = buildDefaultMember();
                 memberUserMapper.insert(memberUserPO);
 
                 socialPO.setMemberId(memberUserPO.getId());
@@ -98,15 +101,13 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         }
 
         StpMemberUtil.login(memberUserPO.getId());
-        String displayName = StringUtils.hasText(memberUserPO.getPhoneNumber())
-                ? memberUserPO.getPhoneNumber()
-                : "member_" + memberUserPO.getId();
+        String displayName = resolveDisplayName(memberUserPO);
         authLoginAuditSupport.storeMemberSession(
                 displayName,
                 displayName,
                 AuthLoginAuditSupport.CLIENT_TYPE_MEMBER_WECHAT
         );
-        memberUserService.touchLastLoginTime(memberUserPO.getId());
+        memberUserService.touchLastLoginInfo(memberUserPO.getId());
         return assembleMemberLoginVO(memberUserPO);
     }
 
@@ -142,9 +143,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     }
 
     private MemberUserPO createWechatMember(String openId, String unionId) {
-        MemberUserPO memberUserPO = MemberUserPO.builder()
-                .status(UserStatusEnum.NORMAL)
-                .build();
+        MemberUserPO memberUserPO = buildDefaultMember();
         memberUserMapper.insert(memberUserPO);
 
         MemberSocialPO memberSocialPO = MemberSocialPO.builder()
@@ -174,13 +173,39 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     private LoginVO assembleMemberLoginVO(MemberUserPO memberUserPO) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(memberUserPO.getId());
-        String displayName = StringUtils.hasText(memberUserPO.getPhoneNumber())
-                ? memberUserPO.getPhoneNumber()
-                : "member_" + memberUserPO.getId();
+        String displayName = resolveDisplayName(memberUserPO);
         loginVO.setUsername(displayName);
         loginVO.setNickname(displayName);
         loginVO.setTokenName(StpMemberUtil.getStpLogic().getTokenName());
         loginVO.setTokenValue(StpMemberUtil.getTokenValue());
         return loginVO;
+    }
+
+    private MemberUserPO buildDefaultMember() {
+        MemberUserPO memberUserPO = MemberUserPO.builder()
+                .status(UserStatusEnum.NORMAL)
+                .build();
+        memberUserPO.setUserLevel(1);
+        memberUserPO.setPoints(0L);
+        memberUserPO.setMemberType(0);
+        memberUserPO.setRealNameStatus(0);
+        memberUserPO.setRegisterIp(resolveCurrentClientIp());
+        return memberUserPO;
+    }
+
+    private String resolveDisplayName(MemberUserPO memberUserPO) {
+        if (StringUtils.hasText(memberUserPO.getNickname())) {
+            return memberUserPO.getNickname();
+        }
+        if (StringUtils.hasText(memberUserPO.getPhoneNumber())) {
+            return memberUserPO.getPhoneNumber();
+        }
+        return "member_" + memberUserPO.getId();
+    }
+
+    private String resolveCurrentClientIp() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes == null ? null : attributes.getRequest();
+        return requestIdentityAccessor.resolveClientIp(request);
     }
 }

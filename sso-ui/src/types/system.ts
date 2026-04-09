@@ -51,8 +51,6 @@ export interface RoleDTO extends BaseEntity {
   status?: number
   remark?: string
   rolePermissions?: PermissionDTO[]
-  roleType?: string
-  buildIn?: number
 }
 
 export interface RolePageQueryDTO extends PageQuery {}

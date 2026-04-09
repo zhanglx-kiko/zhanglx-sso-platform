@@ -1,0 +1,30 @@
+﻿/*
+function apiJs(){
+	
+	var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+	console.log("滚动距离" + scrollTop);
+}
+
+function apiJs_(){
+	setInterval(function(){ apiJs() }, 100);
+}
+*/
+
+function btn2(){
+    var inputs=document.getElementsByName("input1");
+    for(var i=0;i<inputs.length;i++){
+        var input=inputs[i];
+        alert(input.value);
+    }
+}
+
+window.onscroll = function () {
+	//scrollTop就是触发滚轮事件时滚轮的高度
+	var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+	//console.log("滚动距离" + scrollTop);
+	if (scrollTop > 350) {
+		document.getElementById("apiDh_").style.top= scrollTop -10 +"px";
+	}else{
+		document.getElementById("apiDh_").style.top= "auto";
+	}
+}

@@ -87,6 +87,7 @@ CREATE TABLE `t_sys_user`
     `phone_number`           varchar(20)           DEFAULT NULL COMMENT '手机号',
     `email`                  varchar(128)          DEFAULT NULL COMMENT '邮箱',
     `sex`                    tinyint(1)            DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
+    `birthday`               date                  DEFAULT NULL COMMENT '生日',
     `dept_id`                bigint(20)            DEFAULT NULL COMMENT '所属部门 ID',
     `allow_concurrent_login` tinyint(1)   NOT NULL DEFAULT 1 COMMENT '是否允许并发登录：1-允许，0-禁止',
     `status`                 tinyint(1)   NOT NULL DEFAULT 1 COMMENT '状态：1-正常，0-禁用',
@@ -127,17 +128,28 @@ CREATE TABLE `t_sys_user_social`
 DROP TABLE IF EXISTS `t_member_user`;
 CREATE TABLE `t_member_user`
 (
-    `id`              bigint(20) NOT NULL COMMENT '主键 ID',
-    `phone_number`    varchar(20)         DEFAULT NULL COMMENT '手机号',
-    `password`        varchar(255)        DEFAULT NULL COMMENT '密码哈希',
-    `status`          tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态：1-正常，0-禁用',
-    `register_ip`     varchar(128)        DEFAULT NULL COMMENT '注册 IP',
-    `last_login_time` datetime            DEFAULT NULL COMMENT '最后登录时间',
-    `del_flag`        bigint(20) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
-    `create_by`       bigint(20)          DEFAULT 0 COMMENT '创建人',
-    `create_time`     datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_by`       bigint(20)          DEFAULT 0 COMMENT '更新人',
-    `update_time`     datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `id`               bigint(20)   NOT NULL COMMENT '主键 ID',
+    `phone_number`     varchar(20)           DEFAULT NULL COMMENT '手机号',
+    `password`         varchar(255)          DEFAULT NULL COMMENT '密码哈希',
+    `nickname`         varchar(64)           DEFAULT NULL COMMENT '昵称',
+    `avatar`           varchar(255)          DEFAULT NULL COMMENT '头像地址',
+    `sex`              tinyint(1)            DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
+    `birthday`         date                  DEFAULT NULL COMMENT '生日',
+    `email`            varchar(128)          DEFAULT NULL COMMENT '邮箱',
+    `user_level`       int(11)      NOT NULL DEFAULT 1 COMMENT '用户等级，默认 1 级',
+    `points`           bigint(20)   NOT NULL DEFAULT 0 COMMENT '会员积分',
+    `member_type`      tinyint(1)   NOT NULL DEFAULT 0 COMMENT '会员类型：0-普通会员，1-VIP会员',
+    `real_name_status` tinyint(1)   NOT NULL DEFAULT 0 COMMENT '实名状态：0-未认证，1-认证中，2-已认证，3-认证失败',
+    `profile_extra`    text                  DEFAULT NULL COMMENT '扩展资料，建议存储 JSON 字符串',
+    `status`           tinyint(1)   NOT NULL DEFAULT 1 COMMENT '状态：1-正常，0-禁用',
+    `register_ip`      varchar(128)          DEFAULT NULL COMMENT '注册 IP',
+    `last_login_time`  datetime              DEFAULT NULL COMMENT '最后登录时间',
+    `last_login_ip`    varchar(128)          DEFAULT NULL COMMENT '最后登录 IP',
+    `del_flag`         bigint(20)   NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    `create_by`        bigint(20)            DEFAULT 0 COMMENT '创建人',
+    `create_time`      datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`        bigint(20)            DEFAULT 0 COMMENT '更新人',
+    `update_time`      datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_member_phone_del` (`phone_number`, `del_flag`),
     KEY `idx_status_del` (`status`, `del_flag`)
@@ -362,6 +374,7 @@ CREATE TABLE `t_auth_role_permission`
     `id`            bigint(20) NOT NULL COMMENT '主键 ID',
     `role_id`       bigint(20) NOT NULL COMMENT '角色 ID',
     `permission_id` bigint(20) NOT NULL COMMENT '权限 ID',
+    `expire_time`   datetime            DEFAULT NULL COMMENT '授权过期时间，预留未来按时效授权能力',
     `del_flag`      bigint(20) NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
     `create_by`     bigint(20)          DEFAULT NULL COMMENT '创建人',
     `create_time`   datetime   NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -434,7 +447,7 @@ INSERT INTO `t_auth_post`
 VALUES (1200000000000000001, 'ADMIN', '系统管理员', 1, 1, 0, 0, 0);
 
 INSERT INTO `t_sys_user`
-(`id`, `username`, `password`, `user_type`, `nickname`, `avatar`, `phone_number`, `email`, `sex`, `dept_id`,
+(`id`, `username`, `password`, `user_type`, `nickname`, `avatar`, `phone_number`, `email`, `sex`, `birthday`, `dept_id`,
  `allow_concurrent_login`, `status`, `del_flag`, `create_by`, `update_by`)
 VALUES (1300000000000000001,
         'zhanglx',
@@ -445,6 +458,7 @@ VALUES (1300000000000000001,
         '13800138000',
         'admin@zhanglx.com',
         1,
+        NULL,
         1100000000000000001,
         1,
         1,
@@ -810,10 +824,11 @@ VALUES (3000000000000000001, '系统平台', 'system', 0, 'system', NULL, '/syst
         NULL, 5, 0, 2, '查看系统参数详情', 1, 0, 1300000000000000001, 1300000000000000001);
 
 INSERT INTO `t_auth_role_permission`
-(`id`, `role_id`, `permission_id`, `del_flag`, `create_by`, `update_by`)
+(`id`, `role_id`, `permission_id`, `expire_time`, `del_flag`, `create_by`, `update_by`)
 SELECT 1900000000000000000 + ROW_NUMBER() OVER (ORDER BY `id`) AS `id`,
        1400000000000000001                                     AS `role_id`,
        `id`                                                    AS `permission_id`,
+       NULL                                                    AS `expire_time`,
        0                                                       AS `del_flag`,
        1300000000000000001                                     AS `create_by`,
        1300000000000000001                                     AS `update_by`
@@ -840,9 +855,9 @@ VALUES (3000000000000000108, '日志审计', 'system:auth:log', 3000000000000000
         1300000000000000001);
 
 INSERT INTO `t_auth_role_permission`
-(`id`, `role_id`, `permission_id`, `del_flag`, `create_by`, `update_by`)
-VALUES (1900000000000001800, 1400000000000000001, 3000000000000000108, 0, 1300000000000000001, 1300000000000000001),
-       (1900000000000001801, 1400000000000000001, 3000000000000001800, 0, 1300000000000000001, 1300000000000000001),
-       (1900000000000001802, 1400000000000000001, 3000000000000001801, 0, 1300000000000000001, 1300000000000000001),
-       (1900000000000001803, 1400000000000000001, 3000000000000001802, 0, 1300000000000000001, 1300000000000000001),
-       (1900000000000001804, 1400000000000000001, 3000000000000001803, 0, 1300000000000000001, 1300000000000000001);
+(`id`, `role_id`, `permission_id`, `expire_time`, `del_flag`, `create_by`, `update_by`)
+VALUES (1900000000000001800, 1400000000000000001, 3000000000000000108, NULL, 0, 1300000000000000001, 1300000000000000001),
+       (1900000000000001801, 1400000000000000001, 3000000000000001800, NULL, 0, 1300000000000000001, 1300000000000000001),
+       (1900000000000001802, 1400000000000000001, 3000000000000001801, NULL, 0, 1300000000000000001, 1300000000000000001),
+       (1900000000000001803, 1400000000000000001, 3000000000000001802, NULL, 0, 1300000000000000001, 1300000000000000001),
+       (1900000000000001804, 1400000000000000001, 3000000000000001803, NULL, 0, 1300000000000000001, 1300000000000000001);

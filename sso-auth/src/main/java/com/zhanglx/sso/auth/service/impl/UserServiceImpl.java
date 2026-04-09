@@ -131,6 +131,7 @@ public class UserServiceImpl implements UserService {
         userPO.setAvatar(userInfo.getAvatar());
         userPO.setPhoneNumber(userInfo.getPhoneNumber());
         userPO.setSex(userInfo.getSex());
+        userPO.setBirthday(userInfo.getBirthday());
         userPO.setEmail(userInfo.getEmail());
         userPO.setDeptId(userInfo.getDeptId());
         userPO.setAllowConcurrentLogin(userInfo.getAllowConcurrentLogin());

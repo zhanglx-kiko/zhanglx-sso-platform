@@ -23,7 +23,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "UserDTO", description = "用户对象")
+@Schema(name = "UserDTO", description = "后台用户对象")
 public class UserDTO extends UserBaseDTO {
 
     @NotBlank(message = "账号不能为空")

@@ -21,5 +21,5 @@ public interface MemberUserService {
 
     MemberUserPO findByPhoneNumber(String phoneNumber);
 
-    void touchLastLoginTime(Long memberId);
+    void touchLastLoginInfo(Long memberId);
 }

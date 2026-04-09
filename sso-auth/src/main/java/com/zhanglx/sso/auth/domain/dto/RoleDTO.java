@@ -39,12 +39,6 @@ public class RoleDTO extends BaseDTO {
     @Schema(description = "状态", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "1")
     private EnableStatusEnum status;
 
-    @Schema(description = "角色类型兼容字段", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private String roleType;
-
-    @Schema(description = "是否内置兼容字段", requiredMode = Schema.RequiredMode.NOT_REQUIRED, hidden = true)
-    private Integer buildIn;
-
     @Schema(description = "权限项列表", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private List<PermissionVO> rolePermissions;
 

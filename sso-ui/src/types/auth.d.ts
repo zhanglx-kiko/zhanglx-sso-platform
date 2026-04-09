@@ -54,14 +54,38 @@ export interface MemberBindPhoneDTO {
   verificationCode: string
 }
 
+export interface MemberUpdateDTO {
+  nickname?: string
+  avatar?: string | null
+  sex?: number
+  birthday?: string | null
+  email?: string
+  profileExtra?: string | null
+  phoneNumber?: string
+}
+
 export interface MemberInfoVO {
   id: string
-  phoneNumber: string
+  phoneNumber: string | null
+  nickname?: string | null
+  avatar?: string | null
+  sex?: number
+  birthday?: string | null
+  email?: string | null
   phoneBound: boolean
+  userLevel?: number
+  points?: number
+  memberType?: number
+  realNameStatus?: number
   status: number
   registerIp: string | null
   lastLoginTime: string | null
+  lastLoginIp?: string | null
+  profileExtra?: string | null
+  createBy?: string
   createTime: string
+  updateBy?: string
+  updateTime?: string
 }
 
 export interface UserDTO {
@@ -70,6 +94,7 @@ export interface UserDTO {
   nickname?: string
   avatar?: string | null
   phoneNumber?: string
+  birthday?: string | null
   email?: string
   allowConcurrentLogin?: number
   deptId?: string | null

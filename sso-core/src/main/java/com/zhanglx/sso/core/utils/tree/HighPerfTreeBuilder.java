@@ -34,7 +34,9 @@ public class HighPerfTreeBuilder {
         if (rawData == null || rawData.isEmpty()) return Collections.emptyList();
 
         // 1. 获取 Sa-Token 当前用户权限 (放入 Set 加速 O(1) 查询)
-        Set<String> userPermissions = new HashSet<>(StpUtil.getPermissionList());
+        Set<String> userPermissions = strategy == TreeFilterStrategy.NO_FILTER
+                ? Collections.emptySet()
+                : new HashSet<>(StpUtil.getPermissionList());
 
         // 2. 建立索引 (利用 JDK 增强的 SequencedMap 保持顺序可预见性)
         Map<Long, T> nodeMap = rawData.stream()

@@ -18,6 +18,20 @@ import java.util.stream.Collectors;
 public enum TreeFilterStrategy {
 
     /**
+     * 不做权限过滤，仅按层级组装树。
+     * 适用于权限定义管理、导入导出、层级重算等后台维护场景。
+     */
+    NO_FILTER {
+        @Override
+        public <T extends TreeNode<T, Long>> Set<Long> calculateValidNodeIds(
+                Collection<T> allNodes, Map<Long, T> nodeMap, Set<String> userPermissions) {
+            return allNodes.stream()
+                    .map(TreeNode::getId)
+                    .collect(Collectors.toSet());
+        }
+    },
+
+    /**
      * 策略A：保留有权限的节点及其完整父链（父节点无权限时“穿透”展示，保证菜单结构不被破坏）
      */
     KEEP_PARENT_CHAIN {

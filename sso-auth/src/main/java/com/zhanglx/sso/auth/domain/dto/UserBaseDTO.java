@@ -22,7 +22,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "UserBaseDTO", description = "用户基础信息")
+@Schema(name = "UserBaseDTO", description = "后台用户基础信息")
 public class UserBaseDTO extends BaseDTO {
 
     @Size(min = 1, max = 50, message = "用户昵称长度不能超过50个字符")

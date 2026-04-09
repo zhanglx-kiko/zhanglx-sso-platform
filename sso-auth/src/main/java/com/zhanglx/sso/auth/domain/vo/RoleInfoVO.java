@@ -37,9 +37,6 @@ public class RoleInfoVO extends BaseVO {
     @Schema(description = "状态", accessMode = Schema.AccessMode.READ_ONLY)
     private EnableStatusEnum status;
 
-    @Schema(description = "角色类型兼容字段", accessMode = Schema.AccessMode.READ_ONLY)
-    private String roleType;
-
     @Schema(description = "已绑定的用户 ID 列表", accessMode = Schema.AccessMode.READ_ONLY)
     @JsonSerialize(contentUsing = ToStringSerializer.class)
     private List<Long> userIds;

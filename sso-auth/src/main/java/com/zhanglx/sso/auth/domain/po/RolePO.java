@@ -39,12 +39,6 @@ public class RolePO extends BasePO {
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private EnableStatusEnum status;
 
-    @TableField(exist = false)
-    private String roleType;
-
-    @TableField(exist = false)
-    private Integer buildIn;
-
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 }

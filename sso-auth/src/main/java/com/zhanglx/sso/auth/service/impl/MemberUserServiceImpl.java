@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.service.impl;
 
 import com.zhanglx.sso.auth.domain.dto.MemberBindPhoneDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
+import com.zhanglx.sso.auth.constants.MemberVerificationCodeScenes;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
 import com.zhanglx.sso.auth.exception.MemberErrorCode;
@@ -14,10 +15,14 @@ import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
+import com.zhanglx.sso.web.support.RequestIdentityAccessor;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 
@@ -28,6 +33,7 @@ public class MemberUserServiceImpl implements MemberUserService {
     private final MemberUserMapper memberUserMapper;
     private final MemberSocialMapper memberSocialMapper;
     private final MemberVerificationCodeService memberVerificationCodeService;
+    private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Override
     public MemberInfoVO getCurrentMemberInfo(Long memberId) {
@@ -43,6 +49,13 @@ public class MemberUserServiceImpl implements MemberUserService {
             throw BusinessException.badRequest("member.phone.update.requires.verification");
         }
 
+        memberUserPO.setNickname(updateDTO.getNickname());
+        memberUserPO.setAvatar(updateDTO.getAvatar());
+        memberUserPO.setSex(updateDTO.getSex());
+        memberUserPO.setBirthday(updateDTO.getBirthday());
+        memberUserPO.setEmail(updateDTO.getEmail());
+        memberUserPO.setProfileExtra(updateDTO.getProfileExtra());
+        memberUserMapper.updateById(memberUserPO);
         return IMemberUserMapper.INSTANCE.toInfoVO(memberUserPO);
     }
 
@@ -60,7 +73,7 @@ public class MemberUserServiceImpl implements MemberUserService {
         }
 
         memberVerificationCodeService.verifyCode(
-                MemberVerificationCodeServiceImpl.SCENE_BIND_PHONE,
+                MemberVerificationCodeScenes.BIND_PHONE,
                 bindPhoneDTO.getPhoneNumber(),
                 bindPhoneDTO.getVerificationCode(),
                 memberId
@@ -108,9 +121,16 @@ public class MemberUserServiceImpl implements MemberUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void touchLastLoginTime(Long memberId) {
+    public void touchLastLoginInfo(Long memberId) {
         MemberUserPO memberUserPO = getById(memberId);
         memberUserPO.setLastLoginTime(LocalDateTime.now());
+        memberUserPO.setLastLoginIp(resolveCurrentClientIp());
         memberUserMapper.updateById(memberUserPO);
+    }
+
+    private String resolveCurrentClientIp() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = attributes == null ? null : attributes.getRequest();
+        return requestIdentityAccessor.resolveClientIp(request);
     }
 }
