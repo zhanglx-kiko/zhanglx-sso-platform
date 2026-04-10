@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 public enum AuthOperationErrorCode implements ErrorCode {
 
     REPEAT_SUBMIT(ResultCode.TOO_MANY_REQUESTS.getCode(), "repeat.submit"),
+    CURRENT_POST_IS_STILL_ASSIGNED_TO_USERS(ResultCode.CONFLICT.getCode(), "current.post.is.still.assigned.to.users"),
     RESET_CURRENT_USER_PASSWORD_FORBIDDEN(ResultCode.FORBIDDEN.getCode(), "user.self.reset.password.forbidden"),
     DISABLE_CURRENT_USER_FORBIDDEN(ResultCode.FORBIDDEN.getCode(), "user.self.disable.forbidden"),
     DELETE_CURRENT_USER_FORBIDDEN(ResultCode.FORBIDDEN.getCode(), "user.self.delete.forbidden"),

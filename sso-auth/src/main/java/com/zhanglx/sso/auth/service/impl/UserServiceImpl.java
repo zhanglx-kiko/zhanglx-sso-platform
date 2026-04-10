@@ -375,6 +375,7 @@ public class UserServiceImpl implements UserService {
         if (userDTO == null || userDTO.getDeptId() == null || deptNameMap == null) {
             return;
         }
+
         userDTO.setDeptName(deptNameMap.get(userDTO.getDeptId()));
     }
 }

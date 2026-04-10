@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
 
 import App from './App.vue'
 import router from './router'
@@ -8,6 +10,8 @@ import { setupAuthSessionMonitor } from '@/utils/authMonitor'
 import { setupElementPlus } from '@/plugins/element-plus'
 import 'element-plus/dist/index.css'
 import '@/assets/styles/index.scss'
+
+dayjs.locale('zh-cn')
 
 window.addEventListener('unhandledrejection', (event) => {
   const reason = event.reason

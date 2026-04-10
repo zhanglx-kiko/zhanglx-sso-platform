@@ -103,7 +103,6 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" min-width="168" />
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-space :size="10" wrap>

@@ -194,6 +194,7 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
         if (id == null) {
             return 0;
         }
+
         return this.update(null, new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<T>()
                 .setSql("del_flag = id")
                 .eq("id", id));

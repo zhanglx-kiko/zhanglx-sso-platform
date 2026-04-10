@@ -8,6 +8,7 @@ import com.zhanglx.sso.auth.domain.po.PostPO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.po.UserPostPO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
 import com.zhanglx.sso.auth.mapper.PostMapper;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.mapper.UserPostMapper;
@@ -85,14 +86,14 @@ public class PostServiceImpl implements PostService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         PostPO exist = getPostOrThrow(id);
-        AssertUtils.isTrue(userPostMapper.countByPostId(exist.getId()) == 0, "current post is still assigned to users");
+        AssertUtils.isTrue(userPostMapper.countByPostId(exist.getId()) == 0, AuthOperationErrorCode.CURRENT_POST_IS_STILL_ASSIGNED_TO_USERS, exist.getPostName());
         postMapper.deleteByIdWithFill(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDelete(List<Long> ids) {
-        AssertUtils.notEmpty(ids, "post ids cannot be empty");
+        AssertUtils.notEmpty(ids, "business.resource.not.found");
         ids.stream().filter(Objects::nonNull).distinct().forEach(this::delete);
     }
 
@@ -185,7 +186,7 @@ public class PostServiceImpl implements PostService {
      * 根据标识查询目标数据，不存在时抛出异常。
      */
     private PostPO getPostOrThrow(Long id) {
-        AssertUtils.notNull(id, "post id cannot be null");
+        AssertUtils.notNull(id, "business.resource.not.found");
         PostPO exist = postMapper.selectById(id);
         AssertUtils.notNull(exist, CommonErrorCode.NOT_FOUND);
         return exist;
