@@ -1,8 +1,8 @@
 package com.zhanglx.sso.xss.config;
 
 import com.zhanglx.sso.xss.resolver.XssMultipartStringPartResolver;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

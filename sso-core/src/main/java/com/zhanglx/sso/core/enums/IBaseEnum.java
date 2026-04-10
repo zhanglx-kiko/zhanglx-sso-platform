@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:22
- * @ClassName: IBaseEnum
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:22
+ * 类名：基础枚举接口
+ * 说明：
  */
 @JsonDeserialize(using = IBaseEnumJsonDeserializer.class)
 public interface IBaseEnum<K, V> {

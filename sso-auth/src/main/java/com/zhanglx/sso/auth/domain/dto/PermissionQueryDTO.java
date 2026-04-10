@@ -7,10 +7,10 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/4/1 09:42
- * @ClassName: PermissionQueryDTO
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/4/1 09:42
+ * 类名：PermissionQueryDTO
+ * 说明：
  */
 @Data
 public class PermissionQueryDTO {

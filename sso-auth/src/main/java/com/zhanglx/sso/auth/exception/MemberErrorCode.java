@@ -13,8 +13,13 @@ import lombok.RequiredArgsConstructor;
 public enum MemberErrorCode implements ErrorCode {
 
     MEMBER_NOT_FOUND(ResultCode.NOT_FOUND.getCode(), "member.info.not.found");
-
+    /**
+     * 验证码。
+     */
     private final Integer code;
+    /**
+     * 消息键。
+     */
     private final String messageKey;
 
 }

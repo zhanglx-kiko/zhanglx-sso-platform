@@ -44,15 +44,33 @@ public class OperationLogElasticsearchClient {
     private static final DateTimeFormatter INDEX_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final MediaType NDJSON_MEDIA_TYPE = MediaType.parseMediaType("application/x-ndjson");
-
+    /**
+     * 配置属性。
+     */
     private final OperationLogProperties properties;
+    /**
+     * 对象映射器。
+     */
     private final ObjectMapper objectMapper;
-
+    /**
+     * clientCursor。
+     */
     private final AtomicInteger clientCursor = new AtomicInteger();
+    /**
+     * templateLock。
+     */
     private final Object templateLock = new Object();
-
+    /**
+     * 模板已就绪。
+     */
     private volatile boolean templateReady;
+    /**
+     * 最后模板检查时间。
+     */
     private volatile long lastTemplateCheckAt;
+    /**
+     * clients。
+     */
     private volatile List<HostClient> clients;
 
     public String resolveIndexName(OperationLogDocument document) {
@@ -162,6 +180,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * ensureTemplate处理逻辑。
+     */
     private void ensureTemplate() {
         long now = System.currentTimeMillis();
         if (templateReady && now - lastTemplateCheckAt < 300_000L) {
@@ -186,6 +207,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * indexExists处理逻辑。
+     */
     private boolean indexExists(String index) {
         Integer status = executeWithFailover(client -> client.restClient.method(HttpMethod.HEAD)
                 .uri("/" + index)
@@ -193,6 +217,9 @@ public class OperationLogElasticsearchClient {
         return status != null && status == 200;
     }
 
+    /**
+     * 创建index。
+     */
     private void createIndex(String index) {
         try {
             executeWithFailover(client -> client.restClient.put()
@@ -208,6 +235,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * prepareBulkItems处理逻辑。
+     */
     private List<PreparedBulkItem> prepareBulkItems(List<OperationLogDocument> documents) {
         List<PreparedBulkItem> preparedItems = new ArrayList<>();
         for (OperationLogDocument document : documents) {
@@ -219,6 +249,9 @@ public class OperationLogElasticsearchClient {
         return preparedItems;
     }
 
+    /**
+     * parseBulkResult处理逻辑。
+     */
     private BulkWriteResult parseBulkResult(String responseBody, List<PreparedBulkItem> preparedItems) {
         JsonNode root = readTree(responseBody);
         if (!root.path("errors").asBoolean(false)) {
@@ -242,6 +275,9 @@ public class OperationLogElasticsearchClient {
         return new BulkWriteResult(failedDocuments, String.join(" | ", failureMessages));
     }
 
+    /**
+     * parsePageResult处理逻辑。
+     */
     private OperationLogPageVO parsePageResult(String responseBody, OperationLogQueryDTO queryDTO) {
         JsonNode root = readTree(responseBody);
         JsonNode hitsNode = root.path("hits");
@@ -268,6 +304,9 @@ public class OperationLogElasticsearchClient {
                 .build();
     }
 
+    /**
+     * 转换hit。
+     */
     private OperationLogVO convertHit(JsonNode hit) {
         JsonNode source = hit.path("_source");
         return OperationLogVO.builder()
@@ -308,6 +347,9 @@ public class OperationLogElasticsearchClient {
                 .build();
     }
 
+    /**
+     * 构建searchBody。
+     */
     private ObjectNode buildSearchBody(OperationLogQueryDTO queryDTO) {
         ObjectNode body = objectMapper.createObjectNode();
         body.put("track_total_hits", true);
@@ -352,6 +394,9 @@ public class OperationLogElasticsearchClient {
         return body;
     }
 
+    /**
+     * 解析searchIndices。
+     */
     private List<String> resolveSearchIndices(OperationLogQueryDTO queryDTO) {
         LocalDateTime endTime = queryDTO.getEndTime() != null ? queryDTO.getEndTime() : LocalDateTime.now();
         LocalDateTime startTime = queryDTO.getStartTime() != null
@@ -372,6 +417,9 @@ public class OperationLogElasticsearchClient {
         return indices;
     }
 
+    /**
+     * 解析detailIndices。
+     */
     private List<String> resolveDetailIndices(OperationLogQueryDTO queryDTO) {
         if (queryDTO == null || (queryDTO.getStartTime() == null && queryDTO.getEndTime() == null)) {
             return List.of(properties.getElasticsearch().getIndexPrefix() + "-*");
@@ -379,6 +427,9 @@ public class OperationLogElasticsearchClient {
         return resolveSearchIndices(queryDTO);
     }
 
+    /**
+     * 追加条件过滤处理逻辑。
+     */
     private void addTermFilter(ArrayNode filter, String field, String value) {
         if (!StringUtils.hasText(value)) {
             return;
@@ -388,6 +439,9 @@ public class OperationLogElasticsearchClient {
         filter.add(objectMapper.createObjectNode().set("term", objectMapper.createObjectNode().set(field, term)));
     }
 
+    /**
+     * 追加范围过滤处理逻辑。
+     */
     private void addRangeFilter(ArrayNode filter, String field, LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime == null && endTime == null) {
             return;
@@ -403,6 +457,9 @@ public class OperationLogElasticsearchClient {
         filter.add(objectMapper.createObjectNode().set("range", range));
     }
 
+    /**
+     * encodeSearchAfter处理逻辑。
+     */
     private String encodeSearchAfter(JsonNode sortNode) {
         if (sortNode == null || !sortNode.isArray() || sortNode.isEmpty()) {
             return null;
@@ -410,6 +467,9 @@ public class OperationLogElasticsearchClient {
         return Base64.getUrlEncoder().encodeToString(writeJson(sortNode).getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * 解析翻页游标处理逻辑。
+     */
     private JsonNode decodeSearchAfter(String token) {
         if (!StringUtils.hasText(token)) {
             return objectMapper.createArrayNode();
@@ -422,6 +482,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * executeWithFailover处理逻辑。
+     */
     private <T> T executeWithFailover(EsRestCall<T> call) {
         List<HostClient> hostClients = getClients();
         RuntimeException lastException = null;
@@ -443,6 +506,9 @@ public class OperationLogElasticsearchClient {
         throw lastException == null ? new IllegalStateException("ES 调用失败") : lastException;
     }
 
+    /**
+     * 获取clients。
+     */
     private List<HostClient> getClients() {
         List<HostClient> current = clients;
         if (!CollectionUtils.isEmpty(current)) {
@@ -467,6 +533,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * 构建请求客户端。
+     */
     private RestClient buildRestClient(String host) {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(properties.getElasticsearch().getConnectTimeout())
@@ -487,6 +556,9 @@ public class OperationLogElasticsearchClient {
         return builder.build();
     }
 
+    /**
+     * 规范化host。
+     */
     private String normalizeHost(String host) {
         if (!StringUtils.hasText(host)) {
             throw new IllegalArgumentException("Elasticsearch host 不能为空");
@@ -494,6 +566,9 @@ public class OperationLogElasticsearchClient {
         return host.trim().replace("http://", "").replace("https://", "");
     }
 
+    /**
+     * 加载template序列化文本。
+     */
     private String loadTemplateJson() {
         try {
             ClassPathResource resource = new ClassPathResource("es/operation-log-index-template.json");
@@ -503,6 +578,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * 读取tree。
+     */
     private JsonNode readTree(String json) {
         try {
             return objectMapper.readTree(json);
@@ -511,6 +589,9 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * 写出序列化文本。
+     */
     private String writeJson(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
@@ -519,16 +600,25 @@ public class OperationLogElasticsearchClient {
         }
     }
 
+    /**
+     * 读取文本字段值。
+     */
     private String text(JsonNode source, String fieldName) {
         JsonNode node = source.path(fieldName);
         return node.isMissingNode() || node.isNull() ? null : node.asText();
     }
 
+    /**
+     * longValue处理逻辑。
+     */
     private Long longValue(JsonNode source, String fieldName) {
         JsonNode node = source.path(fieldName);
         return node.isMissingNode() || node.isNull() ? null : node.asLong();
     }
 
+    /**
+     * localDateTime处理逻辑。
+     */
     private LocalDateTime localDateTime(JsonNode source, String fieldName) {
         String text = text(source, fieldName);
         if (!StringUtils.hasText(text)) {
@@ -537,6 +627,9 @@ public class OperationLogElasticsearchClient {
         return LocalDateTime.parse(text, DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 转换扩展信息。
+     */
     private Map<String, String> convertExt(JsonNode extNode) {
         if (extNode == null || extNode.isMissingNode() || extNode.isNull() || !extNode.isObject()) {
             return Collections.emptyMap();
@@ -556,7 +649,8 @@ public class OperationLogElasticsearchClient {
     private record HostClient(String host, RestClient restClient) {
     }
 
-    private record PreparedBulkItem(OperationLogDocument document, String indexName, String metaJson, String sourceJson) {
+    private record PreparedBulkItem(OperationLogDocument document, String indexName, String metaJson,
+                                    String sourceJson) {
     }
 
     public record BulkWriteResult(List<OperationLogDocument> failedDocuments, String failureSummary) {

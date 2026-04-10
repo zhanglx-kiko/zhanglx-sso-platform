@@ -12,10 +12,10 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/10 20:49
- * @ClassName: IPermissionMapper
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/2/10 20:49
+ * 类名：IPermissionMapper
+ * 说明：
  */
 @Mapper(builder = @Builder(disableBuilder = true))
 public interface IPermissionMapper {

@@ -94,7 +94,7 @@ public class MemberUserPO extends BasePO {
     private Integer realNameStatus;
 
     /**
-     * 扩展资料统一收敛为 JSON 字符串，避免会员体系频繁改表。
+     * 扩展资料统一收敛为 序列化文本，避免会员体系频繁改表。
      */
     @TableField(value = "profile_extra", jdbcType = JdbcType.LONGVARCHAR)
     private String profileExtra;
@@ -118,7 +118,7 @@ public class MemberUserPO extends BasePO {
     private LocalDateTime lastLoginTime;
 
     /**
-     * 最后登录IP。
+     * 最后登录地址。
      */
     @TableField(value = "last_login_ip", jdbcType = JdbcType.VARCHAR)
     private String lastLoginIp;

@@ -4,6 +4,9 @@ import com.zhanglx.sso.auth.domain.po.ConfigPO;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 
+/**
+ * 配置数据访问层。
+ */
 @Mapper
 public interface ConfigMapper extends IBaseMapperX<ConfigPO> {
 }

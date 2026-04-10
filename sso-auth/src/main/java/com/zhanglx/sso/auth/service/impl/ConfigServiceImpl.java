@@ -16,10 +16,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 配置服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class ConfigServiceImpl implements ConfigService {
-
+    /**
+     * 参数配置映射器。
+     */
     private final ConfigMapper configMapper;
 
     @Override

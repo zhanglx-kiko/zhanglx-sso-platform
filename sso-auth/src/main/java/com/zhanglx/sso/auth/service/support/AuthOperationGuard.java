@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Objects;
 
+/**
+ * 操作保护组件类型。
+ */
 @Component
 public class AuthOperationGuard {
 
@@ -36,7 +39,7 @@ public class AuthOperationGuard {
     }
 
     public void checkRoleUsersBindingDoesNotRemoveCurrentUser(Collection<Long> existingUserIds,
-                                                             Collection<Long> targetUserIds) {
+                                                              Collection<Long> targetUserIds) {
         Long currentUserId = getCurrentLoginUserId();
         if (currentUserId == null || existingUserIds == null || !existingUserIds.contains(currentUserId)) {
             return;
@@ -46,9 +49,9 @@ public class AuthOperationGuard {
         }
     }
 
-/**
- * 校验目标用户不是当前登录人。
- */
+    /**
+     * 校验目标用户不是当前登录人。
+     */
     private void checkUserNotSelf(Long userId, AuthOperationErrorCode errorCode) {
         Long currentUserId = getCurrentLoginUserId();
         if (currentUserId != null && Objects.equals(currentUserId, userId)) {
@@ -56,9 +59,9 @@ public class AuthOperationGuard {
         }
     }
 
-/**
- * 校验目标用户集合不包含当前登录人。
- */
+    /**
+     * 校验目标用户集合不包含当前登录人。
+     */
     private void checkUsersNotContainsSelf(Collection<Long> userIds, AuthOperationErrorCode errorCode) {
         Long currentUserId = getCurrentLoginUserId();
         if (currentUserId != null && userIds != null && userIds.contains(currentUserId)) {

@@ -9,10 +9,15 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
+/**
+ * SmsTemplate支撑组件。
+ */
 @Component
 @RequiredArgsConstructor
 public class SmsTemplateSupport {
-
+    /**
+     * 短信配置属性。
+     */
     private final SmsProperties smsProperties;
 
     public SmsProperties.TemplateProperties getTemplate(SmsSceneType sceneType) {

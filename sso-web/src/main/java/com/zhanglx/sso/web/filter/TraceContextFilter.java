@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * 统一在服务入口处补齐 traceId / requestId，并写入 MDC。
+ * 统一在服务入口处补齐 链路追踪标识 / 请求标识，并写入 MDC。
  * 这样无论是业务日志、登录日志还是 ES 操作日志，都能拿到同一组标识。
  */
 @Component
@@ -44,6 +44,9 @@ public class TraceContextFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * 返回第一个非空白值。
+     */
     private String firstNonBlank(String first, String second) {
         if (StringUtils.hasText(first)) {
             return first.trim();

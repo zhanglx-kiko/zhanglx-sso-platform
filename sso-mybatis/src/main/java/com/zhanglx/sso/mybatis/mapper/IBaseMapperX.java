@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 17:05
- * @ClassName: IBaseMapperX
- * @Description: 顶层通用 Mapper 扩展
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 17:05
+ * 类名：IBaseMapperX
+ * 说明：顶层通用 Mapper 扩展
  * <p>
  * 泛型 T 必须继承自 BasePO，以确保拥有主键与逻辑删除字段。
  */
@@ -30,7 +30,7 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
     /**
      * 按项目统一的分页参数执行分页查询。
      *
-     * @param pageParam 统一分页参数对象
+     * @param pageParam    统一分页参数对象
      * @param queryWrapper 查询条件包装器
      * @return MyBatis-Plus 分页结果对象
      */
@@ -153,7 +153,7 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
     /**
      * 按字段名和候选值集合查询记录列表。
      *
-     * @param field 数据库字段名
+     * @param field  数据库字段名
      * @param values 候选值集合
      * @return 匹配记录列表
      */
@@ -164,7 +164,7 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
     /**
      * 按 Lambda 字段和候选值集合查询记录列表。
      *
-     * @param field Lambda 字段引用
+     * @param field  Lambda 字段引用
      * @param values 候选值集合
      * @return 匹配记录列表
      */
@@ -228,7 +228,7 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
     /**
      * 禁止调用 MyBatis-Plus 新增的带 useFill 标记的删除接口。
      *
-     * @param obj 主键对象或实体对象
+     * @param obj     主键对象或实体对象
      * @param useFill 是否启用填充逻辑
      * @return 永不返回
      */
@@ -263,7 +263,7 @@ public interface IBaseMapperX<T extends BasePO> extends BaseMapper<T> {
      * 禁止调用带 useFill 标记的原生批量删除接口。
      *
      * @param collections 主键集合
-     * @param useFill 是否启用填充逻辑
+     * @param useFill     是否启用填充逻辑
      * @return 永不返回
      */
     @Override

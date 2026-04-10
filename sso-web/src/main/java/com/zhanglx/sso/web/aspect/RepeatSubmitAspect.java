@@ -38,23 +38,38 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * 重复提交切面。
+ */
 @Slf4j
 @Aspect
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 50)
 @RequiredArgsConstructor
 public class RepeatSubmitAspect {
-
+    /**
+     * 对象映射器。
+     */
     private final ObjectMapper objectMapper;
+    /**
+     * 配置属性。
+     */
     private final RepeatSubmitProperties properties;
+    /**
+     * 请求防护存储器。
+     */
     private final RequestProtectionStore requestProtectionStore;
+    /**
+     * Web 表达式解析器。
+     */
     private final WebExpressionEvaluator webExpressionEvaluator;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Around("@annotation(repeatSubmit)")
@@ -88,11 +103,17 @@ public class RepeatSubmitAspect {
         return joinPoint.proceed();
     }
 
+    /**
+     * 获取当前请求对象。
+     */
     private HttpServletRequest currentRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attributes == null ? null : attributes.getRequest();
     }
 
+    /**
+     * 解析window。
+     */
     private Duration resolveWindow(RepeatSubmit repeatSubmit) {
         long seconds = repeatSubmit.windowSeconds() > 0L
                 ? repeatSubmit.windowSeconds()
@@ -100,6 +121,9 @@ public class RepeatSubmitAspect {
         return Duration.ofSeconds(Math.max(1L, seconds));
     }
 
+    /**
+     * 构建锁键。
+     */
     private String buildLockKey(ProceedingJoinPoint joinPoint, HttpServletRequest request, RepeatSubmit repeatSubmit) {
         String customKey = webExpressionEvaluator.evaluateAsString(repeatSubmit.key(), joinPoint, request);
         String payload = StringUtils.hasText(customKey) ? customKey : buildCanonicalPayload(joinPoint);
@@ -112,6 +136,9 @@ public class RepeatSubmitAspect {
                 fingerprint);
     }
 
+    /**
+     * 构建canonicalPayload。
+     */
     private String buildCanonicalPayload(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String[] parameterNames = signature.getParameterNames();
@@ -138,6 +165,9 @@ public class RepeatSubmitAspect {
         }
     }
 
+    /**
+     * 规范化处理逻辑。
+     */
     private JsonNode canonicalize(JsonNode node) {
         if (node == null || node.isNull() || node.isValueNode()) {
             return node;
@@ -157,6 +187,9 @@ public class RepeatSubmitAspect {
         return node;
     }
 
+    /**
+     * 判断是否需要包含参数。
+     */
     private boolean shouldIncludeArgument(Object argument) {
         if (argument == null) {
             return true;
@@ -174,6 +207,9 @@ public class RepeatSubmitAspect {
                 || argument instanceof Locale);
     }
 
+    /**
+     * 重复提交Exception处理逻辑。
+     */
     private BusinessException repeatSubmitException(RepeatSubmit repeatSubmit) {
         if (StringUtils.hasText(repeatSubmit.messageKey())) {
             return new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), repeatSubmit.messageKey().trim());

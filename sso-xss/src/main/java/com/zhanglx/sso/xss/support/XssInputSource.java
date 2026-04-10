@@ -14,7 +14,9 @@ public enum XssInputSource {
     REQUEST_HEADER("request_header"),
 
     MULTIPART_PART("multipart_part");
-
+    /**
+     * 指标值。
+     */
     private final String metricValue;
 
     XssInputSource(String metricValue) {

@@ -13,10 +13,10 @@ import org.apache.ibatis.type.JdbcType;
 import java.time.LocalDateTime;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/18 10:48
- * @ClassName: RolePermissionRelationshipMappingPO
- * @Description: 角色权限关联关系表
+ * 作者：Zhang L X
+ * 创建时间：2026/3/18 10:48
+ * 类名：角色权限关系持久化对象
+ * 说明：角色权限关联关系表
  */
 @Data
 @SuperBuilder

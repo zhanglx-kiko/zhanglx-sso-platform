@@ -3,10 +3,10 @@ package com.zhanglx.sso.mybatis.utils;
 import cn.hutool.core.lang.Singleton;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/26 17:59
- * @ClassName: SnowFlakeUtils
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/26 17:59
+ * 类名：SnowFlakeUtils
+ * 说明：
  */
 public class SnowFlakeUtils {
 
@@ -20,9 +20,21 @@ public class SnowFlakeUtils {
     private static final long MACHINE_LEFT = 9L;
     private static final long DATACENTER_LEFT = 11L;
     private static final long TIMESTMP_LEFT = 13L;
-    private long datacenterId;
-    private long machineId;
+    /**
+     * datacenter标识。
+     */
+    private final long datacenterId;
+    /**
+     * machine标识。
+     */
+    private final long machineId;
+    /**
+     * sequence。
+     */
     private long sequence = 0L;
+    /**
+     * 上次时间戳。
+     */
     private long lastSTmp = -1L;
 
     public SnowFlakeUtils(long datacenterId, long machineId) {
@@ -36,6 +48,15 @@ public class SnowFlakeUtils {
         } else {
             throw new IllegalArgumentException("datacenterId can't be greater than MAX_DATACENTER_NUM or less than 0");
         }
+    }
+
+    /**
+     * 生成ID
+     *
+     * @return
+     */
+    public static Long generateId() {
+        return Singleton.get(SnowFlakeUtils.class, new Object[]{1L, 1L}).nextId();
     }
 
     public synchronized long nextId() {
@@ -57,6 +78,9 @@ public class SnowFlakeUtils {
         }
     }
 
+    /**
+     * 获取下一个可用时间戳。
+     */
     private long getNextMill() {
         long mill;
         for (mill = this.getNewsTmp(); mill <= this.lastSTmp; mill = this.getNewsTmp()) {
@@ -64,17 +88,11 @@ public class SnowFlakeUtils {
         return mill;
     }
 
+    /**
+     * 获取当前系统时间戳。
+     */
     private long getNewsTmp() {
         return System.currentTimeMillis();
-    }
-
-    /**
-     * 生成ID
-     *
-     * @return
-     */
-    public static Long generateId() {
-        return ((SnowFlakeUtils) Singleton.get(SnowFlakeUtils.class, new Object[]{1L, 1L})).nextId();
     }
 
 }

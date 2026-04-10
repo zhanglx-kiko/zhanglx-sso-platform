@@ -25,7 +25,7 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 public class DeptQueryDTO extends PageQuery {
 
     /**
-     * 父部门 ID。
+     * 父部门 标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

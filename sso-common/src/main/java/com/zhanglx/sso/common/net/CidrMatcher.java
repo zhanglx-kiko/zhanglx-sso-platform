@@ -5,11 +5,18 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 
 /**
- * CIDR/IP matcher used by proxy trust and client IP resolution.
+ * 网段匹配器。
+ * 用于校验某个地址是否落在指定的 CIDR 网段范围内。
  */
 public final class CidrMatcher {
-
+    /**
+     * 网络地址字节数组。
+     */
     private final byte[] networkAddress;
+
+    /**
+     * 前缀长度。
+     */
     private final int prefixLength;
 
     public CidrMatcher(String cidr) {
@@ -38,6 +45,17 @@ public final class CidrMatcher {
         this.prefixLength = calculatedPrefixLength;
     }
 
+    /**
+     * 将地址字符串解析为字节数组。
+     */
+    private static byte[] toAddress(String rawAddress) {
+        try {
+            return InetAddress.getByName(rawAddress).getAddress();
+        } catch (UnknownHostException ex) {
+            throw new IllegalArgumentException("invalid ip/cidr address: " + rawAddress, ex);
+        }
+    }
+
     public boolean matches(String ipAddress) {
         if (ipAddress == null || ipAddress.isBlank()) {
             return false;
@@ -62,13 +80,5 @@ public final class CidrMatcher {
 
         int mask = (-1) << (Byte.SIZE - remainingBits);
         return (candidate[fullBytes] & mask) == (networkAddress[fullBytes] & mask);
-    }
-
-    private static byte[] toAddress(String rawAddress) {
-        try {
-            return InetAddress.getByName(rawAddress).getAddress();
-        } catch (UnknownHostException ex) {
-            throw new IllegalArgumentException("invalid ip/cidr address: " + rawAddress, ex);
-        }
     }
 }

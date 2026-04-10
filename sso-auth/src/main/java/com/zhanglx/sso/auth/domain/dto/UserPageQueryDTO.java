@@ -1,9 +1,6 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
-import tools.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,12 +9,15 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/11 16:27
- * @ClassName: UserPageQueryDTO
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/2/11 16:27
+ * 类名：UserPageQueryDTO
+ * 说明：
  */
 @Data
 @SuperBuilder
@@ -30,11 +30,11 @@ public class UserPageQueryDTO extends PageQuery {
     /**
      * 用户名。
      */
-    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "username", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String username;
 
     /**
-     * 部门id。
+     * 部门标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

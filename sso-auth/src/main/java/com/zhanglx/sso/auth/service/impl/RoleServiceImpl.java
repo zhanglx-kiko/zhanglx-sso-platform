@@ -32,20 +32,52 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 角色服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(rollbackFor = Exception.class)
 public class RoleServiceImpl implements RoleService {
-
+    /**
+     * 应用映射器。
+     */
     private final AppMapper appMapper;
+    /**
+     * 用户映射器。
+     */
     private final UserMapper userMapper;
+    /**
+     * 角色映射器。
+     */
     private final RoleMapper roleMapper;
+    /**
+     * 权限映射器。
+     */
     private final PermissionMapper permissionMapper;
+    /**
+     * 权限服务。
+     */
     private final PermissionService permissionService;
+    /**
+     * 角色部门映射器。
+     */
     private final RoleDeptMapper roleDeptMapper;
+    /**
+     * 事件发布器。
+     */
     private final ApplicationEventPublisher eventPublisher;
+    /**
+     * 用户角色关系映射器。
+     */
     private final UserRoleRelationshipMappingMapper userRoleRelationshipMappingMapper;
+    /**
+     * 角色权限关系映射器。
+     */
     private final RolePermissionRelationshipMappingMapper rolePermissionRelationshipMappingMapper;
+    /**
+     * 操作保护组件。
+     */
     private final AuthOperationGuard authOperationGuard;
 
     @Override

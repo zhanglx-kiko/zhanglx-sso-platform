@@ -4,10 +4,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/26 15:46
- * @ClassName: CoreAutoConfig
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/2/26 15:46
+ * 类名：CoreAutoConfig
+ * 说明：
  */
 @Configuration
 @ComponentScan(basePackages = "com.zhanglx.sso.core")

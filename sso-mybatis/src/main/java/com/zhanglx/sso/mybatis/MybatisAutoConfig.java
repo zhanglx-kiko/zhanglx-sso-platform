@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/26 15:46
- * @ClassName: MybatisAutoConfig
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/2/26 15:46
+ * 类名：MybatisAutoConfig
+ * 说明：
  */
 @Configuration
 @Import(MybatisAutoConfiguration.class)

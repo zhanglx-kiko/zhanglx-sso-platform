@@ -1,12 +1,11 @@
 package com.zhanglx.sso.auth.service;
 
-import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberVerificationCodeSendDTO;
-import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.*;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 
+/**
+ * MemberAuth服务接口。
+ */
 public interface MemberAuthService {
 
     LoginVO login(MemberLoginDTO memberLoginDTO);

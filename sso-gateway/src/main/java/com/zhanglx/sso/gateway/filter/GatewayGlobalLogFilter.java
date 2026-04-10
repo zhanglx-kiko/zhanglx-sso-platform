@@ -19,11 +19,16 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 网关全局请求日志过滤器。
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
-
+    /**
+     * clientIpProperties。
+     */
     private final GatewayClientIpProperties clientIpProperties;
 
     @Override
@@ -64,16 +69,25 @@ public class GatewayGlobalLogFilter implements GlobalFilter, Ordered {
         }));
     }
 
+    /**
+     * 解析请求标识。
+     */
     private String resolveRequestId(ServerHttpRequest request) {
         String requestId = request.getHeaders().getFirst(TraceConstants.REQUEST_ID_HEADER);
         return StringUtils.hasText(requestId) ? requestId.trim() : UUID.randomUUID().toString();
     }
 
+    /**
+     * 解析链路追踪标识。
+     */
     private String resolveTraceId(ServerHttpRequest request, String requestId) {
         String traceId = request.getHeaders().getFirst(TraceConstants.TRACE_ID_HEADER);
         return StringUtils.hasText(traceId) ? traceId.trim() : requestId;
     }
 
+    /**
+     * 解析客户端地址。
+     */
     private String resolveClientIp(ServerHttpRequest request) {
         String remoteAddress = request.getRemoteAddress() == null || request.getRemoteAddress().getAddress() == null
                 ? null

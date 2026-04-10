@@ -11,14 +11,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:18
- * @ClassName: AutoEnumTypeHandler
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:18
+ * 类名：AutoEnumTypeHandler
+ * 说明：
  */
-
 public class AutoEnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
-
+    /**
+     * typeHandler。
+     */
     private BaseTypeHandler typeHandler = null;
 
     public AutoEnumTypeHandler(Class<E> type) {
@@ -26,7 +27,7 @@ public class AutoEnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
             throw new IllegalArgumentException("Type argument cannot be null");
         }
         if (IBaseEnum.class.isAssignableFrom(type)) {
-            // 如果实现了 IBaseEnum 则使用我们自定义的转换器
+            // 如果实现了 基础枚举接口 则使用我们自定义的转换器
             typeHandler = new EnumCodeTypeHandler(type);
         } else {
             // 默认转换器 也可换成 EnumOrdinalTypeHandler

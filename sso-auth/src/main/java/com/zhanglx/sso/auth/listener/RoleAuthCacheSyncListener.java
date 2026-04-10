@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 角色权限缓存同步监听器。
+ */
 @Slf4j
 @Component
 public class RoleAuthCacheSyncListener {
@@ -27,9 +30,15 @@ public class RoleAuthCacheSyncListener {
     private static final String ROLE_CACHE_PREFIX = "sso:auth:role:";
     private static final String PERMISSION_CACHE_PREFIX = "sso:auth:permission:";
 
+    /**
+     * 用户角色关系映射器。
+     */
     @Resource
     private UserRoleRelationshipMappingMapper userRoleRelationshipMappingMapper;
 
+    /**
+     * Redis 字符串模板。
+     */
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 

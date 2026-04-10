@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * 用户类型枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum UserTypeEnum implements IIntegerBaseEnum<String> {
@@ -16,10 +19,15 @@ public enum UserTypeEnum implements IIntegerBaseEnum<String> {
     SYSTEM(1, "系统用户"),
     MEMBER(2, "会员用户");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static UserTypeEnum fromCode(Integer code) {

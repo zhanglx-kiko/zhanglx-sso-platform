@@ -9,10 +9,10 @@ import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/19 17:18
- * @ClassName: StringTrimDeserializer
- * @Description: 处理@RequestBody请求当中的string 将字符串去空格
+ * 作者：Zhang L X
+ * 创建时间：2026/3/19 17:18
+ * 类名：StringTrimDeserializer
+ * 说明：处理@RequestBody请求当中的string 将字符串去空格
  */
 @JacksonComponent
 public class StringTrimDeserializer extends ValueDeserializer<String> {

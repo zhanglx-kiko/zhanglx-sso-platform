@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+/**
+ * MemberSocial数据访问层。
+ */
 @Mapper
 public interface MemberSocialMapper extends IBaseMapperX<MemberSocialPO> {
 

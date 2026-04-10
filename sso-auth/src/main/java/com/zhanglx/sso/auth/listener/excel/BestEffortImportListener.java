@@ -15,15 +15,18 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/26 17:22
- * @ClassName: BestEffortImportListener
- * @Description: 尽力而为策略的 Fesod 监听器 (已修复进度同步机制)
+ * 作者：Zhang L X
+ * 创建时间：2026/3/26 17:22
+ * 类名：BestEffortImportListener
+ * 说明：尽力而为策略的 Fesod 监听器 (已修复进度同步机制)
  */
 @Slf4j
 public class BestEffortImportListener implements ReadListener<PermissionExcelVO> {
 
     private final Validator validator;
+    /**
+     * 任务标识。
+     */
     private final String taskId;
     private final ImportProgressManager progressManager; // 直接注入进度管理器
 
@@ -84,7 +87,7 @@ public class BestEffortImportListener implements ReadListener<PermissionExcelVO>
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
-        // 处理最后一批不足 batchSize 的有效数据
+        // 处理最后一批不足 batch数量 的有效数据
         if (!validDataBatch.isEmpty()) {
             processValidBatch();
         }

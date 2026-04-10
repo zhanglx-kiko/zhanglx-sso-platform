@@ -5,20 +5,25 @@ import com.zhanglx.sso.core.utils.enums.EnumUtils;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
-import tools.jackson.databind.BeanProperty;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.*;
 
+/**
+ * 基础枚举反序列化器。
+ */
 public class IBaseEnumJsonDeserializer extends ValueDeserializer<Object> {
 
+    /**
+     * 目标枚举类型。
+     */
     private final Class<? extends Enum<?>> enumType;
 
     public IBaseEnumJsonDeserializer() {
         this(null);
     }
 
+    /**
+     * 私有构造方法，用于绑定具体的枚举类型。
+     */
     private IBaseEnumJsonDeserializer(Class<? extends Enum<?>> enumType) {
         this.enumType = enumType;
     }
@@ -71,6 +76,9 @@ public class IBaseEnumJsonDeserializer extends ValueDeserializer<Object> {
         return new IBaseEnumJsonDeserializer((Class<? extends Enum<?>>) rawClass);
     }
 
+    /**
+     * 解析byEnumName。
+     */
     private Object resolveByEnumName(Object code) {
         if (!(code instanceof String text) || text.isBlank()) {
             return null;
@@ -82,6 +90,9 @@ public class IBaseEnumJsonDeserializer extends ValueDeserializer<Object> {
         }
     }
 
+    /**
+     * 解析fromTree。
+     */
     private Object resolveFromTree(JsonNode node) {
         if (node == null || node.isNull()) {
             return null;
@@ -96,6 +107,9 @@ public class IBaseEnumJsonDeserializer extends ValueDeserializer<Object> {
         return codeNode.isNumber() ? codeNode.numberValue() : normalizeString(codeNode.asText());
     }
 
+    /**
+     * 规范化string。
+     */
     private String normalizeString(String rawValue) {
         if (rawValue == null) {
             return null;

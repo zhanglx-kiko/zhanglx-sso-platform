@@ -3,6 +3,9 @@ package com.zhanglx.sso.common;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * 统一结果码枚举。
+ */
 @Getter
 @AllArgsConstructor
 public enum ResultCode {
@@ -23,7 +26,14 @@ public enum ResultCode {
     SERVICE_UNAVAILABLE(503, "服务暂时不可用"),
     GATEWAY_TIMEOUT(504, "请求超时");
 
+    /**
+     * 编码。
+     */
     private final Integer code;
+
+    /**
+     * 消息。
+     */
     private final String message;
 
 }

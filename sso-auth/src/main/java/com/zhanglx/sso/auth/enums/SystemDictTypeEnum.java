@@ -7,6 +7,9 @@ import com.zhanglx.sso.core.enums.IStringBaseEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * SystemDictType枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum SystemDictTypeEnum implements IStringBaseEnum<String> {
@@ -22,10 +25,15 @@ public enum SystemDictTypeEnum implements IStringBaseEnum<String> {
     CUSTOMER_LEVEL("sys_customer_level", "客户等级"),
     PRODUCT_STATUS("sys_product_status", "产品状态");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final String code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static SystemDictTypeEnum fromCode(String code) {

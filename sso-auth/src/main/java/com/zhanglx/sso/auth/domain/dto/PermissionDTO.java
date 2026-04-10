@@ -44,7 +44,7 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
     private String identification;
 
     /**
-     * 父级 ID。
+     * 父级 标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

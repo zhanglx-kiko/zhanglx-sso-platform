@@ -9,18 +9,18 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/26 17:52
- * @ClassName: ImportProgressManager
- * @Description: Excel 导入进度 Redis 管理器
+ * 作者：Zhang L X
+ * 创建时间：2026/3/26 17:52
+ * 类名：ImportProgressManager
+ * 说明：Excel 导入进度 Redis 管理器
  */
 @Component
 @RequiredArgsConstructor
 public class ImportProgressManager {
 
-    private final StringRedisTemplate stringRedisTemplate;
     private static final String PROGRESS_KEY_PREFIX = "sso:import:progress:";
     private static final long EXPIRE_TIME_HOURS = 24L; // 进度保留24小时
+    private final StringRedisTemplate stringRedisTemplate;
 
     // 初始化任务
     public void initTask(String taskId) {
@@ -79,9 +79,9 @@ public class ImportProgressManager {
         return null;
     }
 
-/**
- * 保存任务进度。
- */
+    /**
+     * 保存任务进度。
+     */
     private void saveProgress(ImportProgressDTO progress) {
         stringRedisTemplate.opsForValue().set(
                 PROGRESS_KEY_PREFIX + progress.getTaskId(),

@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/27 16:23
- * @ClassName: ExportProgressManager
- * @Description: Excel 导出进度 Redis 管理器
+ * 作者：Zhang L X
+ * 创建时间：2026/3/27 16:23
+ * 类名：ExportProgressManager
+ * 说明：Excel 导出进度 Redis 管理器
  */
 @Component
 @RequiredArgsConstructor
@@ -20,6 +20,9 @@ public class ExportProgressManager {
 
     private static final String PROGRESS_KEY_PREFIX = "sso:export:progress:";
     private static final long EXPIRE_TIME_HOURS = 24L;
+    /**
+     * Redis 字符串模板。
+     */
     private final StringRedisTemplate stringRedisTemplate;
 
     // 初始化任务 (需要传入预估的总行数)
@@ -75,9 +78,9 @@ public class ExportProgressManager {
         return null;
     }
 
-/**
- * 保存任务进度。
- */
+    /**
+     * 保存任务进度。
+     */
     private void saveProgress(ExportProgressDTO progress) {
         stringRedisTemplate.opsForValue().set(
                 PROGRESS_KEY_PREFIX + progress.getTaskId(),

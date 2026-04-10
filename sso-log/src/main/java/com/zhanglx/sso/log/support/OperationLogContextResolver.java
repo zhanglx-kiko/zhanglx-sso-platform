@@ -33,8 +33,13 @@ public class OperationLogContextResolver {
     public static final String PLATFORM_CODE_HEADER = "X-Platform-Code";
     public static final String PLATFORM_NAME_HEADER = "X-Platform-Name";
     public static final String SOURCE_SYSTEM_HEADER = "X-Source-System";
-
+    /**
+     * 配置属性。
+     */
     private final OperationLogProperties properties;
+    /**
+     * requestIdentityAccessor。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
     public OperationLogCommand enrich(OperationLogCommand command) {
@@ -105,6 +110,9 @@ public class OperationLogContextResolver {
         return attributes == null ? null : attributes.getRequest();
     }
 
+    /**
+     * 解析链路追踪标识。
+     */
     private String resolveTraceId(HttpServletRequest request) {
         String traceId = TraceContextHolder.getTraceId();
         if (StringUtils.hasText(traceId)) {
@@ -114,6 +122,9 @@ public class OperationLogContextResolver {
         return requestTraceId == null ? null : String.valueOf(requestTraceId);
     }
 
+    /**
+     * 解析请求标识。
+     */
     private String resolveRequestId(HttpServletRequest request) {
         String requestId = TraceContextHolder.getRequestId();
         if (StringUtils.hasText(requestId)) {
@@ -123,6 +134,9 @@ public class OperationLogContextResolver {
         return currentRequestId == null ? null : String.valueOf(currentRequestId);
     }
 
+    /**
+     * 解析当前登录人的基础信息。
+     */
     private CurrentOperator resolveCurrentOperator() {
         try {
             if (StpUtil.isLogin()) {
@@ -151,6 +165,9 @@ public class OperationLogContextResolver {
         return new CurrentOperator(null, null, null);
     }
 
+    /**
+     * 获取会话值。
+     */
     private String getSessionValue(SaSession session, String key) {
         if (session == null) {
             return null;
@@ -159,6 +176,9 @@ public class OperationLogContextResolver {
         return value == null ? null : String.valueOf(value);
     }
 
+    /**
+     * 读取指定请求头并做去空白处理。
+     */
     private String header(HttpServletRequest request, String headerName) {
         if (request == null || !StringUtils.hasText(headerName)) {
             return null;
@@ -167,6 +187,9 @@ public class OperationLogContextResolver {
         return StringUtils.hasText(value) ? value.trim() : null;
     }
 
+    /**
+     * 返回参数中的第一个非空白字符串。
+     */
     private String firstNonBlank(String... values) {
         if (values == null) {
             return null;
@@ -179,6 +202,9 @@ public class OperationLogContextResolver {
         return null;
     }
 
+    /**
+     * 当前登录人的简化快照。
+     */
     private record CurrentOperator(String userId, String username, String displayName) {
     }
 }

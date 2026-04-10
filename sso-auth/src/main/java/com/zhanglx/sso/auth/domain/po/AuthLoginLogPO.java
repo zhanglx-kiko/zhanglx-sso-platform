@@ -22,19 +22,21 @@ import java.time.LocalDateTime;
 public class AuthLoginLogPO {
 
     /**
-     * ID。
+     * 标识。
      */
     /**
-     * 用户ID。
+     * 主键标识。
      */
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
+    /**
+     * 用户标识。
+     */
     private Long userId;
     /**
      * 用户名。
      */
-
     private String username;
 
     /**
@@ -62,7 +64,7 @@ public class AuthLoginLogPO {
     private String failReason;
 
     /**
-     * 登录IP。
+     * 登录地址。
      */
     @TableField("login_ip")
     private String loginIp;
@@ -80,13 +82,13 @@ public class AuthLoginLogPO {
     private String deviceType;
 
     /**
-     * 链路追踪ID。
+     * 链路追踪标识。
      */
     @TableField("trace_id")
     private String traceId;
 
     /**
-     * 请求ID。
+     * 请求标识。
      */
     @TableField("request_id")
     private String requestId;
@@ -116,13 +118,13 @@ public class AuthLoginLogPO {
     private LocalDateTime logoutTime;
 
     /**
-     * createTime。
+     * 创建时间。
      */
     @TableField("create_time")
     private LocalDateTime createTime;
 
     /**
-     * 扩展JSON。
+     * 扩展序列化内容。
      */
     @TableField("ext_json")
     private String extJson;

@@ -19,18 +19,17 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.multipart.support.MultipartResolutionDelegate;
+import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.multipart.support.MultipartResolutionDelegate;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
  * 专门处理 multipart/form-data 中的文本分片。
- * RequestPart String 不会稳定经过统一 RequestBodyAdvice，因此这里补一层轻量解析器。
+ * `RequestPart` 字符串参数不会稳定经过统一请求体增强链路，因此这里补一层轻量解析器。
  */
 @Component
 @RequiredArgsConstructor
@@ -130,6 +129,9 @@ public class XssMultipartStringPartResolver implements HandlerMethodArgumentReso
         return new String(bytes, resolveCharset(part.getContentType()));
     }
 
+    /**
+     * 解析分片名称。
+     */
     private String resolvePartName(MethodParameter parameter) {
         RequestPart requestPart = parameter.getParameterAnnotation(RequestPart.class);
         if (requestPart != null && StringUtils.hasText(requestPart.name())) {
@@ -141,6 +143,9 @@ public class XssMultipartStringPartResolver implements HandlerMethodArgumentReso
         return parameter.getParameterName();
     }
 
+    /**
+     * 解析字符集。
+     */
     private Charset resolveCharset(@Nullable String contentType) {
         if (!StringUtils.hasText(contentType)) {
             return StandardCharsets.UTF_8;

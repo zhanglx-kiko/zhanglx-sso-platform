@@ -12,7 +12,9 @@ public enum XssBypassReason {
     ANNOTATION_NONE("annotation_none"),
 
     IGNORED_CONTENT_TYPE("ignored_content_type");
-
+    /**
+     * 指标值。
+     */
     private final String metricValue;
 
     XssBypassReason(String metricValue) {

@@ -5,10 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/19 14:26
- * @ClassName: WechatProperties
- * @Description: 微信小程序配置属性。
+ * 作者：Zhang L X
+ * 创建时间：2026/3/19 14:26
+ * 类名：WechatProperties
+ * 说明：微信小程序配置属性。
  */
 @Data
 @Builder

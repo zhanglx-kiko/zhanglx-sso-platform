@@ -25,7 +25,9 @@ import java.io.IOException;
 public class XssProtectionFilter extends OncePerRequestFilter {
 
     private final XssSanitizationService sanitizationService;
-
+    /**
+     * 审计记录器。
+     */
     private final XssAuditRecorder auditRecorder;
 
     @Override

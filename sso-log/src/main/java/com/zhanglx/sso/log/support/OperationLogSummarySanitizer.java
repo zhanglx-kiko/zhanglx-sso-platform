@@ -26,9 +26,17 @@ import java.util.*;
 @Component
 @RequiredArgsConstructor
 public class OperationLogSummarySanitizer {
-
+    /**
+     * 对象映射器。
+     */
     private final ObjectMapper objectMapper;
+    /**
+     * 配置属性。
+     */
     private final OperationLogProperties properties;
+    /**
+     * sensitiveDataMasker。
+     */
     private final SensitiveDataMasker sensitiveDataMasker;
 
     public String summarizeRequest(Signature signature, Object[] args) {
@@ -130,6 +138,9 @@ public class OperationLogSummarySanitizer {
         return sanitized;
     }
 
+    /**
+     * summarizeResponseMeta处理逻辑。
+     */
     private Object summarizeResponseMeta(Object result) {
         if (result instanceof Result<?> response) {
             Map<String, Object> summary = new LinkedHashMap<>();
@@ -153,6 +164,9 @@ public class OperationLogSummarySanitizer {
         return Map.of("type", result.getClass().getSimpleName());
     }
 
+    /**
+     * simplify处理逻辑。
+     */
     private Object simplify(String fieldName, Object value, int depth, Set<Object> visited) {
         if (value == null) {
             return null;
@@ -195,6 +209,9 @@ public class OperationLogSummarySanitizer {
         }
     }
 
+    /**
+     * 简化映射内容。
+     */
     private Map<String, Object> simplifyMap(Map<?, ?> map, int depth, Set<Object> visited) {
         Map<String, Object> result = new LinkedHashMap<>();
         int count = 0;
@@ -210,6 +227,9 @@ public class OperationLogSummarySanitizer {
         return result;
     }
 
+    /**
+     * simplifyCollection处理逻辑。
+     */
     private List<Object> simplifyCollection(Collection<?> collection, int depth, Set<Object> visited) {
         List<Object> result = new ArrayList<>();
         int count = 0;
@@ -224,6 +244,9 @@ public class OperationLogSummarySanitizer {
         return result;
     }
 
+    /**
+     * simplifyArray处理逻辑。
+     */
     private List<Object> simplifyArray(Object array, int depth, Set<Object> visited) {
         int length = Array.getLength(array);
         List<Object> result = new ArrayList<>();
@@ -236,6 +259,9 @@ public class OperationLogSummarySanitizer {
         return result;
     }
 
+    /**
+     * simplifyBean处理逻辑。
+     */
     private Map<String, Object> simplifyBean(Object bean, int depth, Set<Object> visited) {
         Map<String, Object> result = new LinkedHashMap<>();
         int count = 0;
@@ -260,6 +286,9 @@ public class OperationLogSummarySanitizer {
         return result;
     }
 
+    /**
+     * 是否simpleValue处理逻辑。
+     */
     private boolean isSimpleValue(Object value) {
         return value instanceof Number
                 || value instanceof Boolean
@@ -270,6 +299,9 @@ public class OperationLogSummarySanitizer {
                 || value instanceof TemporalAccessor;
     }
 
+    /**
+     * shouldIgnore处理逻辑。
+     */
     private boolean shouldIgnore(Object argument) {
         return argument == null
                 || argument instanceof jakarta.servlet.ServletRequest
@@ -279,6 +311,9 @@ public class OperationLogSummarySanitizer {
                 || argument instanceof java.io.OutputStream;
     }
 
+    /**
+     * appendThrowable处理逻辑。
+     */
     private void appendThrowable(StringBuilder builder, Throwable throwable, int depth) {
         if (throwable == null || depth > 2) {
             return;
@@ -302,6 +337,9 @@ public class OperationLogSummarySanitizer {
         }
     }
 
+    /**
+     * 写出序列化文本。
+     */
     private String writeJson(Object value) {
         if (value == null) {
             return null;
@@ -313,6 +351,9 @@ public class OperationLogSummarySanitizer {
         }
     }
 
+    /**
+     * 截断文本处理逻辑。
+     */
     private String truncate(String value, int maxLength) {
         if (!StringUtils.hasText(value) || value.length() <= maxLength) {
             return value;

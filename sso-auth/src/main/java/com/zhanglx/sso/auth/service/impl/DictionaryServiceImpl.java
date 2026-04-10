@@ -23,11 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 字典服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class DictionaryServiceImpl implements DictionaryService {
-
+    /**
+     * 字典类型映射器。
+     */
     private final DictTypeMapper dictTypeMapper;
+    /**
+     * 字典数据映射器。
+     */
     private final DictDataMapper dictDataMapper;
 
     @Override

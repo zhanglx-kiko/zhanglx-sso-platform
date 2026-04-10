@@ -115,7 +115,7 @@ public class MemberInfoVO extends BaseVO {
     private String lastLoginIp;
 
     /**
-     * 扩展资料 JSON。
+     * 扩展资料 序列化文本。
      */
     @Schema(description = "扩展资料 JSON", accessMode = Schema.AccessMode.READ_ONLY)
     private String profileExtra;

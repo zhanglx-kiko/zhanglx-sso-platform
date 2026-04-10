@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 17:06
- * @ClassName: TreeFilterStrategy
- * @Description: 权限树过滤策略 (V2.0 高性能防弹版)
+ * 作者：Zhang L X
+ * 创建时间：2026/3/17 17:06
+ * 类名：TreeFilterStrategy
+ * 说明：权限树过滤策略 (V2.0 高性能防弹版)
  */
 public enum TreeFilterStrategy {
 
@@ -46,11 +46,11 @@ public enum TreeFilterStrategy {
 
             Set<Long> validIds = new HashSet<>();
             for (T node : allNodes) {
-                // 2. 判空保护：排除目录节点可能没有 identification 的情况
+                // 2. 判空保护：排除目录节点可能没有 权限标识 的情况
                 String identification = node.getIdentification();
                 if (StringUtils.isNotBlank(identification) && userPermissions.contains(identification)) {
 
-                    // 3. 【性能优化】直接操作 Node 引用向上追溯，省去重复的 nodeMap.get()
+                    // 3. 【性能优化】直接操作 节点引用向上追溯，省去重复的 nodeMap.get()
                     T currNode = node;
                     while (currNode != null
                             && currNode.getId() != null

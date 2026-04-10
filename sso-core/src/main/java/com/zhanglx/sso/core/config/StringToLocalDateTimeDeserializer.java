@@ -13,7 +13,9 @@ import java.time.format.DateTimeParseException;
  * 将前端传入的字符串反序列化为 LocalDateTime。
  */
 public class StringToLocalDateTimeDeserializer extends ValueDeserializer<LocalDateTime> {
-
+    /**
+     * 时间格式化器。
+     */
     private final DateTimeFormatter formatter;
 
     public StringToLocalDateTimeDeserializer(DateTimeFormatter formatter) {

@@ -12,8 +12,8 @@ import org.apache.fesod.sheet.annotation.ExcelProperty;
 import org.hibernate.validator.constraints.Length;
 
 /**
- * @Author: Zhang L X
- * @Description: 权限导入、导出 Excel 接收对象
+ * 作者：Zhang L X
+ * 说明：权限导入、导出 Excel 接收对象
  */
 @Data
 @Builder
@@ -33,7 +33,7 @@ public class PermissionExcelVO {
     /**
      * 父级标识。
      */
-    @ExcelProperty(value = "上级权限标识", index = 1)
+    @ExcelProperty(value = "上级identification", index = 1)
     private String parentIdentification;
 
     /**

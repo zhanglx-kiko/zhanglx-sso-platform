@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/18 18:17
- * @ClassName: AssertUtils
- * @Description: 业务断言工具类
+ * 作者：Zhang L X
+ * 创建时间：2026/3/18 18:17
+ * 类名：AssertUtils
+ * 说明：业务断言工具类
  */
 public class AssertUtils {
 
@@ -30,10 +30,16 @@ public class AssertUtils {
         throw new BusinessException(message);
     }
 
+    /**
+     * 根据错误码和参数抛出业务异常。
+     */
     private static void throwException(ErrorCode errorCode, Object... args) {
         throw new BusinessException(errorCode, args);
     }
 
+    /**
+     * 根据消息提供器抛出业务异常。
+     */
     private static void throwException(Supplier<String> messageSupplier) {
         throw new BusinessException(messageSupplier != null ? messageSupplier.get() : "业务校验失败");
     }

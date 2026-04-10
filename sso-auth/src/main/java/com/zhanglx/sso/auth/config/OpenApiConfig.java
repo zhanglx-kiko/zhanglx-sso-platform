@@ -15,10 +15,10 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/16 17:59
- * @ClassName: OpenApiConfig
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/16 17:59
+ * 类名：OpenApiConfig
+ * 说明：
  */
 @Configuration
 public class OpenApiConfig {
@@ -54,7 +54,7 @@ public class OpenApiConfig {
     public GroupedOpenApi api() {
         // 创建了一个api接口的分组
         return GroupedOpenApi.builder()
-                // 分组名称，使用英文，中文访问异常(使用displayName设置中文名，避免直接使用group设置中文时访问异常)
+                // 分组名称，使用英文，中文访问异常(使用显示名称设置中文名，避免直接使用group设置中文时访问异常)
                 .group("auth-api")
                 .displayName("认证接口") // 使用displayName设置中文接口分组名时，group仍不可或缺
                 .packagesToScan("com.zhanglx.sso.auth")

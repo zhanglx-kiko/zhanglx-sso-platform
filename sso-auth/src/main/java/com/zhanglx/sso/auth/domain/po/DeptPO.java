@@ -24,7 +24,7 @@ import org.apache.ibatis.type.JdbcType;
 public class DeptPO extends BasePO {
 
     /**
-     * 父级ID。
+     * 父级标识。
      */
     @TableField(value = "parent_id", jdbcType = JdbcType.BIGINT)
     private Long parentId;

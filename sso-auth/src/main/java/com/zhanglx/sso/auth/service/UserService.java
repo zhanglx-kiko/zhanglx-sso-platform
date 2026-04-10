@@ -8,6 +8,9 @@ import com.zhanglx.sso.auth.enums.UserStatusEnum;
 
 import java.util.List;
 
+/**
+ * 用户服务接口。
+ */
 public interface UserService {
 
     void addUser(UserDTO user);

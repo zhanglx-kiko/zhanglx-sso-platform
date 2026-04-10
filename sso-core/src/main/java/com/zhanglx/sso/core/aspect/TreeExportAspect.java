@@ -19,10 +19,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 17:49
- * @ClassName: TreeExportAspect
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/17 17:49
+ * 类名：树形导出切面
+ * 说明：标记当前组件为树结构导出切面。
  */
 @Slf4j
 @Aspect
@@ -30,6 +30,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TreeExportAspect {
 
+    /**
+     * 序列化对象映射器。
+     */
     private final ObjectMapper objectMapper;
 
     /**

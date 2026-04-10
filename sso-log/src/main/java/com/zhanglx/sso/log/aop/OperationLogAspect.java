@@ -30,11 +30,24 @@ import java.util.Map;
 @Order(Ordered.LOWEST_PRECEDENCE - 100)
 @RequiredArgsConstructor
 public class OperationLogAspect {
-
+    /**
+     * 操作日志上下文解析器。
+     */
     private final OperationLogContextResolver contextResolver;
+
+    /**
+     * 日志摘要脱敏处理器。
+     */
     private final OperationLogSummarySanitizer summarySanitizer;
+
+    /**
+     * 操作日志记录客户端。
+     */
     private final OperationLogClient operationLogClient;
 
+    /**
+     * 环绕拦截标注了操作日志注解的方法。
+     */
     @Around("@annotation(operationLog)")
     public Object around(ProceedingJoinPoint joinPoint, OperationLog operationLog) throws Throwable {
         HttpServletRequest request = contextResolver.currentRequest();
@@ -92,6 +105,9 @@ public class OperationLogAspect {
         }
     }
 
+    /**
+     * 根据响应结果和异常信息推导操作执行状态。
+     */
     private String resolveResultStatus(Object result, Throwable throwable) {
         if (throwable != null) {
             return "FAILURE";
@@ -102,6 +118,9 @@ public class OperationLogAspect {
         return "SUCCESS";
     }
 
+    /**
+     * 从响应结果或异常中提取错误码。
+     */
     private String resolveErrorCode(Object result, Throwable throwable) {
         if (throwable instanceof BusinessException businessException) {
             return businessException.getCode() == null ? null : String.valueOf(businessException.getCode());

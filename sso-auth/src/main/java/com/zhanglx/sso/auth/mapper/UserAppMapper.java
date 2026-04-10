@@ -9,11 +9,14 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * UserApp数据访问层。
+ */
 @Mapper
 public interface UserAppMapper extends IBaseMapperX<UserAppPO> {
 
     /**
-     * 根据用户ID查询应用编码列表。
+     * 根据用户标识查询应用编码列表。
      */
     @Select("SELECT app_code FROM t_auth_user_app WHERE user_id = #{userId} AND del_flag = 0")
     List<String> selectAppCodesByUserId(@Param("userId") Long userId);
@@ -25,7 +28,7 @@ public interface UserAppMapper extends IBaseMapperX<UserAppPO> {
     Long countByAppCode(@Param("appCode") String appCode);
 
     /**
-     * 根据用户ID逻辑删除应用关联关系。
+     * 根据用户标识逻辑删除应用关联关系。
      */
     @Update("UPDATE t_auth_user_app SET del_flag = id WHERE user_id = #{userId} AND del_flag = 0")
     int deleteByUserId(@Param("userId") Long userId);

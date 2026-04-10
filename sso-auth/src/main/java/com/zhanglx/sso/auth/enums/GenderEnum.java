@@ -7,6 +7,9 @@ import com.zhanglx.sso.core.enums.IIntegerBaseEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 性别枚举枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum GenderEnum implements IIntegerBaseEnum<String> {
@@ -15,10 +18,15 @@ public enum GenderEnum implements IIntegerBaseEnum<String> {
     MALE(1, "男"),
     FEMALE(2, "女");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static GenderEnum fromCode(Integer code) {

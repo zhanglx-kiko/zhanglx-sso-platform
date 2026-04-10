@@ -7,6 +7,9 @@ import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 
 import java.util.List;
 
+/**
+ * 应用服务接口。
+ */
 public interface AppService {
 
     AppDTO create(AppDTO appDTO);

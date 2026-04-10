@@ -10,10 +10,10 @@ import com.zhanglx.sso.core.domain.page.PageQuery;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/18 09:29
- * @ClassName: RoleService
- * @Description: 角色管理服务接口
+ * 作者：Zhang L X
+ * 创建时间：2026/3/18 09:29
+ * 类名：RoleService
+ * 说明：角色管理服务接口
  * <p>
  * 主要职责：
  * 1. 角色基本信息管理（增删改查）
@@ -32,7 +32,7 @@ public interface RoleService {
      * 3. 保存到数据库
      *
      * @param roleDTO 角色信息对象
-     * @return RoleDTO 保存后的角色信息
+     * @return roleDTO 保存后的角色信息
      */
     RoleDTO addRole(RoleDTO roleDTO);
 
@@ -45,7 +45,7 @@ public interface RoleService {
      * 3. 组装返回结果
      *
      * @param roleId 角色 ID
-     * @return RoleDTO 角色详情（包含权限列表）
+     * @return 角色数据传输对象 角色详情（包含权限列表）
      */
     RoleDTO loadRole(Long roleId);
 
@@ -58,7 +58,7 @@ public interface RoleService {
      * 3. 组装返回结果
      *
      * @param roleId 角色 ID
-     * @return RoleInfoVO 角色详情（包含关联用户 ID 列表）
+     * @return 角色详情视图对象 角色详情（包含关联用户 ID 列表）
      */
     RoleInfoVO selectRoleDetail(Long roleId);
 
@@ -76,7 +76,7 @@ public interface RoleService {
      *
      * @param roleId  角色 id
      * @param userIds 用户 id 列表
-     * @return RoleInfoVO 角色信息（包含更新后的用户 ID 列表）
+     * @return 角色详情视图对象 角色信息（包含更新后的用户 ID 列表）
      */
     RoleInfoVO bindUsers(Long roleId, List<Long> userIds);
 
@@ -89,7 +89,7 @@ public interface RoleService {
      *
      * @param id      主键
      * @param roleDTO 修改后的角色信息对象
-     * @return RoleDTO 更新后的角色信息
+     * @return roleDTO 更新后的角色信息
      */
     RoleDTO updateRole(Long id, RoleDTO roleDTO);
 
@@ -103,7 +103,7 @@ public interface RoleService {
      * 4. 删除该角色与权限的关联关系
      *
      * @param id 角色 id
-     * @return RoleDTO 被删除的角色信息
+     * @return 角色数据传输对象 被删除的角色信息
      */
     RoleDTO delRole(Long id);
 
@@ -121,7 +121,7 @@ public interface RoleService {
      *
      * @param roleId      角色 id
      * @param permissions 权限项列表
-     * @return RoleDTO 角色信息
+     * @return 角色数据传输对象 角色信息
      */
     RoleDTO associatePermissions(Long roleId, List<RolePermissionRelationshipMappingDTO> permissions);
 
@@ -130,12 +130,12 @@ public interface RoleService {
      * <p>
      * 业务逻辑：
      * 1. 构建动态查询条件（角色名称、角色编码模糊查询）
-     * 2. 排除内置角色（build_in=1）
+     * 2. 排除内置角色（内置标记为 1）
      * 3. 按创建时间倒序排序
      * 4. 转换为 DTO 返回
      *
      * @param queryParam 角色查询分页参数
-     * @return Page<RoleDTO> 角色列表
+     * @return Page<角色数据传输对象> 角色列表
      */
     Page<RoleDTO> selRole(PageQuery queryParam);
 
@@ -156,11 +156,11 @@ public interface RoleService {
      * 获取用户账户授权的角色列表
      * <p>
      * 特殊逻辑：
-     * - 如果是游客账号（guest_username），返回固定的游客角色
+     * - 如果是游客账号（guest_用户名），返回固定的游客角色
      * - 否则查询数据库获取角色列表
      *
      * @param userAccount 用户名
-     * @return List<RoleDTO> 角色列表
+     * @return 角色列表
      */
     List<RoleDTO> selectRolesForUser(String userAccount);
 
@@ -173,7 +173,7 @@ public interface RoleService {
      * 3. 转换为 DTO 返回
      *
      * @param userId 用户 ID
-     * @return List<RoleDTO> 角色列表
+     * @return 角色列表
      */
     List<RoleDTO> selectRolesForUser(Long userId);
 

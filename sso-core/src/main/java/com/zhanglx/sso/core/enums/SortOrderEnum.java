@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:27
- * @ClassName: SortOrderEnum
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:27
+ * 类名：SortOrderEnum
+ * 说明：
  */
 @Getter
 @NoArgsConstructor

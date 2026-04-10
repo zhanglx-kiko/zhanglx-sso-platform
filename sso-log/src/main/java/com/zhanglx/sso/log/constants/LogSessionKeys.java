@@ -10,6 +10,9 @@ public final class LogSessionKeys {
     public static final String DISPLAY_NAME = "log.displayName";
     public static final String CLIENT_TYPE = "log.clientType";
 
+    /**
+     * 私有构造方法，禁止外部实例化。
+     */
     private LogSessionKeys() {
         throw new UnsupportedOperationException("Utility class");
     }

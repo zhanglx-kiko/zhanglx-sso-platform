@@ -6,10 +6,10 @@ import org.apache.commons.lang3.Strings;
 import java.util.Objects;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:49
- * @ClassName: EnumUtils
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:49
+ * 类名：EnumUtils
+ * 说明：
  */
 public class EnumUtils {
     public static <T extends IBaseEnum> T codeOf(Class<T> enumClass, Object code) {

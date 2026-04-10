@@ -3,8 +3,8 @@ package com.zhanglx.sso.auth.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
-import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeSendDTO;
 import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeSendDTO;
 import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
@@ -24,20 +24,27 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+/**
+ * 认证系统控制器。
+ */
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Auth API")
 @RequestMapping("/apis/v1/auth/s")
 public class AuthSysController {
-
+    /**
+     * 认证服务。
+     */
     private final AuthService authService;
+    /**
+     * 登录审计支持组件。
+     */
     private final AuthLoginAuditSupport authLoginAuditSupport;
+    /**
+     * 操作保护组件。
+     */
     private final AuthOperationGuard authOperationGuard;
 
     @Operation(summary = "Admin login")

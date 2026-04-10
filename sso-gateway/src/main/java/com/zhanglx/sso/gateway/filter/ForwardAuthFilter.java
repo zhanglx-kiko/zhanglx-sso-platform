@@ -10,10 +10,10 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/24
- * @ClassName: ForwardAuthFilter
- * @Description: 全局过滤器：为转发给下游微服务的请求注入 Same-Token
+ * 作者：Zhang L X
+ * 创建时间：2026/3/24
+ * 类名：转发鉴权过滤器
+ * 说明：全局过滤器：为转发给下游微服务的请求注入 同源令牌
  */
 @Component
 public class ForwardAuthFilter implements GlobalFilter, Ordered {

@@ -1,11 +1,7 @@
 package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberVerificationCodeSendDTO;
-import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.*;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.service.MemberAuthService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
@@ -19,20 +15,27 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+/**
+ * 认证会员控制器。
+ */
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "C 端认证接口")
 @RequestMapping("/apis/v1/auth/m")
 public class AuthMemberController {
-
+    /**
+     * 会员认证服务。
+     */
     private final MemberAuthService memberAuthService;
+    /**
+     * 微信认证服务。
+     */
     private final WechatAuthService wechatAuthService;
+    /**
+     * 登录审计支持组件。
+     */
     private final AuthLoginAuditSupport authLoginAuditSupport;
 
     @Operation(summary = "会员账号密码登录")

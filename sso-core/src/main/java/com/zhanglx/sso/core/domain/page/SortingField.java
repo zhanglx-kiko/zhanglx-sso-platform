@@ -1,15 +1,16 @@
 package com.zhanglx.sso.core.domain.page;
 
 import com.zhanglx.sso.core.enums.SortOrderEnum;
-import lombok.Data;import lombok.Getter;
+import lombok.Data;
+import lombok.Getter;
 
 import java.io.Serializable;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 17:21
- * @ClassName: SortingField
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 17:21
+ * 类名：SortingField
+ * 说明：
  */
 @Data
 @Getter

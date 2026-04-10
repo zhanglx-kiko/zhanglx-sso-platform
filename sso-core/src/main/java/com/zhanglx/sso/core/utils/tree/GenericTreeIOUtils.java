@@ -1,16 +1,19 @@
 package com.zhanglx.sso.core.utils.tree;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.type.CollectionType;
 import com.zhanglx.sso.core.domain.tree.TreeNode;
 import com.zhanglx.sso.core.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.type.CollectionType;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 通用树结构输入输出工具。
+ */
 @Slf4j
 public class GenericTreeIOUtils {
 
@@ -43,6 +46,9 @@ public class GenericTreeIOUtils {
         }
     }
 
+    /**
+     * flattenNode处理逻辑。
+     */
     private static <T extends TreeNode<T, ID>, ID> void flattenNode(T node, ID parentId, List<T> flatList) {
         node.setParentId(parentId);
         flatList.add(node);

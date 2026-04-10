@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * ConfigType枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum ConfigTypeEnum implements IIntegerBaseEnum<String> {
@@ -16,14 +19,23 @@ public enum ConfigTypeEnum implements IIntegerBaseEnum<String> {
     CUSTOM(0, "普通参数"),
     BUILT_IN(1, "系统内置");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static ConfigTypeEnum fromCode(Integer code) {
         return IBaseEnum.fromCode(code, ConfigTypeEnum.class);
+    }
+
+    public static boolean isBuiltIn(Object value) {
+        return BUILT_IN.matches(value);
     }
 
     public boolean matches(Object value) {
@@ -40,9 +52,5 @@ public enum ConfigTypeEnum implements IIntegerBaseEnum<String> {
             return Objects.equals(String.valueOf(code), text) || name().equalsIgnoreCase(text);
         }
         return false;
-    }
-
-    public static boolean isBuiltIn(Object value) {
-        return BUILT_IN.matches(value);
     }
 }

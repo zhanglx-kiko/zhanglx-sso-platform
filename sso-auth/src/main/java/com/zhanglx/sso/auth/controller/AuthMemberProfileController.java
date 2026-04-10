@@ -17,13 +17,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 认证会员资料控制器。
+ */
 @RestController
 @Validated
 @RequiredArgsConstructor
 @Tag(name = "会员中心", description = "C 端会员资料接口")
 @RequestMapping("/apis/v1/auth/m/users")
 public class AuthMemberProfileController {
-
+    /**
+     * 会员用户服务。
+     */
     private final MemberUserService memberUserService;
 
     @Operation(summary = "查询当前会员信息")

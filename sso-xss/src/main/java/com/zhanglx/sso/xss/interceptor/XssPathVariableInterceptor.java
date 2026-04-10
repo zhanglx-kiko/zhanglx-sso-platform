@@ -97,6 +97,9 @@ public class XssPathVariableInterceptor implements HandlerInterceptor {
         return policies;
     }
 
+    /**
+     * 解析pathVariableName。
+     */
     private String resolvePathVariableName(PathVariable pathVariable, MethodParameter methodParameter) {
         if (!pathVariable.name().isBlank()) {
             return pathVariable.name();

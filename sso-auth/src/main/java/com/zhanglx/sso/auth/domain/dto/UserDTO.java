@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/11 16:31
- * @ClassName: UserDTO
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/2/11 16:31
+ * 类名：UserDTO
+ * 说明：
  */
 @Data
 @SuperBuilder
@@ -40,7 +40,7 @@ public class UserDTO extends UserBaseDTO {
     private String password;
 
     /**
-     * wx用户唯一标识。
+     * 微信用户唯一标识。
      */
     @JsonIgnore
     @Schema(description = "wx用户唯一标识", name = "openId", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)

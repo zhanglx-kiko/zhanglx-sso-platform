@@ -3,12 +3,12 @@ package com.zhanglx.sso.core.domain.tree;
 import java.util.List;
 
 /**
- * @param <T>  实体类型（如 PermissionDTO）
+ * @param <T>  实体类型（如 权限数据传输对象）
  * @param <ID> 主键类型（如 Long, String）
- * @Author: Zhang L X
- * @Create: 2026/3/17 17:04
- * @ClassName: TreeNode
- * @Description: 通用树节点接口（泛型化）
+ *             作者：Zhang L X
+ *             创建时间：2026/3/17 17:04
+ *             类名：TreeNode
+ *             说明：通用树节点接口（泛型化）
  */
 public interface TreeNode<T, ID> {
 

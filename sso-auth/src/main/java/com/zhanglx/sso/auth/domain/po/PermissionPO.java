@@ -15,10 +15,10 @@ import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 15:12
- * @ClassName: PermissionPO
- * @Description: 权限对象
+ * 作者：Zhang L X
+ * 创建时间：2026/3/17 15:12
+ * 类名：PermissionPO
+ * 说明：权限对象
  */
 @Data
 @SuperBuilder

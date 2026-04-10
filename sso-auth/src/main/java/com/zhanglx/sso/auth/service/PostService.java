@@ -6,7 +6,9 @@ import com.zhanglx.sso.auth.domain.dto.PostQueryDTO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 
 import java.util.List;
-
+/**
+ * 岗位服务接口。
+  */
 public interface PostService {
 
     PostDTO create(PostDTO postDTO);

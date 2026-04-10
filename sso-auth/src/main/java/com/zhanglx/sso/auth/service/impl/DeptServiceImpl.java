@@ -26,12 +26,23 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * 部门服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class DeptServiceImpl implements DeptService {
-
+    /**
+     * 部门映射器。
+     */
     private final DeptMapper deptMapper;
+    /**
+     * 角色映射器。
+     */
     private final RoleMapper roleMapper;
+    /**
+     * 角色部门映射器。
+     */
     private final RoleDeptMapper roleDeptMapper;
 
     @Override

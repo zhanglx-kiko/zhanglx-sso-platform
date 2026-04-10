@@ -12,7 +12,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * XSS 安全组件自动装配。
- * 这里只在 Servlet Web 应用中生效，避免网关这类 WebFlux 应用误装配。
+ * 这里只在 Servlet Web 应用中生效，避免网关这类 响应式 Web 应用误装配。
  */
 @AutoConfiguration
 @ComponentScan(basePackages = "com.zhanglx.sso.xss")

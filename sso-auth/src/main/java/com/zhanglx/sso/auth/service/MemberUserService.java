@@ -5,6 +5,9 @@ import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
 
+/**
+ * MemberUser服务接口。
+ */
 public interface MemberUserService {
 
     MemberInfoVO getCurrentMemberInfo(Long memberId);

@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "DictDataDTO", description = "字典数据对象")
+@Schema(name = "DictDataDTO", description = "DictData对象")
 public class DictDataDTO extends BaseDTO {
 
     /**

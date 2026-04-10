@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 17:17
- * @ClassName: MyBatisUtils
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 17:17
+ * 类名：MyBatisUtils
+ * 说明：
  */
 public class MyBatisUtils {
 

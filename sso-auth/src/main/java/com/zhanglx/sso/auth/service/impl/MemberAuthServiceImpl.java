@@ -26,16 +26,36 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+/**
+ * MemberAuth服务实现。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberAuthServiceImpl implements MemberAuthService {
-
+    /**
+     * 会员用户映射器。
+     */
     private final MemberUserMapper memberUserMapper;
+    /**
+     * 会员用户服务。
+     */
     private final MemberUserService memberUserService;
+    /**
+     * Argon2 密码编码器。
+     */
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+    /**
+     * 会员验证码服务。
+     */
     private final MemberVerificationCodeService memberVerificationCodeService;
+    /**
+     * 登录审计支持组件。
+     */
     private final AuthLoginAuditSupport authLoginAuditSupport;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Override

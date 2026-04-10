@@ -11,18 +11,18 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.util.Map;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/26 18:20
- * @ClassName: VirtualThreadConfig
- * @Description: 适配 JDK 25 虚拟线程的异步配置
+ * 作者：Zhang L X
+ * 创建时间：2026/2/26 18:20
+ * 类名：VirtualThreadConfig
+ * 说明：适配 JDK 25 虚拟线程的异步配置
  */
 @EnableAsync // 必须加上，否则 @Async 注解不生效
 @Configuration
 public class VirtualThreadConfig {
 
     /**
-     * 注册 TaskDecorator 后，Spring Boot 自动装配的虚拟线程执行器会自动使用它
-     * 完成主线程到虚拟线程的上下文传递 (如 Sa-Token 的 ThreadLocal 数据)
+     * 注册任务装饰器后，Spring Boot 自动装配的虚拟线程执行器会自动使用它。
+     * 用于完成主线程到虚拟线程的上下文传递，例如 Sa-Token 的线程上下文数据。
      */
     @Bean
     public TaskDecorator contextCopyingDecorator() {

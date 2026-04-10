@@ -22,13 +22,13 @@ import org.apache.ibatis.type.JdbcType;
 public class RoleDeptPO extends BasePO {
 
     /**
-     * 角色ID。
+     * 角色标识。
      */
     @TableField(value = "role_id", jdbcType = JdbcType.BIGINT)
     private Long roleId;
 
     /**
-     * 部门ID。
+     * 部门标识。
      */
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;

@@ -72,7 +72,7 @@ public class UserBaseDTO extends BaseDTO {
     private YesNoEnum allowConcurrentLogin;
 
     /**
-     * 部门ID。
+     * 部门标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

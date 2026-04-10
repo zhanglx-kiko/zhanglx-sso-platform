@@ -27,13 +27,27 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 应用服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class AppServiceImpl implements AppService {
-
+    /**
+     * 应用映射器。
+     */
     private final AppMapper appMapper;
+    /**
+     * 角色映射器。
+     */
     private final RoleMapper roleMapper;
+    /**
+     * 用户映射器。
+     */
     private final UserMapper userMapper;
+    /**
+     * 用户应用映射器。
+     */
     private final UserAppMapper userAppMapper;
 
     @Override

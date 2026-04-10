@@ -12,10 +12,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 18:09
- * @ClassName: CollectionUtils
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 18:09
+ * 类名：CollectionUtils
+ * 说明：
  */
 public class CollectionUtils extends CollectionUtil {
 

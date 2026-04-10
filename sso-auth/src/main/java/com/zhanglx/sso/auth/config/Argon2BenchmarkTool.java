@@ -6,10 +6,10 @@ import com.password4j.SystemChecker;
 import com.password4j.types.Argon2;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/24 17:20
- * @ClassName: Argon2BenchmarkTool
- * @Description: Argon2 硬件性能基准测试工具 (独立运行)
+ * 作者：Zhang L X
+ * 创建时间：2026/3/24 17:20
+ * 类名：Argon2BenchmarkTool
+ * 说明：Argon2 硬件性能基准测试工具（独立运行）
  * 用途：在与生产环境同等规格的机器（或容器）上运行此工具，
  * 获取最适合当前硬件的加密参数，并填入 application-prod.yml。
  */

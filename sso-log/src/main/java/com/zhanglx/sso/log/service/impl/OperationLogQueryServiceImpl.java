@@ -17,8 +17,13 @@ import org.springframework.util.StringUtils;
 @Service
 @RequiredArgsConstructor
 public class OperationLogQueryServiceImpl implements OperationLogQueryService {
-
+    /**
+     * 配置属性。
+     */
     private final OperationLogProperties properties;
+    /**
+     * Elasticsearch 客户端。
+     */
     private final OperationLogElasticsearchClient elasticsearchClient;
 
     @Override

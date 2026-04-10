@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * PermissionType枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum PermissionTypeEnum implements IIntegerBaseEnum<String> {
@@ -19,10 +22,15 @@ public enum PermissionTypeEnum implements IIntegerBaseEnum<String> {
     BUTTON(2, "按钮"),
     API(3, "接口");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static PermissionTypeEnum fromCode(Integer code) {

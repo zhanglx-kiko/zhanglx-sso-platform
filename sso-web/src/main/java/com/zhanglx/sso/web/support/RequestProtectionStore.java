@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * RequestProtection存储器。
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -46,9 +49,17 @@ public class RequestProtectionStore {
         FIXED_WINDOW_RATE_LIMIT_SCRIPT.setResultType(List.class);
     }
 
+    /**
+     * Redis 字符串模板Prov标识er。
+     */
     private final ObjectProvider<StringRedisTemplate> stringRedisTemplateProvider;
-
+    /**
+     * local重复提交Cache。
+     */
     private final ConcurrentMap<String, Long> localRepeatSubmitCache = new ConcurrentHashMap<>();
+    /**
+     * localRateLimitCache。
+     */
     private final ConcurrentMap<String, LocalRateLimitCounter> localRateLimitCache = new ConcurrentHashMap<>();
 
     public boolean tryAcquireRepeatSubmit(String lockKey, Duration window, boolean localFallbackEnabled) {
@@ -90,6 +101,9 @@ public class RequestProtectionStore {
                 : new RateLimitDecision(true, limit, limit, Math.max(1L, window.toSeconds()), 0L);
     }
 
+    /**
+     * 尝试acquireLocal重复提交。
+     */
     private boolean tryAcquireLocalRepeatSubmit(String lockKey, Duration window) {
         long now = System.currentTimeMillis();
         long expireAt = now + window.toMillis();
@@ -101,6 +115,9 @@ public class RequestProtectionStore {
         return existingExpireAt <= now && localRepeatSubmitCache.replace(lockKey, existingExpireAt, expireAt);
     }
 
+    /**
+     * 获取本地限流计数。
+     */
     private RateLimitDecision acquireLocalRateLimit(String key, long limit, Duration window) {
         long now = System.currentTimeMillis();
         long expireAt = now + window.toMillis();
@@ -118,6 +135,9 @@ public class RequestProtectionStore {
         return new RateLimitDecision(current <= limit, limit, remaining, resetSeconds, current);
     }
 
+    /**
+     * 将对象安全转换为长整型。
+     */
     private long asLong(Object value) {
         if (value instanceof Number number) {
             return number.longValue();
@@ -126,9 +146,14 @@ public class RequestProtectionStore {
     }
 
     private static final class LocalRateLimitCounter {
-
+        /**
+         * count。
+         */
         private long count;
-        private long expireAt;
+        /**
+         * 过期时间。
+         */
+        private final long expireAt;
 
         private LocalRateLimitCounter(long count, long expireAt) {
             this.count = count;

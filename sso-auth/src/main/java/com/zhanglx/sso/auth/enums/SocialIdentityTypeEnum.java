@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * SocialIdentityType枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum SocialIdentityTypeEnum implements IStringBaseEnum<String> {
@@ -16,10 +19,15 @@ public enum SocialIdentityTypeEnum implements IStringBaseEnum<String> {
     WECHAT_OPEN("WECHAT_OPEN", "微信开放平台"),
     WX_MINI("WX_MINI", "微信小程序");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final String code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static SocialIdentityTypeEnum fromCode(String code) {

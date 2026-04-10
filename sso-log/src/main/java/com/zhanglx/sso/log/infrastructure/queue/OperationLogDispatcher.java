@@ -24,18 +24,41 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @RequiredArgsConstructor
 public class OperationLogDispatcher {
-
+    /**
+     * 配置属性。
+     */
     private final OperationLogProperties properties;
+    /**
+     * Elasticsearch 客户端。
+     */
     private final OperationLogElasticsearchClient elasticsearchClient;
+    /**
+     * metrics。
+     */
     private final OperationLogMetrics metrics;
-
+    /**
+     * running。
+     */
     private final AtomicBoolean running = new AtomicBoolean(false);
+    /**
+     * workerCount。
+     */
     private final AtomicInteger workerCount = new AtomicInteger();
-
+    /**
+     * 事件队列。
+     */
     private BlockingQueue<OperationLogDocument> eventQueue;
+    /**
+     * workerExecutor。
+     */
     private ThreadPoolExecutor workerExecutor;
-
+    /**
+     * lastQueueFullLogAt。
+     */
     private volatile long lastQueueFullLogAt;
+    /**
+     * 最后失败记录时间。
+     */
     private volatile long lastFailureLogAt;
 
     @PostConstruct
@@ -57,6 +80,9 @@ public class OperationLogDispatcher {
                 // 消费线程是长生命周期任务，这里必须直接移交，避免“扩容任务”被排队后迟迟不生效。
                 new SynchronousQueue<>(),
                 new ThreadFactory() {
+                    /**
+                     * 线程计数器。
+                     */
                     private final AtomicInteger counter = new AtomicInteger(1);
 
                     @Override
@@ -121,6 +147,9 @@ public class OperationLogDispatcher {
         logQueueFullOnce("操作日志队列已满，当前日志被丢弃，未阻塞主业务线程");
     }
 
+    /**
+     * 尝试扩容处理逻辑。
+     */
     private void tryScaleOut() {
         int maxPoolSize = Math.max(properties.getAsync().getCorePoolSize(), properties.getAsync().getMaxPoolSize());
         int threshold = Math.max(1, properties.getElasticsearch().getBulkBatchSize() * 2);
@@ -130,6 +159,9 @@ public class OperationLogDispatcher {
         submitWorker(true);
     }
 
+    /**
+     * 提交流程处理器处理逻辑。
+     */
     private void submitWorker(boolean burstWorker) {
         workerCount.incrementAndGet();
         try {
@@ -140,6 +172,9 @@ public class OperationLogDispatcher {
         }
     }
 
+    /**
+     * consumeLoop处理逻辑。
+     */
     private void consumeLoop(boolean burstWorker) {
         long keepAliveMillis = Duration.ofSeconds(Math.max(1, properties.getAsync().getKeepAliveSeconds())).toMillis();
         long flushIntervalMillis = Math.max(200L, properties.getElasticsearch().getBulkFlushIntervalMs());
@@ -183,6 +218,9 @@ public class OperationLogDispatcher {
         }
     }
 
+    /**
+     * flush处理逻辑。
+     */
     private void flush(List<OperationLogDocument> batch) {
         if (batch == null || batch.isEmpty()) {
             return;
@@ -220,6 +258,9 @@ public class OperationLogDispatcher {
         }
     }
 
+    /**
+     * 退避休眠处理逻辑。
+     */
     private void sleepBackoff(int retryCount) {
         try {
             Thread.sleep(Math.min(1000L, 200L * retryCount));
@@ -228,6 +269,9 @@ public class OperationLogDispatcher {
         }
     }
 
+    /**
+     * estimateDocumentBytes处理逻辑。
+     */
     private int estimateDocumentBytes(OperationLogDocument document) {
         int base = 256;
         base += safeLength(document.getOperationDesc());
@@ -238,10 +282,16 @@ public class OperationLogDispatcher {
         return base;
     }
 
+    /**
+     * safeLength处理逻辑。
+     */
     private int safeLength(String value) {
         return value == null ? 0 : value.length();
     }
 
+    /**
+     * 记录一次队列满日志处理逻辑。
+     */
     private void logQueueFullOnce(String message) {
         long now = System.currentTimeMillis();
         if (now - lastQueueFullLogAt < 30_000L) {
@@ -251,6 +301,9 @@ public class OperationLogDispatcher {
         log.warn(message);
     }
 
+    /**
+     * 记录一次失败日志处理逻辑。
+     */
     private void logFailureOnce(String message, Exception exception) {
         long now = System.currentTimeMillis();
         if (now - lastFailureLogAt < 30_000L) {

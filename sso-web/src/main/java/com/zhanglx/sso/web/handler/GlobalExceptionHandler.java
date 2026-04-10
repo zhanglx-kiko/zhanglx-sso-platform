@@ -28,11 +28,16 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
+/**
+ * GlobalException处理器。
+ */
 @Slf4j
 @RequiredArgsConstructor
 @RestControllerAdvice(basePackages = "com.zhanglx")
 public class GlobalExceptionHandler {
-
+    /**
+     * i18nUtils。
+     */
     private final I18nUtils i18nUtils;
 
     @ExceptionHandler(BusinessException.class)
@@ -157,16 +162,25 @@ public class GlobalExceptionHandler {
         return Result.error(500, resolveMessage("system.busy"));
     }
 
+    /**
+     * 解析message。
+     */
     private String resolveMessage(String messageKeyOrMessage) {
         String resolved = i18nUtils.getMessage(messageKeyOrMessage);
         return resolved == null || resolved.isBlank() ? messageKeyOrMessage : resolved;
     }
 
+    /**
+     * 解析businessMessage。
+     */
     private String resolveBusinessMessage(BusinessException exception) {
         String resolved = i18nUtils.getMessage(exception.getMessageKey(), exception.getArgs());
         return resolved == null || resolved.isBlank() ? exception.getMessageKey() : resolved;
     }
 
+    /**
+     * 拆解businessException。
+     */
     private BusinessException unwrapBusinessException(Throwable throwable) {
         Throwable current = throwable;
         while (current != null) {

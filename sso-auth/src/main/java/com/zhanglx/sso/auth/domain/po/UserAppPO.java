@@ -22,7 +22,7 @@ import org.apache.ibatis.type.JdbcType;
 public class UserAppPO extends BasePO {
 
     /**
-     * 用户ID。
+     * 用户标识。
      */
     @TableField(value = "user_id", jdbcType = JdbcType.BIGINT)
     private Long userId;

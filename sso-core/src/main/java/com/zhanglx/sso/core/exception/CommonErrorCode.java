@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 通用错误码定义，按 HTTP/通用业务语义提供默认 code 与 messageKey。
+ * 通用错误码定义，按 HTTP/通用业务语义提供默认 code 与 消息键。
  */
 @Getter
 @RequiredArgsConstructor
@@ -20,8 +20,13 @@ public enum CommonErrorCode implements ErrorCode {
     INTERNAL_ERROR(ResultCode.INTERNAL_SERVER_ERROR.getCode(), "system.internal.error"),
     SYSTEM_BUSY(ResultCode.INTERNAL_SERVER_ERROR.getCode(), "system.busy"),
     BAD_GATEWAY(ResultCode.BAD_GATEWAY.getCode(), "technical.third.party.error");
-
+    /**
+     * 编码。
+     */
     private final Integer code;
+    /**
+     * 消息键。
+     */
     private final String messageKey;
 
 }

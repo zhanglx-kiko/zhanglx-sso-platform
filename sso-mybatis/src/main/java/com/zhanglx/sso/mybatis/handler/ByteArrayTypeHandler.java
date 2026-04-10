@@ -12,10 +12,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:34
- * @ClassName: ByteArrayTypeHandler
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:34
+ * 类名：ByteArrayTypeHandler
+ * 说明：
  */
 @MappedJdbcTypes(JdbcType.VARCHAR)
 @MappedTypes({byte[].class})

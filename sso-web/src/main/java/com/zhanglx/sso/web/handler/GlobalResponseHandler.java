@@ -1,6 +1,5 @@
 package com.zhanglx.sso.web.handler;
 
-import tools.jackson.databind.ObjectMapper;
 import com.zhanglx.sso.common.result.Result;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
@@ -12,10 +11,17 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import tools.jackson.databind.ObjectMapper;
 
+/**
+ * 全局响应包装处理器。
+ */
 @RestControllerAdvice(basePackages = "com.zhanglx")
 public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
 
+    /**
+     * 对象映射器。
+     */
     @Resource
     private ObjectMapper objectMapper;
 
@@ -46,6 +52,9 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
         return Result.success(body);
     }
 
+    /**
+     * 应用响应状态码。
+     */
     private void applyHttpStatus(Result<?> result, ServerHttpResponse response) {
         Integer code = result.getCode();
         if (code == null || code < 400) {

@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 import java.util.Locale;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/16 17:47
- * @ClassName: I18nUtils
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/16 17:47
+ * 类名：I18nUtils
+ * 说明：
  */
 @Slf4j
 @Component

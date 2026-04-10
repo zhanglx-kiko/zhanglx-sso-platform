@@ -17,12 +17,20 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 
+/**
+ * 短信通渠道发送器。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SmsChineseChannelSender implements SmsChannelSender {
-
+    /**
+     * 短信配置属性。
+     */
     private final SmsProperties smsProperties;
+    /**
+     * 短信模板支持组件。
+     */
     private final SmsTemplateSupport smsTemplateSupport;
 
     @Override
@@ -44,6 +52,12 @@ public class SmsChineseChannelSender implements SmsChannelSender {
 
         String content;
         try {
+            /*
+             * 短信通没有模板签名渲染能力，这里直接生成最终发送正文。
+             * 例如登录/注册场景最终发送内容为：
+             * 您的验证码为123456。尊敬的客户，以上验证码3分钟内有效，请注意保密，切勿告知他人。
+             * 其他场景会按统一模板配置渲染成各自的最终短信内容。
+             */
             content = smsTemplateSupport.renderSmsChineseContent(templateProperties, request.getTemplateParams());
         } catch (RuntimeException e) {
             return buildFailureResult(request, templateProperties, "TEMPLATE_PARAM_INVALID", e.getMessage(), null, null);
@@ -62,6 +76,7 @@ public class SmsChineseChannelSender implements SmsChannelSender {
                     new NameValuePair("Uid", providerProperties.getUid().trim()),
                     new NameValuePair("Key", providerProperties.getKey().trim()),
                     new NameValuePair("smsMob", request.getPhoneNumber()),
+                    // 这里提交的 短信正文 就是上面渲染完成后的最终短信正文。
                     new NameValuePair("smsText", content)
             });
 
@@ -112,6 +127,9 @@ public class SmsChineseChannelSender implements SmsChannelSender {
         }
     }
 
+    /**
+     * 组装短信通发送失败时的统一返回结果。
+     */
     private SmsSendResult buildFailureResult(
             SmsSendRequest request,
             SmsProperties.TemplateProperties templateProperties,

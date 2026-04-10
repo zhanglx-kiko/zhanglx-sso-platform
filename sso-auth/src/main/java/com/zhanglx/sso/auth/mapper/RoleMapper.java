@@ -3,21 +3,17 @@ package com.zhanglx.sso.auth.mapper;
 import com.zhanglx.sso.auth.domain.po.RolePO;
 import com.zhanglx.sso.auth.enums.DataScopeEnum;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
-import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
 import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
+import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 15:04
- * @ClassName: RoleMapper
- * @Description: 角色数据访问层
+ * 作者：Zhang L X
+ * 创建时间：2026/3/17 15:04
+ * 类名：RoleMapper
+ * 说明：角色数据访问层
  */
 @Mapper
 public interface RoleMapper extends IBaseMapperX<RolePO> {

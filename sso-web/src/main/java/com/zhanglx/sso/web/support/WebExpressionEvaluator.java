@@ -15,11 +15,22 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * WebExpression计算器。
+ */
 @Component
 public class WebExpressionEvaluator {
-
+    /**
+     * parameterNameDiscoverer。
+     */
     private final DefaultParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
+    /**
+     * 表达式解析器。
+     */
     private final ExpressionParser expressionParser = new SpelExpressionParser();
+    /**
+     * expressionCache。
+     */
     private final Map<String, Expression> expressionCache = new ConcurrentHashMap<>();
 
     public boolean matchesCondition(String condition, ProceedingJoinPoint joinPoint, HttpServletRequest request) {
@@ -45,6 +56,9 @@ public class WebExpressionEvaluator {
         return normalized.isEmpty() ? null : normalized;
     }
 
+    /**
+     * 计算处理逻辑。
+     */
     private Object evaluate(String expression, ProceedingJoinPoint joinPoint, HttpServletRequest request) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();

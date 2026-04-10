@@ -20,26 +20,26 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 认证用户管理控制器。
+ */
 @RestController
 @Validated
 @RequiredArgsConstructor
 @Tag(name = "用户管理", description = "后台用户管理接口")
 @RequestMapping("/apis/v1/auth/s/users")
 public class AuthUserManageController {
-
+    /**
+     * 用户服务。
+     */
     private final UserService userService;
+    /**
+     * 操作保护组件。
+     */
     private final AuthOperationGuard authOperationGuard;
 
     @Operation(summary = "新增用户")

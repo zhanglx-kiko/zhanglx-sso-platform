@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/10 20:22
- * @ClassName: SaTokenConfigure
- * @Description: 网关全局鉴权配置
+ * 作者：Zhang L X
+ * 创建时间：2026/2/10 20:22
+ * 类名：SaTokenConfigure
+ * 说明：网关全局鉴权配置
  */
 @Configuration
 public class SaTokenConfigure {

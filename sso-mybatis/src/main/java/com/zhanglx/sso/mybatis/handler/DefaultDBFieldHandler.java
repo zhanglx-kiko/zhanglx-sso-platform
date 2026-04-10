@@ -12,10 +12,10 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:36
- * @ClassName: DefaultDBFieldHandler
- * @Description: 自动填充审计字段
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:36
+ * 类名：DefaultDBFieldHandler
+ * 说明：自动填充审计字段
  */
 @Slf4j
 public class DefaultDBFieldHandler implements MetaObjectHandler {

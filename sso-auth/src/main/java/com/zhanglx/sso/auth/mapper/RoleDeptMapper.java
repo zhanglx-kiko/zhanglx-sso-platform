@@ -9,6 +9,9 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * RoleDept数据访问层。
+ */
 @Mapper
 public interface RoleDeptMapper extends IBaseMapperX<RoleDeptPO> {
 

@@ -19,10 +19,21 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class DefaultOperationLogClient implements OperationLogClient {
-
+    /**
+     * 配置属性。
+     */
     private final OperationLogProperties properties;
+    /**
+     * contextResolver。
+     */
     private final OperationLogContextResolver contextResolver;
+    /**
+     * 摘要脱敏器。
+     */
     private final OperationLogSummarySanitizer summarySanitizer;
+    /**
+     * dispatcher。
+     */
     private final OperationLogDispatcher dispatcher;
 
     @Override

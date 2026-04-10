@@ -16,14 +16,33 @@ import java.util.concurrent.atomic.AtomicReference;
 @Getter
 @Component
 public class OperationLogMetrics {
-
+    /**
+     * 指标注册器提供者。
+     */
     private final ObjectProvider<MeterRegistry> meterRegistryProvider;
-
+    /**
+     * acceptedCount。
+     */
     private final AtomicLong acceptedCount = new AtomicLong();
+    /**
+     * successWriteCount。
+     */
     private final AtomicLong successWriteCount = new AtomicLong();
+    /**
+     * failedWriteCount。
+     */
     private final AtomicLong failedWriteCount = new AtomicLong();
+    /**
+     * 队列满时丢弃计数。
+     */
     private final AtomicLong queueFullDropCount = new AtomicLong();
+    /**
+     * lastFailureTime。
+     */
     private final AtomicReference<LocalDateTime> lastFailureTime = new AtomicReference<>();
+    /**
+     * 最后失败原因。
+     */
     private final AtomicReference<String> lastFailureReason = new AtomicReference<>();
 
     public OperationLogMetrics(ObjectProvider<MeterRegistry> meterRegistryProvider) {
@@ -60,6 +79,9 @@ public class OperationLogMetrics {
         incrementCounter("sso.operation.log.queue.drop", 1);
     }
 
+    /**
+     * incrementCounter处理逻辑。
+     */
     private void incrementCounter(String name, double amount) {
         MeterRegistry registry = meterRegistryProvider.getIfAvailable();
         if (registry == null) {

@@ -28,20 +28,49 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+/**
+ * 用户服务实现。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
+    /**
+     * 用户映射器。
+     */
     private final UserMapper userMapper;
+    /**
+     * 部门映射器。
+     */
     private final DeptMapper deptMapper;
+    /**
+     * 系统用户社交账号映射器。
+     */
     private final SysUserSocialMapper sysUserSocialMapper;
+    /**
+     * 用户应用映射器。
+     */
     private final UserAppMapper userAppMapper;
+    /**
+     * 用户岗位映射器。
+     */
     private final UserPostMapper userPostMapper;
+    /**
+     * 用户角色关系映射器。
+     */
     private final UserRoleRelationshipMappingMapper userRoleRelationshipMappingMapper;
+    /**
+     * Argon2 密码编码器。
+     */
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+    /**
+     * 操作保护组件。
+     */
     private final AuthOperationGuard authOperationGuard;
 
+    /**
+     * 默认密码。
+     */
     @Value("${default.password:123456}")
     private String defaultPassword;
 

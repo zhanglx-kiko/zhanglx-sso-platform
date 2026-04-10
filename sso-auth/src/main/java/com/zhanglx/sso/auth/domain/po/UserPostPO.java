@@ -22,13 +22,13 @@ import org.apache.ibatis.type.JdbcType;
 public class UserPostPO extends BasePO {
 
     /**
-     * 用户ID。
+     * 用户标识。
      */
     @TableField(value = "user_id", jdbcType = JdbcType.BIGINT)
     private Long userId;
 
     /**
-     * 岗位ID。
+     * 岗位标识。
      */
     @TableField(value = "post_id", jdbcType = JdbcType.BIGINT)
     private Long postId;

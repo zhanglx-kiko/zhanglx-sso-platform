@@ -129,7 +129,7 @@ public class SmsProperties {
         private boolean enabled = false;
 
         /**
-         * 阿里云 AccessKey ID。
+         * 阿里云 AccessKey 标识。
          */
         private String accessKeyId;
 

@@ -8,10 +8,10 @@ import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/10 20:49
- * @ClassName: PermissionService
- * @Description: 权限管理服务接口
+ * 作者：Zhang L X
+ * 创建时间：2026/2/10 20:49
+ * 类名：PermissionService
+ * 说明：权限管理服务接口
  * <p>
  * 主要职责：
  * 1. 权限项基本信息管理（增删改查）
@@ -31,7 +31,7 @@ public interface PermissionService {
      * 4. 清理权限树缓存
      *
      * @param permissionDTO 新增的权限项内容
-     * @return PermissionDTO 保存后的权限项
+     * @return permissionDTO 保存后的权限项
      */
     PermissionDTO addPermission(PermissionDTO permissionDTO);
 
@@ -45,7 +45,7 @@ public interface PermissionService {
      * 4. 清理权限树缓存
      *
      * @param id 权限项 id
-     * @return PermissionDTO 被删除的权限项
+     * @return 权限数据传输对象 被删除的权限项
      */
     PermissionDTO delPermission(Long id);
 
@@ -61,7 +61,7 @@ public interface PermissionService {
      *
      * @param id            主键
      * @param permissionDTO 更新的内容
-     * @return PermissionDTO 更新后的权限项
+     * @return 权限数据传输对象 更新后的权限项
      */
     PermissionDTO updatePermission(Long id, PermissionDTO permissionDTO);
 
@@ -76,7 +76,7 @@ public interface PermissionService {
      * 5. 应用树枝隐藏策略
      *
      * @param searchKey 查询条件（支持名称或标识模糊匹配）
-     * @return List<PermissionDTO> 权限项树形列表
+     * @return List<权限数据传输对象> 权限项树形列表
      */
     List<PermissionDTO> selPermission(String searchKey);
 
@@ -87,12 +87,12 @@ public interface PermissionService {
      * 1. 根据用户名查询用户信息
      * 2. 查询用户通过角色关联的所有权限
      * 3. 根据标识和类型过滤
-     * 4. 转换为 VO 返回
+     * 4. 转换为 视图对象返回
      *
      * @param username        账号
      * @param identifications 权限项标识列表（可为空，不过滤）
      * @param permissionTypes 权限项类型列表（可为空，不过滤）
-     * @return List<PermissionVO> 以传入权限项分组的权限项列表
+     * @return List<权限视图对象> 以传入权限项分组的权限项列表
      */
     List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<PermissionTypeEnum> permissionTypes);
 
@@ -101,10 +101,10 @@ public interface PermissionService {
      * <p>
      * 业务逻辑：
      * 1. 查询角色关联的所有权限项
-     * 2. 转换为 VO 返回
+     * 2. 转换为 视图对象返回
      *
      * @param roleId 角色 id
-     * @return List<PermissionVO> 已绑定的权限项列表
+     * @return List<权限视图对象> 已绑定的权限项列表
      */
     List<PermissionVO> selPermissionByRoleId(long roleId);
 
@@ -129,7 +129,7 @@ public interface PermissionService {
      * 4. 清理权限树缓存
      *
      * @param idList 权限项 id 列表
-     * @return List<PermissionDTO> 被删除的权限项列表
+     * @return List<权限数据传输对象> 被删除的权限项列表
      */
     List<PermissionDTO> batchDelPermission(List<Long> idList);
 
@@ -168,10 +168,10 @@ public interface PermissionService {
      * <p>
      * 业务逻辑：
      * 1. 根据用户角色映射表和角色权限映射表，关联查出所有权限
-     * 2. 返回当前用户已获授权的全部 identification，供鉴权缓存与树形场景共用
+     * 2. 返回当前用户已获授权的全部 权限标识，供鉴权缓存与树形场景共用
      *
      * @param userId 用户 ID
-     * @return List<String> 权限标识列表 (如 "user:add", "role:edit")
+     * @return 权限标识列表 (如 "user:add", "role:edit")
      */
     List<String> selectPermissionCodesByUserId(Long userId);
 

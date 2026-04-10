@@ -9,6 +9,9 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * UserPost数据访问层。
+ */
 @Mapper
 public interface UserPostMapper extends IBaseMapperX<UserPostPO> {
 
@@ -19,7 +22,7 @@ public interface UserPostMapper extends IBaseMapperX<UserPostPO> {
     List<Long> selectPostIdsByUserId(@Param("userId") Long userId);
 
     /**
-     * 根据岗位ID统计用户岗位关联数量。
+     * 根据岗位标识统计用户岗位关联数量。
      */
     @Select("SELECT COUNT(1) FROM t_auth_user_post WHERE post_id = #{postId} AND del_flag = 0")
     Long countByPostId(@Param("postId") Long postId);

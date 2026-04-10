@@ -7,10 +7,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+/**
+ * ServletClient地址解析器。
+ */
 @Component
 @RequiredArgsConstructor
 public class ServletClientIpResolver {
-
+    /**
+     * 配置属性。
+     */
     private final ClientIpProperties properties;
 
     public String resolveClientIp(HttpServletRequest request) {

@@ -16,7 +16,9 @@ import java.util.Map;
 public class XssAuditRecorder {
 
     private static final String AUDIT_CONTEXT_ATTRIBUTE = XssAuditRecorder.class.getName() + ".AUDIT_CONTEXT";
-
+    /**
+     * xssAuditMetrics。
+     */
     private final XssAuditMetrics xssAuditMetrics;
 
     public void recordHit(HttpServletRequest request, XssInputSource inputSource, XssPolicyMode policyMode) {
@@ -65,6 +67,9 @@ public class XssAuditRecorder {
         context.markFlushed();
     }
 
+    /**
+     * getCon读取文本字段值。
+     */
     private XssAuditContext getContext(HttpServletRequest request) {
         Object attribute = request.getAttribute(AUDIT_CONTEXT_ATTRIBUTE);
         if (attribute instanceof XssAuditContext context) {
@@ -75,6 +80,9 @@ public class XssAuditRecorder {
         return context;
     }
 
+    /**
+     * 解析端点。
+     */
     private String resolveEndpoint(HttpServletRequest request) {
         Object attribute = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         if (attribute instanceof String pattern && StringUtils.hasText(pattern)) {

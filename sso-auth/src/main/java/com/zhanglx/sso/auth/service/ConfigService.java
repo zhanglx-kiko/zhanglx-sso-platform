@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.ConfigDTO;
 import com.zhanglx.sso.auth.domain.dto.ConfigQueryDTO;
 
+/**
+ * 配置服务接口。
+ */
 public interface ConfigService {
 
     ConfigDTO create(ConfigDTO dto);

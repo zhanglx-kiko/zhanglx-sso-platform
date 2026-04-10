@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 /**
  * XSS 清洗核心服务。
- * 这里统一封装路径匹配、字段策略解析、文本清洗和审计记录，避免逻辑散落在过滤器与 Advice 中。
+ * 这里统一封装路径匹配、字段策略解析、文本清洗和审计记录，避免逻辑散落在过滤器与请求增强组件中。
  */
 @Slf4j
 @Getter
@@ -52,11 +52,17 @@ public class XssSanitizationService {
             .addTags("span")
             .addProtocols("a", "href", "http", "https", "mailto")
             .addProtocols("img", "src", "http", "https");
-
+    /**
+     * 配置属性。
+     */
     private final XssProtectionProperties properties;
-
+    /**
+     * 审计记录器。
+     */
     private final XssAuditRecorder auditRecorder;
-
+    /**
+     * pathMatcher。
+     */
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public boolean shouldApplyGlobalProtection() {
@@ -187,6 +193,9 @@ public class XssSanitizationService {
         return defaultSource;
     }
 
+    /**
+     * 解析注解策略。
+     */
     private XssPolicyMode resolveAnnotationPolicy(AnnotatedElement annotatedElement) {
         if (annotatedElement == null) {
             return null;
@@ -195,6 +204,9 @@ public class XssSanitizationService {
         return annotation == null ? null : annotation.value();
     }
 
+    /**
+     * 匹配内容类型。
+     */
     private boolean matchContentType(String configuredPattern, String actualContentType) {
         if (configuredPattern.endsWith("/*")) {
             String prefix = configuredPattern.substring(0, configuredPattern.length() - 1);
@@ -203,6 +215,9 @@ public class XssSanitizationService {
         return actualContentType.equals(configuredPattern);
     }
 
+    /**
+     * 净化plainText。
+     */
     private String sanitizePlainText(String originalValue) {
         if (!shouldSanitizeAsPlainText(originalValue)) {
             return originalValue;
@@ -214,6 +229,9 @@ public class XssSanitizationService {
         return cleanedValue;
     }
 
+    /**
+     * 净化searchText。
+     */
     private String sanitizeSearchText(String originalValue) {
         if (!shouldSanitizeAsSearchText(originalValue)) {
             return originalValue;
@@ -221,10 +239,16 @@ public class XssSanitizationService {
         return Jsoup.clean(stripDangerousBlocks(originalValue), Safelist.none());
     }
 
+    /**
+     * 净化richText。
+     */
     private String sanitizeRichText(String originalValue) {
         return Jsoup.clean(originalValue, RICH_TEXT_SAFELIST);
     }
 
+    /**
+     * 判断是否需要按纯文本方式清洗。
+     */
     private boolean shouldSanitizeAsPlainText(String originalValue) {
         if (!StringUtils.hasText(originalValue)) {
             return false;
@@ -242,6 +266,9 @@ public class XssSanitizationService {
         return HTML_TAG_PATTERN.matcher(originalValue).find();
     }
 
+    /**
+     * 判断是否需要按搜索文本方式清洗。
+     */
     private boolean shouldSanitizeAsSearchText(String originalValue) {
         if (!StringUtils.hasText(originalValue)) {
             return false;
@@ -251,11 +278,17 @@ public class XssSanitizationService {
                 || HTML_TAG_PATTERN.matcher(originalValue).find();
     }
 
+    /**
+     * 剥离dangerousBlocks。
+     */
     private String stripDangerousBlocks(String originalValue) {
         String withoutBlocks = DANGEROUS_BLOCK_PATTERN.matcher(originalValue).replaceAll("");
         return DANGEROUS_SINGLE_TAG_PATTERN.matcher(withoutBlocks).replaceAll("");
     }
 
+    /**
+     * 压缩forLog。
+     */
     private String abbreviateForLog(String value) {
         if (value == null) {
             return null;
@@ -267,6 +300,9 @@ public class XssSanitizationService {
         return normalized.substring(0, 120) + "...";
     }
 
+    /**
+     * 生成特征处理逻辑。
+     */
     private String fingerprint(AnnotatedElement annotatedElement) {
         return annotatedElement == null ? "unknown" : annotatedElement.toString();
     }

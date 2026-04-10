@@ -17,13 +17,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 认证配置控制器。
+ */
 @RestController
 @Validated
 @RequiredArgsConstructor
 @Tag(name = "参数管理", description = "B 端系统参数管理接口")
 @RequestMapping("/apis/v1/auth/s/configs")
 public class AuthConfigController {
-
+    /**
+     * 参数配置服务。
+     */
     private final ConfigService configService;
 
     @Operation(summary = "新增参数")

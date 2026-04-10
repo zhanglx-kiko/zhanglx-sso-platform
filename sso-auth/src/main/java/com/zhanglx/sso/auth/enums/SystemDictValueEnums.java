@@ -7,13 +7,16 @@ import lombok.RequiredArgsConstructor;
 
 public final class SystemDictValueEnums {
 
-/**
- * 私有构造方法，禁止外部实例化。
- */
+    /**
+     * 私有构造方法，禁止外部实例化。
+     */
     private SystemDictValueEnums() {
         throw new UnsupportedOperationException("Utility class");
     }
 
+    /**
+     * SystemDictValueEnums枚举。
+     */
     @Getter
     @RequiredArgsConstructor
     public enum IdCardType implements BuiltInDictEnum {
@@ -23,17 +26,23 @@ public final class SystemDictValueEnums {
         DRIVER_LICENSE("4", "驾驶证"),
         HONG_KONG_MACAO_PASS("5", "港澳通行证");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static IdCardType fromCode(String code) {
+            return IBaseEnum.fromCode(code, IdCardType.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.ID_CARD_TYPE;
-        }
-
-        public static IdCardType fromCode(String code) {
-            return IBaseEnum.fromCode(code, IdCardType.class);
         }
     }
 
@@ -48,17 +57,23 @@ public final class SystemDictValueEnums {
         MASTER("6", "硕士研究生"),
         DOCTOR("7", "博士研究生");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static Education fromCode(String code) {
+            return IBaseEnum.fromCode(code, Education.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.EDUCATION;
-        }
-
-        public static Education fromCode(String code) {
-            return IBaseEnum.fromCode(code, Education.class);
         }
     }
 
@@ -70,17 +85,23 @@ public final class SystemDictValueEnums {
         DIVORCED("3", "离异"),
         WIDOWED("4", "丧偶");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static MaritalStatus fromCode(String code) {
+            return IBaseEnum.fromCode(code, MaritalStatus.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.MARITAL_STATUS;
-        }
-
-        public static MaritalStatus fromCode(String code) {
-            return IBaseEnum.fromCode(code, MaritalStatus.class);
         }
     }
 
@@ -94,17 +115,23 @@ public final class SystemDictValueEnums {
         REVOLUTIONARY_PARTY_MEMBER("5", "民革党员"),
         DEMOCRATIC_LEAGUE_MEMBER("6", "民盟盟员");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static PoliticalStatus fromCode(String code) {
+            return IBaseEnum.fromCode(code, PoliticalStatus.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.POLITICAL_STATUS;
-        }
-
-        public static PoliticalStatus fromCode(String code) {
-            return IBaseEnum.fromCode(code, PoliticalStatus.class);
         }
     }
 
@@ -118,17 +145,23 @@ public final class SystemDictValueEnums {
         MATERNITY("5", "产假"),
         PATERNITY("6", "陪产假");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static LeaveType fromCode(String code) {
+            return IBaseEnum.fromCode(code, LeaveType.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.LEAVE_TYPE;
-        }
-
-        public static LeaveType fromCode(String code) {
-            return IBaseEnum.fromCode(code, LeaveType.class);
         }
     }
 
@@ -141,17 +174,23 @@ public final class SystemDictValueEnums {
         REJECTED("3", "已拒绝"),
         CANCELED("4", "已撤回");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static ApprovalStatus fromCode(String code) {
+            return IBaseEnum.fromCode(code, ApprovalStatus.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.APPROVAL_STATUS;
-        }
-
-        public static ApprovalStatus fromCode(String code) {
-            return IBaseEnum.fromCode(code, ApprovalStatus.class);
         }
     }
 
@@ -164,17 +203,23 @@ public final class SystemDictValueEnums {
         BANK_CARD("4", "银行卡"),
         CREDIT_CARD("5", "信用卡");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static PaymentMethod fromCode(String code) {
+            return IBaseEnum.fromCode(code, PaymentMethod.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.PAYMENT_METHOD;
-        }
-
-        public static PaymentMethod fromCode(String code) {
-            return IBaseEnum.fromCode(code, PaymentMethod.class);
         }
     }
 
@@ -187,17 +232,23 @@ public final class SystemDictValueEnums {
         SIGNED("4", "已签收"),
         REJECTED("5", "已拒收");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static LogisticsStatus fromCode(String code) {
+            return IBaseEnum.fromCode(code, LogisticsStatus.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.LOGISTICS_STATUS;
-        }
-
-        public static LogisticsStatus fromCode(String code) {
-            return IBaseEnum.fromCode(code, LogisticsStatus.class);
         }
     }
 
@@ -209,17 +260,23 @@ public final class SystemDictValueEnums {
         SVIP("3", "SVIP客户"),
         DIAMOND("4", "钻石客户");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static CustomerLevel fromCode(String code) {
+            return IBaseEnum.fromCode(code, CustomerLevel.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.CUSTOMER_LEVEL;
-        }
-
-        public static CustomerLevel fromCode(String code) {
-            return IBaseEnum.fromCode(code, CustomerLevel.class);
         }
     }
 
@@ -232,17 +289,23 @@ public final class SystemDictValueEnums {
         OFF_SHELF("3", "已下架"),
         STOPPED("4", "已停售");
 
+        /**
+         * 验证码。
+         */
         @JsonValue
         private final String code;
+        /**
+         * 说明。
+         */
         private final String description;
+
+        public static ProductStatus fromCode(String code) {
+            return IBaseEnum.fromCode(code, ProductStatus.class);
+        }
 
         @Override
         public SystemDictTypeEnum getDictType() {
             return SystemDictTypeEnum.PRODUCT_STATUS;
-        }
-
-        public static ProductStatus fromCode(String code) {
-            return IBaseEnum.fromCode(code, ProductStatus.class);
         }
     }
 

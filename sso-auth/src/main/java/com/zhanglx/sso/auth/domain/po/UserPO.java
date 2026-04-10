@@ -95,7 +95,7 @@ public class UserPO extends BasePO {
     private YesNoEnum allowConcurrentLogin;
 
     /**
-     * 部门ID。
+     * 部门标识。
      */
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;

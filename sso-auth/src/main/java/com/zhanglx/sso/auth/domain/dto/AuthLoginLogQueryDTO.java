@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 public class AuthLoginLogQueryDTO extends PageQuery {
 
     /**
-     * 用户ID。
+     * 用户标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
@@ -37,17 +37,17 @@ public class AuthLoginLogQueryDTO extends PageQuery {
     /**
      * 用户名。
      */
-    @Schema(description = "用户名")
+    @Schema(description = "username")
     private String username;
 
     /**
-     * 事件类型，LOGIN / LOGOUT。
+     * 事件类型，登录 / 退出。
      */
     @Schema(description = "事件类型，LOGIN / LOGOUT")
     private String eventType;
 
     /**
-     * 登录结果，SUCCESS / FAILURE。
+     * 登录结果，成功/失败。
      */
     @Schema(description = "登录结果，SUCCESS / FAILURE")
     private String loginResult;

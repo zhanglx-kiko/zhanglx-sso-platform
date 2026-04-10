@@ -5,6 +5,9 @@ import com.zhanglx.sso.core.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * AuthOperationErrorCode枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum AuthOperationErrorCode implements ErrorCode {
@@ -17,8 +20,13 @@ public enum AuthOperationErrorCode implements ErrorCode {
     REDUCE_CURRENT_USER_ROLE_PERMISSION_FORBIDDEN(ResultCode.FORBIDDEN.getCode(), "role.self.permission.reduce.forbidden"),
     DISABLE_CURRENT_USER_ROLE_FORBIDDEN(ResultCode.FORBIDDEN.getCode(), "role.self.disable.forbidden"),
     DELETE_CURRENT_USER_ROLE_FORBIDDEN(ResultCode.FORBIDDEN.getCode(), "role.self.delete.forbidden");
-
+    /**
+     * 验证码。
+     */
     private final Integer code;
+    /**
+     * 消息键。
+     */
     private final String messageKey;
 
 }

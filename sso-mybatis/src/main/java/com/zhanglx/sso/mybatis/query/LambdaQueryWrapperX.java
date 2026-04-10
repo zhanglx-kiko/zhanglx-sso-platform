@@ -10,10 +10,10 @@ import org.springframework.util.StringUtils;
 import java.util.Collection;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 18:01
- * @ClassName: LambdaQueryWrapperX
- * @Description: 拓展 MyBatis Plus QueryWrapper 类，主要增加如下功能：
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 18:01
+ * 类名：LambdaQueryWrapperX
+ * 说明：拓展 MyBatis Plus QueryWrapper 类，主要增加如下功能：
  * 拼接条件的方法，增加 xxxIfPresent 方法，用于判断值不存在的时候，不要拼接到条件中。
  */
 public class LambdaQueryWrapperX<T> extends LambdaQueryWrapper<T> {

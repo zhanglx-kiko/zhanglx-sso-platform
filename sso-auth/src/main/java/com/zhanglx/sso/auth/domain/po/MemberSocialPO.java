@@ -24,7 +24,7 @@ import org.apache.ibatis.type.JdbcType;
 public class MemberSocialPO extends BasePO {
 
     /**
-     * 会员ID。
+     * 会员标识。
      */
     @TableField(value = "member_id", jdbcType = JdbcType.BIGINT)
     private Long memberId;
@@ -42,7 +42,7 @@ public class MemberSocialPO extends BasePO {
     private String identifier;
 
     /**
-     * UnionId。
+     * Union标识。
      */
     @TableField(value = "union_id", jdbcType = JdbcType.VARCHAR)
     private String unionId;

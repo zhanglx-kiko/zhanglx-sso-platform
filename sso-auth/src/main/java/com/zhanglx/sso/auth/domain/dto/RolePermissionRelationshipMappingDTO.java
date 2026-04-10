@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 public class RolePermissionRelationshipMappingDTO extends BaseDTO {
 
     /**
-     * 角色 ID。
+     * 角色 标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
@@ -34,7 +34,7 @@ public class RolePermissionRelationshipMappingDTO extends BaseDTO {
     private Long roleId;
 
     /**
-     * 权限项 ID。
+     * 权限项 标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

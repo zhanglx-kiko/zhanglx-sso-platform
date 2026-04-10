@@ -24,12 +24,23 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * 岗位服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
-
+    /**
+     * postMapper。
+     */
     private final PostMapper postMapper;
+    /**
+     * 用户映射器。
+     */
     private final UserMapper userMapper;
+    /**
+     * 用户岗位映射器。
+     */
     private final UserPostMapper userPostMapper;
 
     @Override

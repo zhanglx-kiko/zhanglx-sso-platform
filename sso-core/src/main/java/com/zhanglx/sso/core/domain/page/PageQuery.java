@@ -12,10 +12,10 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/11 16:14
- * @ClassName: PageQuery
- * @Description: 分页查询参数基类
+ * 作者：Zhang L X
+ * 创建时间：2026/2/11 16:14
+ * 类名：PageQuery
+ * 说明：分页查询参数基类
  */
 @Data
 @SuperBuilder
@@ -33,9 +33,15 @@ public class PageQuery implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * pageNum。
+     */
     @Min(value = 1, message = "页码必须大于0")
     private final Integer pageNum = PAGE_NUM;
 
+    /**
+     * 分页大小。
+     */
     @Min(value = 1, message = "每页大小必须大于0")
     @Max(value = 100, message = "每页大小不能超过100")
     private final Integer pageSize = PAGE_SIZE;

@@ -43,7 +43,7 @@ public class PermissionVO extends BaseVO {
     private String identification;
 
     /**
-     * 父级 ID。
+     * 父级 标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

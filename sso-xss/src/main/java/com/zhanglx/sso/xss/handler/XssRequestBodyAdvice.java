@@ -18,20 +18,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -43,7 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class XssRequestBodyAdvice extends RequestBodyAdviceAdapter {
 
     private final XssSanitizationService sanitizationService;
-
+    /**
+     * fieldCache。
+     */
     private final Map<Class<?>, List<Field>> fieldCache = new ConcurrentHashMap<>();
 
     @Override
@@ -166,7 +157,7 @@ public class XssRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 changed = changed || sanitizedElement != elementValue;
             }
             if (changed) {
-                ((Set<Object>) set).clear();
+                set.clear();
                 ((Set<Object>) set).addAll(sanitizedValues);
             }
             return value;
@@ -188,14 +179,14 @@ public class XssRequestBodyAdvice extends RequestBodyAdviceAdapter {
                 changed = changed || sanitizedElement != elementValue;
             }
             if (changed) {
-                ((Collection<Object>) collection).clear();
+                collection.clear();
                 ((Collection<Object>) collection).addAll(sanitizedValues);
             }
             return value;
         }
 
         if (value instanceof Map<?, ?> map) {
-            for (Map.Entry<?, ?> entry : ((Map<?, ?>) map).entrySet()) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
                 Object originalEntryValue = entry.getValue();
                 Object sanitizedEntryValue = sanitizeValue(
                         originalEntryValue,
@@ -255,6 +246,9 @@ public class XssRequestBodyAdvice extends RequestBodyAdviceAdapter {
         });
     }
 
+    /**
+     * 是否simpleValueType处理逻辑。
+     */
     private boolean isSimpleValueType(Class<?> valueClass) {
         return valueClass.isPrimitive()
                 || ClassUtils.isPrimitiveOrWrapper(valueClass)
@@ -269,6 +263,9 @@ public class XssRequestBodyAdvice extends RequestBodyAdviceAdapter {
     }
 
     @Nullable
+    /**
+     * 获取当前请求对象。
+     */
     private HttpServletRequest currentRequest() {
         ServletRequestAttributes requestAttributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();

@@ -23,13 +23,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 认证权限管理控制器。
+ */
 @RestController
 @Validated
 @RequiredArgsConstructor
 @Tag(name = "权限管理", description = "后台权限管理接口")
 @RequestMapping("/apis/v1/auth/s/permissions")
 public class AuthPermissionManageController {
-
+    /**
+     * 权限服务。
+     */
     private final PermissionService permissionService;
 
     @Operation(summary = "新增权限")

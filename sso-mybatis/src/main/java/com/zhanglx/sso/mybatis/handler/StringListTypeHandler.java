@@ -14,10 +14,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 17:03
- * @ClassName: StringListTypeHandler
- * @Description: List<String> 的类型转换器实现类，对应数据库的 varchar 类型 使用 , 分隔
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 17:03
+ * 类名：StringListTypeHandler
+ * 说明：List<String> 的类型转换器实现类，对应数据库的 varchar 类型 使用 , 分隔
  */
 @MappedJdbcTypes(JdbcType.VARCHAR)
 @MappedTypes(List.class)
@@ -49,6 +49,9 @@ public class StringListTypeHandler implements TypeHandler<List<String>> {
         return getResult(value);
     }
 
+    /**
+     * 解析查询结果值。
+     */
     private List<String> getResult(String value) {
         if (value == null) {
             return null;

@@ -7,12 +7,7 @@ import com.zhanglx.sso.xss.support.XssSanitizationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 对 Query 参数、表单参数和指定请求头做统一包装清洗。
@@ -20,10 +15,14 @@ import java.util.Map;
 public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
 
     private final XssSanitizationService sanitizationService;
-
-    private Map<String, String[]> sanitizedParameterMap;
-
+    /**
+     * sanitizedHeaderCache。
+     */
     private final Map<String, String> sanitizedHeaderCache = new HashMap<>();
+    /**
+     * sanitizedParameterMap。
+     */
+    private Map<String, String[]> sanitizedParameterMap;
 
     public XssHttpServletRequestWrapper(HttpServletRequest request, XssSanitizationService sanitizationService) {
         super(request);
@@ -88,6 +87,9 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
         return Collections.enumeration(sanitizedHeaders);
     }
 
+    /**
+     * getSanitizedParameterMap处理逻辑。
+     */
     private Map<String, String[]> getSanitizedParameterMap() {
         if (sanitizedParameterMap != null) {
             return sanitizedParameterMap;

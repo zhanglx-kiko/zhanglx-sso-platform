@@ -9,16 +9,16 @@ import org.apache.ibatis.annotations.Update;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/18 11:37
- * @ClassName: RolePermissionRelationshipMappingMapper
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/18 11:37
+ * 类名：角色权限关系映射器
+ * 说明：
  */
 @Mapper
 public interface RolePermissionRelationshipMappingMapper extends IBaseMapperX<RolePermissionRelationshipMappingPO> {
 
     /**
-     * 根据角色ID逻辑删除权限授权关系。
+     * 根据角色标识逻辑删除权限授权关系。
      */
     @Update("UPDATE t_auth_role_permission SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0")
     int deleteByRoleId(@Param("roleId") Long roleId);

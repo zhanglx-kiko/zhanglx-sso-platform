@@ -7,6 +7,9 @@ import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 
 import java.util.List;
 
+/**
+ * 部门服务接口。
+ */
 public interface DeptService {
 
     DeptDTO create(DeptDTO deptDTO);

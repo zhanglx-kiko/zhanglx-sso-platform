@@ -1,19 +1,13 @@
 package com.zhanglx.sso.web.support;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
-public class RateLimitDecision {
-
-    private final boolean allowed;
-
-    private final long limit;
-
-    private final long remaining;
-
-    private final long resetSeconds;
-
-    private final long current;
+/**
+ * RateLimitDecision类型。
+ *
+ * @param allowed      allowed。
+ * @param limit        限制。
+ * @param remaining    remaining。
+ * @param resetSeconds resetSeconds。
+ * @param current      当前值。
+ */
+public record RateLimitDecision(boolean allowed, long limit, long remaining, long resetSeconds, long current) {
 }

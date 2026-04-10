@@ -51,10 +51,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 14:59
- * @ClassName: PermissionServiceImpl
- * @Description: 权限服务实现类
+ * 作者：Zhang L X
+ * 创建时间：2026/3/17 14:59
+ * 类名：PermissionServiceImpl
+ * 说明：权限服务实现类
  */
 @Slf4j
 @Service
@@ -62,13 +62,37 @@ import java.util.stream.Collectors;
 public class PermissionServiceImpl implements PermissionService {
 
     private final Validator validator;
+    /**
+     * 用户服务。
+     */
     private final UserService userService;
+    /**
+     * 树构建器。
+     */
     private final HighPerfTreeBuilder treeBuilder;
+    /**
+     * 权限映射器。
+     */
     private final PermissionMapper permissionMapper;
+    /**
+     * 进度管理器。
+     */
     private final ImportProgressManager progressManager;
+    /**
+     * 事务模板。
+     */
     private final TransactionTemplate transactionTemplate;
+    /**
+     * 事件发布器。
+     */
     private final ApplicationEventPublisher eventPublisher;
+    /**
+     * exportProgressManager。
+     */
     private final ExportProgressManager exportProgressManager;
+    /**
+     * 角色权限关系映射器。
+     */
     private final RolePermissionRelationshipMappingMapper rolePermissionRelationshipMappingMapper;
 
     @Override
@@ -105,7 +129,7 @@ public class PermissionServiceImpl implements PermissionService {
      * <p>该方法会对前端传入的权限标识做统一规范化处理，并根据父级血缘生成当前节点的
      * {@code identityLineage}，用于后续树结构查询、导出和递归更新。</p>
      *
-     * @param identity      当前权限标识，例如 {@code mall:goods:add} 或 {@code add}
+     * @param identity 当前权限标识，例如 {@code mall:goods:add} 或 {@code add}
      * @param parentLineage 父级权限的血缘路径，例如 {@code mall.goods.list}
      * @return 当前节点规范化后的完整血缘路径，例如 {@code mall.goods.list.add}
      */
@@ -160,7 +184,7 @@ public class PermissionServiceImpl implements PermissionService {
      * <p>该方法会先找出当前批次节点的直接子节点，再执行当前层删除，最后递归向下清理所有
      * 子孙权限以及对应的角色权限关联关系。</p>
      *
-     * @param permissionDTOS 需要删除的权限节点列表
+     * @param 权限数据传输对象S 需要删除的权限节点列表
      * @return 按递归顺序汇总后的已删除权限列表
      */
     /**
@@ -262,12 +286,12 @@ public class PermissionServiceImpl implements PermissionService {
     /**
      * 递归刷新子节点的血缘路径。
      *
-     * <p>当父节点的 {@code identification} 发生变化时，所有子节点都需要基于新的父级血缘重新计算
+     * <p>当父节点的 {@code 权限标识} 发生变化时，所有子节点都需要基于新的父级血缘重新计算
      * 自身的 {@code identityLineage}。</p>
      *
-     * @param identity              当前父节点的权限标识
+     * @param identity 当前父节点的权限标识
      * @param parentIdentityLineage 当前父节点的血缘路径
-     * @param childrenPermission    待更新的子节点树
+     * @param childrenPermission 待更新的子节点树
      * @return 所有被更新的子节点平铺列表
      */
     /**
@@ -348,7 +372,7 @@ public class PermissionServiceImpl implements PermissionService {
      * 节点的所有祖先节点递归补齐回来。</p>
      *
      * @param searchFuncPermLabels 命中的权限节点列表
-     * @param allFuncPermLabels    全量权限节点列表
+     * @param allFuncPermLabels 全量权限节点列表
      * @return 包含祖先节点的结果集
      */
     /**
@@ -566,7 +590,7 @@ public class PermissionServiceImpl implements PermissionService {
      * 待补充 位置补充上传逻辑即可。</p>
      *
      * @param failedData 导入失败的数据列表
-     * @param taskId     导入任务 ID
+     * @param taskId 导入任务 ID
      * @return 错误文件下载地址；生成失败时返回空字符串
      */
     /**
@@ -597,11 +621,11 @@ public class PermissionServiceImpl implements PermissionService {
      * <p>该方法会综合当前批次数据、数据库中已存在的数据和已解析缓存，递归构建出节点的
      * {@code id}、{@code parentId} 以及 {@code identityLineage}，同时检测孤儿节点和循环依赖。</p>
      *
-     * @param identification 当前要解析的权限标识
-     * @param batchMap       当前批次的 Excel 数据缓存
-     * @param dbMap          数据库中已存在的权限缓存
-     * @param resolvedCache  已完成解析的节点缓存，用于记忆化加速
-     * @param visiting       当前递归链路上的访问集合，用于检测循环依赖
+     * @param 权限标识          当前要解析的权限标识
+     * @param batchMap      当前批次的 Excel 数据缓存
+     * @param dbMap         数据库中已存在的权限缓存
+     * @param resolvedCache 已完成解析的节点缓存，用于记忆化加速
+     * @param visiting      当前递归链路上的访问集合，用于检测循环依赖
      * @return 解析完成后的节点核心信息
      */
     private ResolvedNode resolveNode(String identification,
@@ -623,12 +647,12 @@ public class PermissionServiceImpl implements PermissionService {
 
         // 既不在缓存，也不在数据库，还不在当前批次中时，说明它是孤儿节点。
         if (!batchMap.containsKey(identification)) {
-            throw BusinessException.badRequest("映射失败：找不到权限标识 [" + identification + "]");
+            throw BusinessException.badRequest("映射失败：找不到identification [" + identification + "]");
         }
 
         // 检测循环依赖，例如 A -> B -> A。
         if (visiting.contains(identification)) {
-            throw BusinessException.badRequest("侦测到循环依赖：权限标识 [" + identification + "] 构成了死循环");
+            throw BusinessException.badRequest("侦测到循环依赖：identification [" + identification + "] 构成了死循环");
         }
 
         visiting.add(identification);

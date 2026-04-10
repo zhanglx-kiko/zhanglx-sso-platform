@@ -3,10 +3,10 @@ package com.zhanglx.sso.auth.event;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/27 10:20
- * @ClassName: PermissionChangedEvent
- * @Description: 权限数据变更事件
+ * 作者：Zhang L X
+ * 创建时间：2026/3/27 10:20
+ * 类名：权限变更事件
+ * 说明：权限数据变更事件
  */
 public class PermissionChangedEvent extends ApplicationEvent {
 

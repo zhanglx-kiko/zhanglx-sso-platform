@@ -19,15 +19,28 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * DefaultSmsGateway类型。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DefaultSmsGateway implements SmsGateway {
-
+    /**
+     * channelSenders。
+     */
     private final List<SmsChannelSender> channelSenders;
+    /**
+     * 短信配置属性。
+     */
     private final SmsProperties smsProperties;
+    /**
+     * 短信模板支持组件。
+     */
     private final SmsTemplateSupport smsTemplateSupport;
-
+    /**
+     * senderIndex。
+     */
     private final Map<SmsProviderType, SmsChannelSender> senderIndex = new EnumMap<>(SmsProviderType.class);
 
     @PostConstruct

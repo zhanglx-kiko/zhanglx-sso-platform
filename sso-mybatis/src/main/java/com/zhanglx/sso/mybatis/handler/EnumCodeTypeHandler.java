@@ -11,10 +11,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:47
- * @ClassName: EnumCodeTypeHandler
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:47
+ * 类名：EnumCodeTypeHandler
+ * 说明：
  */
 public class EnumCodeTypeHandler<E extends Enum<?> & IBaseEnum> extends BaseTypeHandler<E> {
     private final Class<E> type;

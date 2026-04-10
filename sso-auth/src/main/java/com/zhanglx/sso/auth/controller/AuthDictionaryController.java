@@ -2,11 +2,7 @@ package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zhanglx.sso.auth.domain.dto.DictDataDTO;
-import com.zhanglx.sso.auth.domain.dto.DictDataQueryDTO;
-import com.zhanglx.sso.auth.domain.dto.DictTypeDTO;
-import com.zhanglx.sso.auth.domain.dto.DictTypeQueryDTO;
-import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
+import com.zhanglx.sso.auth.domain.dto.*;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.service.DictionaryService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
@@ -19,26 +15,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 认证字典控制器。
+ */
 @RestController
 @Validated
 @RequiredArgsConstructor
-@Tag(name = "字典管理", description = "后台字典类型与字典数据管理接口")
+@Tag(name = "字典管理", description = "后台字典类型与DictData管理接口")
 @RequestMapping("/apis/v1/auth/s/dicts")
 public class AuthDictionaryController {
-
+    /**
+     * 字典服务。
+     */
     private final DictionaryService dictionaryService;
 
     @Operation(summary = "新增字典类型")
@@ -97,45 +89,45 @@ public class AuthDictionaryController {
         return dictionaryService.updateTypeStatus(RequestIdUtils.parseId(id, "dictTypeId"), dto.getStatus());
     }
 
-    @Operation(summary = "新增字典数据")
+    @Operation(summary = "新增DictData")
     @PostMapping("/data")
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:add")
-    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "CREATE", operationName = "新增字典数据", operationDesc = "新增系统字典数据", includeResponseBody = true)
+    @OperationLog(module = "字典管理", feature = "DictData", operationType = "CREATE", operationName = "新增DictData", operationDesc = "新增系统DictData", includeResponseBody = true)
     public DictDataDTO createData(@RequestBody @Valid DictDataDTO dto) {
         dto.setId(null);
         return dictionaryService.createData(dto);
     }
 
-    @Operation(summary = "修改字典数据")
+    @Operation(summary = "修改DictData")
     @PutMapping("/data/{id}")
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:edit")
-    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "UPDATE", operationName = "修改字典数据", operationDesc = "修改系统字典数据", includeResponseBody = true)
+    @OperationLog(module = "字典管理", feature = "DictData", operationType = "UPDATE", operationName = "修改DictData", operationDesc = "修改系统DictData", includeResponseBody = true)
     public DictDataDTO updateData(@PathVariable String id, @RequestBody @Valid DictDataDTO dto) {
         return dictionaryService.updateData(RequestIdUtils.parseId(id, "dictDataId"), dto);
     }
 
-    @Operation(summary = "删除字典数据")
+    @Operation(summary = "删除DictData")
     @DeleteMapping("/data/{id}")
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:remove")
-    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "DELETE", operationName = "删除字典数据", operationDesc = "删除系统字典数据", includeResponseBody = false)
+    @OperationLog(module = "字典管理", feature = "DictData", operationType = "DELETE", operationName = "删除DictData", operationDesc = "删除系统DictData", includeResponseBody = false)
     public void deleteData(@PathVariable String id) {
         dictionaryService.deleteData(RequestIdUtils.parseId(id, "dictDataId"));
     }
 
-    @Operation(summary = "字典数据详情")
+    @Operation(summary = "DictData详情")
     @GetMapping("/data/{id}")
     @SaCheckPermission("dict:data:view")
     public DictDataDTO getData(@PathVariable String id) {
         return dictionaryService.getData(RequestIdUtils.parseId(id, "dictDataId"));
     }
 
-    @Operation(summary = "分页查询字典数据")
+    @Operation(summary = "分页查询DictData")
     @PostMapping("/data/page")
     @RequestRateLimit(limit = 60, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:list")
@@ -143,7 +135,7 @@ public class AuthDictionaryController {
         return dictionaryService.pageData(queryDTO);
     }
 
-    @Operation(summary = "按字典类型查询字典数据")
+    @Operation(summary = "按字典类型查询DictData")
     @GetMapping("/data/by-type/{dictType}")
     @SaCheckPermission("dict:data:list")
     public List<DictDataDTO> listDataByType(@PathVariable String dictType,
@@ -151,12 +143,12 @@ public class AuthDictionaryController {
         return dictionaryService.listDataByType(dictType, EnableStatusEnum.fromCode(status));
     }
 
-    @Operation(summary = "更新字典数据状态")
+    @Operation(summary = "更新DictData状态")
     @PatchMapping("/data/{id}/status")
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("dict:data:status")
-    @OperationLog(module = "字典管理", feature = "字典数据", operationType = "STATUS", operationName = "修改字典数据状态", operationDesc = "启停系统字典数据", includeResponseBody = true)
+    @OperationLog(module = "字典管理", feature = "DictData", operationType = "STATUS", operationName = "修改DictData状态", operationDesc = "启停系统DictData", includeResponseBody = true)
     public DictDataDTO updateDataStatus(@PathVariable String id, @RequestBody @Valid EnableStatusUpdateDTO dto) {
         return dictionaryService.updateDataStatus(RequestIdUtils.parseId(id, "dictDataId"), dto.getStatus());
     }

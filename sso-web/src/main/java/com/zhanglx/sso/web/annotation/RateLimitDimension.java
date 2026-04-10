@@ -1,5 +1,8 @@
 package com.zhanglx.sso.web.annotation;
 
+/**
+ * RateLimitDimension枚举。
+ */
 public enum RateLimitDimension {
 
     IP,

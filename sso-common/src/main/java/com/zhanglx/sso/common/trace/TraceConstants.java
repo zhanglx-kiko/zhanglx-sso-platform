@@ -15,6 +15,9 @@ public final class TraceConstants {
     public static final String MDC_TRACE_ID = "traceId";
     public static final String MDC_REQUEST_ID = "requestId";
 
+    /**
+     * 私有构造方法，禁止外部实例化。
+     */
     private TraceConstants() {
         throw new UnsupportedOperationException("Utility class");
     }

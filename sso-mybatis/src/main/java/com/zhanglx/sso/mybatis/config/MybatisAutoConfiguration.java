@@ -15,10 +15,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 16:17
- * @ClassName: MybatisAutoConfiguration
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 16:17
+ * 类名：MybatisAutoConfiguration
+ * 说明：
  */
 @Configuration
 @EnableTransactionManagement(proxyTargetClass = true)
@@ -45,7 +45,7 @@ public class MybatisAutoConfiguration {
     @Bean
     public ConfigurationCustomizer configurationCustomizer() {
         return configuration -> {
-            //此处注册对查询条件有用，否则查询条件不会经过typehandler的处理
+            // 此处注册对查询条件有用，否则查询条件不会经过typehandler的处理
             configuration.getTypeHandlerRegistry().setDefaultEnumTypeHandler(AutoEnumTypeHandler.class);
             configuration.getTypeHandlerRegistry().register(List.class, StringListTypeHandler.class);
         };

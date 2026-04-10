@@ -24,6 +24,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+/**
+ * 默认短信验证码管理器类型。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,9 +42,17 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
     private static final String FIXED_TEMPLATE_MINUTES = "3";
     private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
     private static final Pattern CODE_PATTERN = Pattern.compile("^\\d{6}$");
-
+    /**
+     * Redis 字符串模板。
+     */
     private final StringRedisTemplate stringRedisTemplate;
+    /**
+     * 配置属性。
+     */
     private final SmsVerificationCodeProperties properties;
+    /**
+     * smsGateway。
+     */
     private final SmsGateway smsGateway;
 
     @Override

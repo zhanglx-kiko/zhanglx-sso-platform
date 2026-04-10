@@ -31,18 +31,44 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import tools.jackson.databind.JsonNode;
 
+/**
+ * WechatAuth服务实现。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WechatAuthServiceImpl implements WechatAuthService {
-
+    /**
+     * wechatProperties。
+     */
     private final WechatProperties wechatProperties;
+    /**
+     * 用户服务。
+     */
     private final UserService userService;
+    /**
+     * 会员用户服务。
+     */
     private final MemberUserService memberUserService;
+    /**
+     * 会员用户映射器。
+     */
     private final MemberUserMapper memberUserMapper;
+    /**
+     * 会员社交账号映射器。
+     */
     private final MemberSocialMapper memberSocialMapper;
+    /**
+     * 登录审计支持组件。
+     */
     private final AuthLoginAuditSupport authLoginAuditSupport;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
+    /**
+     * 请求客户端。
+     */
     private final RestClient restClient = RestClient.create();
 
     @Override

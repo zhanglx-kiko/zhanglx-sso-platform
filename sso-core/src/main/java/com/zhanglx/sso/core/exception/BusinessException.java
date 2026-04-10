@@ -5,12 +5,23 @@ import lombok.Getter;
 
 import java.util.Arrays;
 
+/**
+ * 统一业务异常。
+ */
 @Getter
 @EqualsAndHashCode(callSuper = true)
 public class BusinessException extends RuntimeException {
-
+    /**
+     * 编码。
+     */
     private final Integer code;
+    /**
+     * 消息键。
+     */
     private final String messageKey;
+    /**
+     * args。
+     */
     private final transient Object[] args;
 
     public BusinessException(String messageKey, Object... args) {

@@ -9,10 +9,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/5 18:03
- * @ClassName: ArrayUtils
- * @Description:
+ * 作者：Zhang L X
+ * 创建时间：2026/3/5 18:03
+ * 类名：ArrayUtils
+ * 说明：
  */
 public class ArrayUtils {
 

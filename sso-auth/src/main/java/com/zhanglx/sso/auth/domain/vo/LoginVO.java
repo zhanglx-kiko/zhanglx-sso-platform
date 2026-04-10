@@ -1,8 +1,5 @@
 package com.zhanglx.sso.auth.domain.vo;
 
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
-import tools.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -10,15 +7,18 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/10 21:12
- * @ClassName: LoginVO
- * @Description: 登录结果视图对象。
+ * 作者：Zhang L X
+ * 创建时间：2026/2/10 21:12
+ * 类名：登录视图对象
+ * 说明：登录结果视图对象。
  */
 @Data
 @SuperBuilder
@@ -36,13 +36,13 @@ public class LoginVO implements Serializable {
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
-    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "username", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     /**
      * 用户名
      */
-    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "username", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String username;
 
     /**

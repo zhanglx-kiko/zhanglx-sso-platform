@@ -3,11 +3,11 @@ package com.zhanglx.sso.core.utils.satoken;
 import cn.dev33.satoken.stp.StpLogic;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/4/3 22:55
- * @ClassName: StpMemberUtil
- * @Description: C端（电商会员）多账号体系鉴权工具类
- *  * 隔离策略：使用 "member" 作为前缀，与后台的 "login" 彻底物理隔离
+ * 作者：Zhang L X
+ * 创建时间：2026/4/3 22:55
+ * 类名：StpMemberUtil
+ * 说明：会员端多账号体系鉴权工具类
+ * * 隔离策略：使用 "member" 作为前缀，与后台的 "登录" 彻底物理隔离
  */
 public class StpMemberUtil {
 
@@ -32,6 +32,7 @@ public class StpMemberUtil {
 
     /**
      * 会话登录
+     *
      * @param id 账号id，建议有多账号体系时，加上类型前缀，但我们已经通过体系隔离了，直接传 member_id 即可
      */
     public static void login(Object id) {
@@ -57,7 +58,7 @@ public class StpMemberUtil {
     }
 
     /**
-     * 检验当前会话是否已经登录，如未登录，则抛出 NotLoginException 异常
+     * 检验当前会话是否已经登录，如未登录，则抛出 未登录异常
      */
     public static void checkLogin() {
         stpLogic.checkLogin();

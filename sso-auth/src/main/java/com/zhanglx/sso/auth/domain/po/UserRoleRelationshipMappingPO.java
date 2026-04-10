@@ -11,10 +11,10 @@ import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/20 10:27
- * @ClassName: UserRoleRelationshipMappingPO
- * @Description: 用户与角色关系映射表
+ * 作者：Zhang L X
+ * 创建时间：2026/3/20 10:27
+ * 类名：UserRoleRelationshipMappingPO
+ * 说明：用户与角色关系映射表
  */
 @Data
 @SuperBuilder

@@ -11,7 +11,9 @@ import java.time.format.DateTimeFormatter;
  * 将 LocalDateTime 序列化为统一的字符串格式。
  */
 public class LocalDateTimeToStringSerializer extends ValueSerializer<LocalDateTime> {
-
+    /**
+     * 时间格式化器。
+     */
     private final DateTimeFormatter formatter;
 
     public LocalDateTimeToStringSerializer(DateTimeFormatter formatter) {

@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * 启用状态枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum EnableStatusEnum implements IIntegerBaseEnum<String> {
@@ -16,10 +19,15 @@ public enum EnableStatusEnum implements IIntegerBaseEnum<String> {
     DISABLED(0, "停用"),
     ENABLED(1, "启用");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static EnableStatusEnum fromCode(Integer code) {

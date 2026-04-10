@@ -17,10 +17,10 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 import java.io.Serializable;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/12 16:46
- * @ClassName: UserPasswordDTO
- * @Description: 系统用户修改密码请求对象。
+ * 作者：Zhang L X
+ * 创建时间：2026/2/12 16:46
+ * 类名：UserPasswordDTO
+ * 说明：系统用户修改密码请求对象。
  */
 @Data
 @SuperBuilder
@@ -31,7 +31,7 @@ import java.io.Serializable;
 public class UserPasswordDTO implements Serializable {
 
     /**
-     * 用户ID。
+     * 用户标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

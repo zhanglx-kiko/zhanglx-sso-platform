@@ -33,6 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * 请求限流切面。
+ */
 @Slf4j
 @Aspect
 @Component
@@ -41,10 +44,21 @@ import java.util.Locale;
 public class RequestRateLimitAspect {
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
-
+    /**
+     * 配置属性。
+     */
     private final RateLimitProperties properties;
+    /**
+     * 请求防护存储器。
+     */
     private final RequestProtectionStore requestProtectionStore;
+    /**
+     * Web 表达式解析器。
+     */
     private final WebExpressionEvaluator webExpressionEvaluator;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Around("@annotation(requestRateLimit)")
@@ -79,30 +93,39 @@ public class RequestRateLimitAspect {
                 properties.isLocalFallbackEnabled()
         );
         writeHeaders(requestRateLimit, decision);
-        if (!decision.isAllowed()) {
+        if (!decision.allowed()) {
             log.warn("request rate limited, uri={}, method={}, clientIp={}, key={}, current={}, limit={}, reset={}s",
                     request.getRequestURI(),
                     request.getMethod(),
                     clientIp,
                     key,
-                    decision.getCurrent(),
-                    decision.getLimit(),
-                    decision.getResetSeconds());
+                    decision.current(),
+                    decision.limit(),
+                    decision.resetSeconds());
             throw rateLimitedException(requestRateLimit);
         }
         return joinPoint.proceed();
     }
 
+    /**
+     * 获取当前请求对象。
+     */
     private HttpServletRequest currentRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attributes == null ? null : attributes.getRequest();
     }
 
+    /**
+     * 获取当前响应对象。
+     */
     private HttpServletResponse currentResponse() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attributes == null ? null : attributes.getResponse();
     }
 
+    /**
+     * 构建key。
+     */
     private String buildKey(ProceedingJoinPoint joinPoint, HttpServletRequest request, RequestRateLimit requestRateLimit) {
         List<String> keyParts = new ArrayList<>();
         for (RateLimitDimension dimension : requestRateLimit.dimensions()) {
@@ -120,6 +143,9 @@ public class RequestRateLimitAspect {
         return properties.getKeyPrefix() + ":" + fingerprint;
     }
 
+    /**
+     * 解析dimensionValue。
+     */
     private String resolveDimensionValue(RateLimitDimension dimension, HttpServletRequest request) {
         return switch (dimension) {
             case IP -> defaultValue(requestIdentityAccessor.resolveClientIp(request), "unknown");
@@ -131,6 +157,9 @@ public class RequestRateLimitAspect {
         };
     }
 
+    /**
+     * 是否whitelisted处理逻辑。
+     */
     private boolean isWhitelisted(String requestUri, String clientIp) {
         boolean pathWhitelisted = properties.getWhitelistPaths().stream()
                 .filter(StringUtils::hasText)
@@ -143,6 +172,9 @@ public class RequestRateLimitAspect {
                 .anyMatch(pattern -> ClientIpUtils.isTrustedProxy(clientIp, List.of(pattern.trim())));
     }
 
+    /**
+     * 写出headers。
+     */
     private void writeHeaders(RequestRateLimit requestRateLimit, RateLimitDecision decision) {
         if (!properties.isWriteResponseHeaders() || !requestRateLimit.writeHeaders()) {
             return;
@@ -151,14 +183,17 @@ public class RequestRateLimitAspect {
         if (response == null) {
             return;
         }
-        response.setHeader("X-RateLimit-Limit", String.valueOf(decision.getLimit()));
-        response.setHeader("X-RateLimit-Remaining", String.valueOf(decision.getRemaining()));
-        response.setHeader("X-RateLimit-Reset-Seconds", String.valueOf(decision.getResetSeconds()));
-        if (!decision.isAllowed()) {
-            response.setHeader("Retry-After", String.valueOf(decision.getResetSeconds()));
+        response.setHeader("X-RateLimit-Limit", String.valueOf(decision.limit()));
+        response.setHeader("X-RateLimit-Remaining", String.valueOf(decision.remaining()));
+        response.setHeader("X-RateLimit-Reset-Seconds", String.valueOf(decision.resetSeconds()));
+        if (!decision.allowed()) {
+            response.setHeader("Retry-After", String.valueOf(decision.resetSeconds()));
         }
     }
 
+    /**
+     * rateLimitedException处理逻辑。
+     */
     private BusinessException rateLimitedException(RequestRateLimit requestRateLimit) {
         if (StringUtils.hasText(requestRateLimit.messageKey())) {
             return new BusinessException(ResultCode.TOO_MANY_REQUESTS.getCode(), requestRateLimit.messageKey().trim());
@@ -172,6 +207,9 @@ public class RequestRateLimitAspect {
         return new BusinessException(WebRequestProtectionErrorCode.RATE_LIMITED);
     }
 
+    /**
+     * 返回默认值。
+     */
     private String defaultValue(String value, String defaultValue) {
         return StringUtils.hasText(value) ? value : defaultValue;
     }

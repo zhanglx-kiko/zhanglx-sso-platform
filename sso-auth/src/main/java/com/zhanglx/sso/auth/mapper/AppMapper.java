@@ -4,6 +4,9 @@ import com.zhanglx.sso.auth.domain.po.AppPO;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 
+/**
+ * 应用数据访问层。
+ */
 @Mapper
 public interface AppMapper extends IBaseMapperX<AppPO> {
 }

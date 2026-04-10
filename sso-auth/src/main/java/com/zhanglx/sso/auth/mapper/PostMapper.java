@@ -4,6 +4,9 @@ import com.zhanglx.sso.auth.domain.po.PostPO;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
 import org.apache.ibatis.annotations.Mapper;
 
+/**
+ * 岗位数据访问层。
+ */
 @Mapper
 public interface PostMapper extends IBaseMapperX<PostPO> {
 }

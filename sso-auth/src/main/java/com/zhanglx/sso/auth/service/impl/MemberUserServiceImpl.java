@@ -27,13 +27,27 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 
+/**
+ * MemberUser服务实现。
+ */
 @Service
 @RequiredArgsConstructor
 public class MemberUserServiceImpl implements MemberUserService {
-
+    /**
+     * 会员用户映射器。
+     */
     private final MemberUserMapper memberUserMapper;
+    /**
+     * 会员社交账号映射器。
+     */
     private final MemberSocialMapper memberSocialMapper;
+    /**
+     * 会员验证码服务。
+     */
     private final MemberVerificationCodeService memberVerificationCodeService;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Override

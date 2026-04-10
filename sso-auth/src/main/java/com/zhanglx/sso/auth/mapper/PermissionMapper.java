@@ -6,14 +6,7 @@ import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
 import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import com.zhanglx.sso.mybatis.mapper.IBaseMapperX;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.ResultType;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.ResultSetType;
 import org.apache.ibatis.session.ResultHandler;
 

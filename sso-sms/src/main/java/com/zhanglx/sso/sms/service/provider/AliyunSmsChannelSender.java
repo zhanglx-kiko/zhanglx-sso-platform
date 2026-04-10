@@ -24,6 +24,9 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * 阿里云短信渠道发送器。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,11 +35,17 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
     private static final String FIXED_SIGN_NAME = "速通互联验证平台";
     private static final boolean FIXED_RETURN_VERIFY_CODE = false;
     private static final long FIXED_VALID_TIME = 180L;
-
+    /**
+     * 短信配置属性。
+     */
     private final SmsProperties smsProperties;
-
+    /**
+     * 对象映射器。
+     */
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    /**
+     * 客户端。
+     */
     private volatile AsyncClient client;
 
     @Override
@@ -64,6 +73,13 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
 
         String templateParamJson;
         try {
+            /*
+             * 阿里云这里提交的是模板参数，最终短信正文由模板编号和参数在平台侧渲染。
+             * 例如模板 100001 配合 {"code":"123456","min":"3"} 时，
+             * 用户最终收到的短信内容为：
+             * 您的验证码为123456。尊敬的客户，以上验证码3分钟内有效，请注意保密，切勿告知他人。
+             * 其他场景同样会依据对应 模板编号 渲染成最终短信正文。
+             */
             templateParamJson = buildTemplateParamJson(request);
         } catch (RuntimeException e) {
             return buildFailureResult(request, templateProperties, "TEMPLATE_PARAM_INVALID", e.getMessage(), null, null, null);
@@ -71,6 +87,7 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
 
         try {
             logFixedConfigMismatch(providerProperties);
+            // 这里发送的是模板编号和模板参数，用户看到的最终短信正文由阿里云完成模板渲染。
             SendSmsVerifyCodeRequest requestModel = SendSmsVerifyCodeRequest.builder()
                     .signName(FIXED_SIGN_NAME)
                     .templateCode(templateProperties.getTemplateCode())
@@ -160,7 +177,7 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
     }
 
     /**
-     * 构建短信模板参数 JSON。
+     * 构建短信模板参数 序列化文本。
      */
     private String buildTemplateParamJson(SmsSendRequest request) {
         Map<String, String> templateParams = request.getTemplateParams();
@@ -230,6 +247,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         }
     }
 
+    /**
+     * 组装阿里云发送失败时的统一返回结果。
+     */
     private SmsSendResult buildFailureResult(
             SmsSendRequest request,
             SmsProperties.TemplateProperties templateProperties,

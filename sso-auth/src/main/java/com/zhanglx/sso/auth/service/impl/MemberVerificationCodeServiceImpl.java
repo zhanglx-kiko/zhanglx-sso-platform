@@ -16,12 +16,20 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+/**
+ * 会员验证码服务实现。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberVerificationCodeServiceImpl implements MemberVerificationCodeService {
-
+    /**
+     * 短信验证码管理器。
+     */
     private final SmsVerificationCodeManager smsVerificationCodeManager;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
     @Override

@@ -19,14 +19,25 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 认证分配控制器。
+ */
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "关系绑定", description = "B 端用户与角色绑定关系维护接口")
 @RequestMapping("/apis/v1/auth/s/bindings")
 public class AuthAssignmentController {
-
+    /**
+     * 应用服务。
+     */
     private final AppService appService;
+    /**
+     * 部门服务。
+     */
     private final DeptService deptService;
+    /**
+     * 岗位服务。
+     */
     private final PostService postService;
 
     @Operation(summary = "查询用户已绑定应用")

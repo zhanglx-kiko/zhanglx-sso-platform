@@ -37,18 +37,41 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+/**
+ * 认证服务实现。
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
+    /**
+     * 用户映射器。
+     */
     private final UserMapper userMapper;
+    /**
+     * Argon2 密码编码器。
+     */
     private final Argon2PasswordEncoder argon2PasswordEncoder;
+    /**
+     * 登录审计支持组件。
+     */
     private final AuthLoginAuditSupport authLoginAuditSupport;
+    /**
+     * 操作保护组件。
+     */
     private final AuthOperationGuard authOperationGuard;
+    /**
+     * 短信验证码管理器。
+     */
     private final SmsVerificationCodeManager smsVerificationCodeManager;
+    /**
+     * 请求标识访问器。
+     */
     private final RequestIdentityAccessor requestIdentityAccessor;
 
+    /**
+     * 默认密码。
+     */
     @Value("${default.password:123456}")
     private String defaultPassword;
 

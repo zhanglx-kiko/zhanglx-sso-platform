@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * DataScope枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum DataScopeEnum implements IIntegerBaseEnum<String> {
@@ -19,10 +22,15 @@ public enum DataScopeEnum implements IIntegerBaseEnum<String> {
     SELF(4, "本人"),
     CUSTOM(5, "自定义");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static DataScopeEnum fromCode(Integer code) {

@@ -5,6 +5,9 @@ import com.zhanglx.sso.sms.model.SmsSendRequest;
 import com.zhanglx.sso.sms.model.SmsSendResult;
 import com.zhanglx.sso.sms.properties.SmsProperties;
 
+/**
+ * 短信渠道发送器接口。
+ */
 public interface SmsChannelSender {
 
     SmsProviderType providerType();

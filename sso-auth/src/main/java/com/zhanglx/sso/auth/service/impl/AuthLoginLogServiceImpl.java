@@ -28,10 +28,21 @@ import java.util.concurrent.RejectedExecutionException;
 public class AuthLoginLogServiceImpl implements AuthLoginLogService {
 
     private final LoginLogProperties properties;
+    /**
+     * 登录日志映射器。
+     */
     private final AuthLoginLogMapper authLoginLogMapper;
+    /**
+     * loginLogTaskExecutor。
+     */
     private final ThreadPoolTaskExecutor loginLogTaskExecutor;
-
+    /**
+     * lastRejectLogAt。
+     */
     private volatile long lastRejectLogAt;
+    /**
+     * 最后失败记录时间。
+     */
     private volatile long lastFailureLogAt;
 
     @Override

@@ -5,10 +5,14 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Utilities for resolving the real client IP behind trusted proxies.
+ * 客户端地址解析工具。
+ * 用于在可信代理链场景下还原真实来源地址。
  */
 public final class ClientIpUtils {
 
+    /**
+     * 工具类不允许实例化。
+     */
     private ClientIpUtils() {
     }
 
@@ -113,11 +117,17 @@ public final class ClientIpUtils {
         return result;
     }
 
+    /**
+     * 提取转发链中的首个地址。
+     */
     private static String firstForwardedIp(String forwardedFor) {
         List<String> chain = parseForwardedChain(forwardedFor);
         return chain.isEmpty() ? null : chain.getFirst();
     }
 
+    /**
+     * 返回两个参数中的第一个非空白值。
+     */
     private static String firstNonBlank(String first, String second) {
         if (hasText(first)) {
             return first;
@@ -126,10 +136,16 @@ public final class ClientIpUtils {
         return hasText(second) ? second : null;
     }
 
+    /**
+     * 判断字符串是否包含有效文本。
+     */
     private static boolean hasText(String value) {
         return value != null && !value.isBlank();
     }
 
+    /**
+     * 判断集合是否为空。
+     */
     private static boolean isEmpty(Collection<?> values) {
         return values == null || values.isEmpty();
     }

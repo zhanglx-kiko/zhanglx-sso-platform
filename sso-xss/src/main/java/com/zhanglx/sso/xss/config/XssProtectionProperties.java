@@ -115,6 +115,9 @@ public class XssProtectionProperties {
         return containsIgnoreCase(sanitizeHeaderNames, headerName);
     }
 
+    /**
+     * 判断是否包含忽略大小写。
+     */
     private boolean containsIgnoreCase(List<String> configuredValues, String fieldName) {
         if (!StringUtils.hasText(fieldName) || configuredValues == null || configuredValues.isEmpty()) {
             return false;

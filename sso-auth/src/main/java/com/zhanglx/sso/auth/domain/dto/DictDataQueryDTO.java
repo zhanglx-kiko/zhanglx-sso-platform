@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Schema(name = "DictDataQueryDTO", description = "字典数据分页查询参数")
+@Schema(name = "DictDataQueryDTO", description = "DictData分页查询参数")
 public class DictDataQueryDTO extends PageQuery {
 
     /**

@@ -6,6 +6,9 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 
+/**
+ * 短信自动配置类。
+ */
 @AutoConfiguration
 @ComponentScan(basePackages = "com.zhanglx.sso.sms")
 @EnableConfigurationProperties({SmsProperties.class, SmsVerificationCodeProperties.class})

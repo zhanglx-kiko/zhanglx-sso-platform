@@ -1,14 +1,13 @@
 package com.zhanglx.sso.common.result;
 
 import com.zhanglx.sso.common.ResultCode;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
+/**
+ * 统一返回结果对象。
+ */
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,8 +15,19 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 public class Result<T> implements Serializable {
 
+    /**
+     * 编码。
+     */
     private Integer code;
+
+    /**
+     * 消息。
+     */
     private String msg;
+
+    /**
+     * 数据。
+     */
     private T data;
 
     public static Result<Void> success() {

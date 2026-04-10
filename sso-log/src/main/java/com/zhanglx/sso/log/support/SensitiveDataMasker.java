@@ -49,6 +49,9 @@ public class SensitiveDataMasker {
         return "******";
     }
 
+    /**
+     * 手机号脱敏处理逻辑。
+     */
     private String maskPhone(String value) {
         if (value.length() <= 7) {
             return "******";
@@ -56,6 +59,9 @@ public class SensitiveDataMasker {
         return value.substring(0, 3) + "****" + value.substring(value.length() - 4);
     }
 
+    /**
+     * maskIdentity处理逻辑。
+     */
     private String maskIdentity(String value) {
         if (value.length() <= 8) {
             return "******";
@@ -63,6 +69,9 @@ public class SensitiveDataMasker {
         return value.substring(0, 4) + "********" + value.substring(value.length() - 4);
     }
 
+    /**
+     * maskKeepEdges处理逻辑。
+     */
     private String maskKeepEdges(String value, int prefixLength, int suffixLength) {
         if (value.length() <= prefixLength + suffixLength) {
             return "******";

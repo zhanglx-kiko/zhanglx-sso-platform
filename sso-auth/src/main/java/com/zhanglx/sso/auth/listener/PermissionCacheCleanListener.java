@@ -18,11 +18,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * PermissionCacheClean监听器。
+ */
 @Slf4j
 @Component
 public class PermissionCacheCleanListener {
-
+    /**
+     * Redis 字符串模板。
+     */
     private final StringRedisTemplate stringRedisTemplate;
+    /**
+     * 缓存管理器。
+     */
     private final CacheManager cacheManager;
 
     public PermissionCacheCleanListener(
@@ -35,7 +43,7 @@ public class PermissionCacheCleanListener {
     @Async
     @EventListener
     public void handlePermissionChangedEvent(PermissionChangedEvent event) {
-        log.info("收到权限变更事件，开始清理权限缓存，taskId={}", event.getTaskId());
+        log.info("收到PermissionChangedEvent，开始清理权限缓存，taskId={}", event.getTaskId());
 
         try {
             if (cacheManager != null && cacheManager.getCache(PermissionCacheConstants.PERMISSION_TREE_CACHE) != null) {

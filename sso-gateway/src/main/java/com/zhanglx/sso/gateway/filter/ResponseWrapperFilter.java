@@ -23,11 +23,16 @@ import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * 统一响应包装过滤器。
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ResponseWrapperFilter implements GlobalFilter, Ordered {
-
+    /**
+     * 对象映射器。
+     */
     private final ObjectMapper objectMapper;
 
     @Override
@@ -57,6 +62,9 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
                 return writeNormalizedError(getDelegate(), currentStatusCode(), extractErrorMessage(null, currentStatusCode()));
             }
 
+            /**
+             * 当前状态码处理逻辑。
+             */
             private int currentStatusCode() {
                 return getStatusCode() == null ? 500 : getStatusCode().value();
             }
@@ -65,6 +73,9 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().response(decoratedResponse).build());
     }
 
+    /**
+     * rewriteErrorBody处理逻辑。
+     */
     private Mono<Void> rewriteErrorBody(ServerHttpResponse targetResponse, int statusCode, List<? extends DataBuffer> dataBuffers) {
         byte[] originalBytes = readBodyBytes(dataBuffers);
         String originalBody = new String(originalBytes, StandardCharsets.UTF_8);
@@ -75,6 +86,9 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
         return writeNormalizedError(targetResponse, statusCode, extractErrorMessage(originalBody, statusCode));
     }
 
+    /**
+     * 写出normalizedError。
+     */
     private Mono<Void> writeNormalizedError(ServerHttpResponse targetResponse, int statusCode, String message) {
         Result<Void> normalized = Result.error(statusCode, message);
         try {
@@ -87,6 +101,9 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
         }
     }
 
+    /**
+     * 读取请求体字节数组。
+     */
     private byte[] readBodyBytes(List<? extends DataBuffer> dataBuffers) {
         int totalLength = dataBuffers.stream().mapToInt(DataBuffer::readableByteCount).sum();
         byte[] content = new byte[totalLength];
@@ -100,11 +117,17 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
         return content;
     }
 
+    /**
+     * 写出bytes。
+     */
     private Mono<Void> writeBytes(ServerHttpResponse targetResponse, byte[] bytes) {
         DataBuffer buffer = targetResponse.bufferFactory().wrap(bytes);
         return targetResponse.writeWith(Mono.just(buffer));
     }
 
+    /**
+     * 判断是否为标准返回体。
+     */
     private boolean isStandardResultBody(String body) {
         if (body == null || body.isBlank()) {
             return false;
@@ -117,6 +140,9 @@ public class ResponseWrapperFilter implements GlobalFilter, Ordered {
         }
     }
 
+    /**
+     * extractErrorMessage处理逻辑。
+     */
     private String extractErrorMessage(String body, int statusCode) {
         if (body != null && !body.isBlank()) {
             try {

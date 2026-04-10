@@ -13,10 +13,10 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/4/2 10:00
- * @ClassName: ForgotPasswordDTO
- * @Description: 忘记密码请求参数
+ * 作者：Zhang L X
+ * 创建时间：2026/4/2 10:00
+ * 类名：ForgotPasswordDTO
+ * 说明：忘记密码请求参数
  */
 @Data
 @NoArgsConstructor

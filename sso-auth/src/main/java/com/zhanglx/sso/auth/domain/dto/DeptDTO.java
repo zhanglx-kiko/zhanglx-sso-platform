@@ -27,7 +27,7 @@ import java.util.List;
 public class DeptDTO extends BaseDTO implements TreeNode<DeptDTO, Long> {
 
     /**
-     * 父部门ID。
+     * 父部门标识。
      */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)

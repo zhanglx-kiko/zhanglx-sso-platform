@@ -13,12 +13,15 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/2/10 20:48
- * @ClassName: UserLoginDTO
- * @Description: 系统用户登录请求对象。
+ * 作者：Zhang L X
+ * 创建时间：2026/2/10 20:48
+ * 类名：用户登录参数
+ * 说明：系统用户登录请求对象。
  */
 
+/**
+ * UserLogin数据传输对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -31,7 +34,7 @@ public class UserLoginDTO extends BaseDTO {
      * 用户名
      */
     @NotBlank(message = "账号不能为空")
-    @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
+    @Schema(description = "username", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String username;
 
     /**

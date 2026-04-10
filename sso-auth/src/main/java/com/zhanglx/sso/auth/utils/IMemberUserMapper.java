@@ -7,6 +7,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+/**
+ * IMemberUser数据访问层。
+ */
 @Mapper(builder = @Builder(disableBuilder = true))
 public interface IMemberUserMapper {
 

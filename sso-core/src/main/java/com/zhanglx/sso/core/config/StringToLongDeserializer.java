@@ -1,11 +1,14 @@
 package com.zhanglx.sso.core.config;
 
+import com.zhanglx.sso.core.exception.BusinessException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.ValueDeserializer;
-import com.zhanglx.sso.core.exception.BusinessException;
 
+/**
+ * 字符串转 Long 反序列化器。
+ */
 public class StringToLongDeserializer extends ValueDeserializer<Long> {
 
     @Override

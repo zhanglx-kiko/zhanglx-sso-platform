@@ -19,8 +19,13 @@ public enum UserErrorCode implements ErrorCode {
     USER_OLD_PASSWORD_ERROR(ResultCode.UNAUTHORIZED.getCode(), "user.old.password.error"),
     USER_ACCOUNT_DISABLED(ResultCode.FORBIDDEN.getCode(), "user.account.disabled"),
     USERNAME_ALREADY_EXISTS(ResultCode.CONFLICT.getCode(), "user.username.already.exists");
-
+    /**
+     * 验证码。
+     */
     private final Integer code;
+    /**
+     * 消息键。
+     */
     private final String messageKey;
 
 }

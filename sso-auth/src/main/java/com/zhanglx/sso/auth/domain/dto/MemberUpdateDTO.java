@@ -53,7 +53,7 @@ public class MemberUpdateDTO {
     private String email;
 
     /**
-     * 扩展资料 JSON 字符串。
+     * 扩展资料 序列化文本。
      */
     @Size(max = 4096, message = "会员扩展资料长度不能超过4096个字符")
     @Schema(description = "扩展资料 JSON 字符串", requiredMode = Schema.RequiredMode.NOT_REQUIRED, example = "{\"city\":\"Shanghai\"}")

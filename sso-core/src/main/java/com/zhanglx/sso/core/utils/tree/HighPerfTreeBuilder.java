@@ -13,16 +13,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/17 17:07
- * @ClassName: HighPerfTreeBuilder
- * @Description: 高性能树形结构组装器（零时域分配优化版）
+ * 作者：Zhang L X
+ * 创建时间：2026/3/17 17:07
+ * 类名：HighPerf树构建器
+ * 说明：高性能树形结构组装器（零时域分配优化版）
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class HighPerfTreeBuilder {
-
+    /**
+     * 指标注册器。
+     */
     private final MeterRegistry meterRegistry;
 
     @Timed(value = "tree.build.time", description = "Time taken to build the permission tree")

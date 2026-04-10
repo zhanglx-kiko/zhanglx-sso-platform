@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * StpInterfaceImpl类型。
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -25,9 +28,17 @@ public class StpInterfaceImpl implements StpInterface {
     private static final String PERMISSION_CACHE_PREFIX = "sso:auth:permission:";
     private static final String ROLE_CACHE_PREFIX = "sso:auth:role:";
     private static final long CACHE_EXPIRE_HOURS = 2;
-
+    /**
+     * 权限服务。
+     */
     private final PermissionService permissionService;
+    /**
+     * 角色服务。
+     */
     private final RoleService roleService;
+    /**
+     * Redis 字符串模板。
+     */
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override

@@ -1,17 +1,20 @@
 package com.zhanglx.sso.web.config;
 
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.ser.std.ToStringSerializer;
 import com.zhanglx.sso.core.config.LocalDateTimeToStringSerializer;
-import com.zhanglx.sso.core.config.StringToLongDeserializer;
 import com.zhanglx.sso.core.config.StringToLocalDateTimeDeserializer;
+import com.zhanglx.sso.core.config.StringToLongDeserializer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Jackson配置类。
+ */
 @Configuration
 public class JacksonConfig {
 

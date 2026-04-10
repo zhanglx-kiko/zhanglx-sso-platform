@@ -10,10 +10,10 @@ import org.apache.ibatis.annotations.Update;
 import java.util.List;
 
 /**
- * @Author: Zhang L X
- * @Create: 2026/3/20 10:26
- * @ClassName: UserRoleRelationshipMappingMapper
- * @Description: 用户角色关联数据访问层
+ * 作者：Zhang L X
+ * 创建时间：2026/3/20 10:26
+ * 类名：用户角色关系映射器
+ * 说明：用户角色关联数据访问层
  */
 @Mapper
 public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRoleRelationshipMappingPO> {

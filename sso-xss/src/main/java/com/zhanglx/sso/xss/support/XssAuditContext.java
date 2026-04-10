@@ -1,10 +1,6 @@
 package com.zhanglx.sso.xss.support;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 单次请求的 XSS 审计上下文。
@@ -13,11 +9,17 @@ import java.util.Set;
 final class XssAuditContext {
 
     private final Map<AuditKey, Integer> hitBuckets = new HashMap<>();
-
+    /**
+     * bypassBuckets。
+     */
     private final EnumMap<XssBypassReason, Integer> bypassBuckets = new EnumMap<>(XssBypassReason.class);
-
+    /**
+     * 一次性键集合。
+     */
     private final Set<String> onceKeys = new HashSet<>();
-
+    /**
+     * flushed。
+     */
     private boolean flushed;
 
     void recordHit(XssInputSource inputSource, XssPolicyMode policyMode) {
@@ -56,6 +58,9 @@ final class XssAuditContext {
         this.flushed = true;
     }
 
+    /**
+     * XssAuditContext类型。
+     */
     record AuditKey(XssInputSource inputSource, XssPolicyMode policyMode) {
     }
 }

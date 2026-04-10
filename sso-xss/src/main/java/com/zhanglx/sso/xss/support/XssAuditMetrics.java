@@ -20,15 +20,25 @@ import java.util.concurrent.atomic.AtomicLong;
 public class XssAuditMetrics {
 
     private static final String UNKNOWN_ENDPOINT = "UNKNOWN";
-
+    /**
+     * meterRegistryProv标识er。
+     */
     private final ObjectProvider<MeterRegistry> meterRegistryProvider;
-
+    /**
+     * hitCount。
+     */
     private final AtomicLong hitCount = new AtomicLong();
-
+    /**
+     * whitelistHitCount。
+     */
     private final AtomicLong whitelistHitCount = new AtomicLong();
-
+    /**
+     * requestHitCount。
+     */
     private final AtomicLong requestHitCount = new AtomicLong();
-
+    /**
+     * 端点命中分布。
+     */
     private final Map<String, AtomicLong> endpointHitDistribution = new ConcurrentHashMap<>();
 
     public XssAuditMetrics(ObjectProvider<MeterRegistry> meterRegistryProvider) {
@@ -75,6 +85,9 @@ public class XssAuditMetrics {
         );
     }
 
+    /**
+     * 递增counter。
+     */
     private void incrementCounter(String name, double amount, String... tags) {
         MeterRegistry meterRegistry = meterRegistryProvider.getIfAvailable();
         if (meterRegistry == null) {
@@ -84,6 +97,9 @@ public class XssAuditMetrics {
         counter.increment(amount);
     }
 
+    /**
+     * 规范化端点。
+     */
     private String normalizeEndpoint(String endpoint) {
         return StringUtils.hasText(endpoint) ? endpoint : UNKNOWN_ENDPOINT;
     }

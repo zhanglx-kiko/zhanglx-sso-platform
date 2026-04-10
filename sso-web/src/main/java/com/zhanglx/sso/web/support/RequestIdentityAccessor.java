@@ -7,11 +7,19 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+/**
+ * Request标识entity访问器。
+ */
 @Component
 @RequiredArgsConstructor
 public class RequestIdentityAccessor {
-
+    /**
+     * requestActorResolverProvider。
+     */
     private final ObjectProvider<RequestActorResolver> requestActorResolverProvider;
+    /**
+     * Servlet 客户端地址解析器。
+     */
     private final ServletClientIpResolver servletClientIpResolver;
 
     public String resolveActorKey(HttpServletRequest request) {
@@ -85,6 +93,9 @@ public class RequestIdentityAccessor {
         return servletClientIpResolver.resolveClientIp(request);
     }
 
+    /**
+     * 解析使用中的解析器。
+     */
     private String resolveUsingResolver(HttpServletRequest request, ResolverType resolverType) {
         return requestActorResolverProvider.orderedStream()
                 .map(resolver -> switch (resolverType) {
@@ -99,6 +110,9 @@ public class RequestIdentityAccessor {
                 .orElse(null);
     }
 
+    /**
+     * 返回默认值。
+     */
     private String defaultValue(String value, String defaultValue) {
         return StringUtils.hasText(value) ? value : defaultValue;
     }

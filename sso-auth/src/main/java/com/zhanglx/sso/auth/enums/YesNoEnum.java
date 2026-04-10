@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * 是否枚举。
+ */
 @Getter
 @RequiredArgsConstructor
 public enum YesNoEnum implements IIntegerBaseEnum<String> {
@@ -16,10 +19,15 @@ public enum YesNoEnum implements IIntegerBaseEnum<String> {
     NO(0, "否"),
     YES(1, "是");
 
+    /**
+     * 验证码。
+     */
     @EnumValue
     @JsonValue
     private final Integer code;
-
+    /**
+     * 说明。
+     */
     private final String description;
 
     public static YesNoEnum fromCode(Integer code) {
