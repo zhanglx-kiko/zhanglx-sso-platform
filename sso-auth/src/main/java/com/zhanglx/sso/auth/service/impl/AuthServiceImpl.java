@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeSendDTO;
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeVerifyDTO;
 import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
@@ -154,9 +155,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public SmsVerificationCodeSendVO sendForgotPasswordVerificationCode(ForgotPasswordVerificationCodeSendDTO sendDTO) {
         UserPO userPO = getActiveUserByUsername(sendDTO.getUsername());
-        if (!StringUtils.hasText(userPO.getPhoneNumber())) {
-            throw BusinessException.badRequest("user.phone.not.bound");
-        }
+        ensurePhoneBound(userPO);
 
         SmsVerificationCodeSendResult sendResult = smsVerificationCodeManager.sendCode(
                 SmsVerificationCodeSendCommand.builder()
@@ -176,22 +175,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void verifyForgotPasswordVerificationCode(ForgotPasswordVerificationCodeVerifyDTO verifyDTO) {
+        UserPO userPO = getActiveUserByUsername(verifyDTO.getUsername());
+        ensurePhoneBound(userPO);
+        smsVerificationCodeManager.checkCode(buildForgotPasswordVerifyCommand(userPO, verifyDTO.getVerificationCode()));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void forgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
         UserPO userPO = getActiveUserByUsername(forgotPasswordDTO.getUsername());
-        if (!StringUtils.hasText(userPO.getPhoneNumber())) {
-            throw BusinessException.badRequest("user.phone.not.bound");
-        }
-
-        smsVerificationCodeManager.verifyCode(
-                SmsVerificationCodeVerifyCommand.builder()
-                        .businessType(SmsVerificationBusinessType.SYS_USER)
-                        .sceneType(SmsSceneType.FORGOT_PASSWORD)
-                        .phoneNumber(userPO.getPhoneNumber())
-                        .subjectKey(String.valueOf(userPO.getId()))
-                        .verificationCode(forgotPasswordDTO.getVerificationCode())
-                        .build()
-        );
+        ensurePhoneBound(userPO);
+        smsVerificationCodeManager.verifyCode(buildForgotPasswordVerifyCommand(userPO, forgotPasswordDTO.getVerificationCode()));
 
         updateUserPassword(userPO.getId(), argon2PasswordEncoder.encodeAsyncWithTimeout(forgotPasswordDTO.getNewPassword()));
         StpUtil.logout(userPO.getId());
@@ -216,6 +211,28 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return userPO;
+    }
+
+    /**
+     * 确保用户已绑定手机号。
+     */
+    private void ensurePhoneBound(UserPO userPO) {
+        if (!StringUtils.hasText(userPO.getPhoneNumber())) {
+            throw BusinessException.badRequest("user.phone.not.bound");
+        }
+    }
+
+    /**
+     * 构建后台忘记密码验证码校验命令。
+     */
+    private SmsVerificationCodeVerifyCommand buildForgotPasswordVerifyCommand(UserPO userPO, String verificationCode) {
+        return SmsVerificationCodeVerifyCommand.builder()
+                .businessType(SmsVerificationBusinessType.SYS_USER)
+                .sceneType(SmsSceneType.FORGOT_PASSWORD)
+                .phoneNumber(userPO.getPhoneNumber())
+                .subjectKey(String.valueOf(userPO.getId()))
+                .verificationCode(verificationCode)
+                .build();
     }
 
     /**

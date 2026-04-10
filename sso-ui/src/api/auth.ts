@@ -2,6 +2,7 @@ import request from '@/utils/request'
 import type {
   ForgotPasswordDTO,
   ForgotPasswordVerificationCodeSendDTO,
+  ForgotPasswordVerificationCodeVerifyDTO,
   LoginDTO,
   LoginVO,
   SmsVerificationCodeSendVO,
@@ -27,6 +28,15 @@ export const forgotPasswordApi = (data: ForgotPasswordDTO) => {
 export const sendForgotPasswordVerificationCodeApi = (data: ForgotPasswordVerificationCodeSendDTO) => {
   return request.post<unknown, SmsVerificationCodeSendVO>(
     '/apis/v1/auth/s/forgot-password/verification-code/send',
+    data,
+  )
+}
+
+export const verifyForgotPasswordVerificationCodeApi = (
+  data: ForgotPasswordVerificationCodeVerifyDTO,
+) => {
+  return request.post<unknown, void>(
+    '/apis/v1/auth/s/forgot-password/verification-code/verify',
     data,
   )
 }

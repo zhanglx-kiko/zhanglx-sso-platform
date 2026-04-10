@@ -1,6 +1,5 @@
 package com.zhanglx.sso.sms.properties;
 
-import com.zhanglx.sso.sms.enums.SmsProviderType;
 import com.zhanglx.sso.sms.enums.SmsSceneType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -16,6 +15,11 @@ import java.util.Map;
 public class SmsProperties {
 
     /**
+     * 自动选择短信渠道的配置值。
+     */
+    public static final String AUTO_PROVIDER = "auto";
+
+    /**
      * 短信通渠道配置。
      */
     private final SmsChineseProperties smsChinese = new SmsChineseProperties();
@@ -24,9 +28,9 @@ public class SmsProperties {
      */
     private final AliyunProperties aliyun = new AliyunProperties();
     /**
-     * 当前启用的短信渠道编码。
+     * 当前启用的短信渠道编码
      */
-    private String provider = SmsProviderType.SMS_CHINESE.getCode();
+    private String provider = AUTO_PROVIDER;
     /**
      * 是否记录第三方原始响应摘要。
      */

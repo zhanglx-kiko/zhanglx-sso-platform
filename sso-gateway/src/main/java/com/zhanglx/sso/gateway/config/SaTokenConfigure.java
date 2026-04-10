@@ -39,6 +39,7 @@ public class SaTokenConfigure {
                 .addExclude("/favicon.ico",
                         "/apis/v1/auth/s/login",
                         "/apis/v1/auth/s/forgot-password/verification-code/send",
+                        "/apis/v1/auth/s/forgot-password/verification-code/verify",
                         "/apis/v1/auth/s/forgot-password",
                         "/apis/v1/auth/m/login",
                         "/apis/v1/auth/m/register",

@@ -158,6 +158,7 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
                         .build();
             }
         }
+
         return client;
     }
 
@@ -172,7 +173,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         boolean httpOk = payload.getHttpStatus() != null && payload.getHttpStatus() == 200;
         boolean successFlag = Boolean.TRUE.equals(payload.getSuccess());
         boolean codeOk = "OK".equalsIgnoreCase(payload.getCode());
-        boolean messageOk = !StringUtils.hasText(payload.getMessage()) || payload.getMessage().trim().contains("成功");
+        boolean messageOk = !StringUtils.hasText(payload.getMessage())
+                || payload.getMessage().trim().contains("OK")
+                || payload.getMessage().trim().contains("ok");
         return httpOk && successFlag && codeOk && messageOk;
     }
 

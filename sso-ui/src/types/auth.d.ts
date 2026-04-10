@@ -29,6 +29,11 @@ export interface ForgotPasswordVerificationCodeSendDTO {
   username: string
 }
 
+export interface ForgotPasswordVerificationCodeVerifyDTO {
+  username: string
+  verificationCode: string
+}
+
 export interface SmsVerificationCodeSendVO {
   maskedPhoneNumber: string
   expireSeconds: number

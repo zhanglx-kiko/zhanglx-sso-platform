@@ -4,10 +4,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import { useUserStore } from '@/stores/user'
-import { useMenuStore } from '@/stores/menu'
-import router, { resetRouter } from '@/router'
 import { BIZ_CODE, HTTP_STATUS, TOKEN_HEADER_KEY } from '@/constants'
-import { TOKEN_EXPIRED_KEYWORDS, ROUTE_WHITE_LIST } from '@/constants'
 import { extractErrorMessage, markGlobalErrorHandled, showGlobalError } from '@/stores/globalError'
 import {
   isLogoutInProgress,
@@ -60,10 +57,6 @@ const isTokenExpiredError = (message: string): boolean => {
   return resolveAuthFailure({ msg: message }).matched
 }
 
-const isWhiteListPage = (): boolean => {
-  return false
-}
-
 const isLogoutRequest = (config?: InternalAxiosRequestConfig): boolean => {
   if (!config) return false
   const url = config.url || ''
@@ -84,37 +77,18 @@ const createHandledError = (payload: unknown, fallbackMessage = '系统错误'):
   return markGlobalErrorHandled(new Error(extractErrorMessage(payload, fallbackMessage)))
 }
 
-const handleTokenExpired = (skipMessage = false): void => {
+const handleTokenExpired = (message = '登录状态已失效，请重新登录', skipMessage = false): void => {
   if (isRedirecting) return
   isRedirecting = true
 
-  cancelAllPendingRequests()
-
-  const userStore = useUserStore()
-  const menuStore = useMenuStore()
-
-  userStore.clearAll()
-  resetRouter()
-  menuStore.clearMenu()
-
-  if (!skipMessage) {
-    showGlobalError('登录已过期，请重新登录', {
-      autoCloseMs: 3200,
-    })
-  }
-
-  const currentPath = router.currentRoute.value.path
-
-  if (!isWhiteListPage()) {
-    router.push({
-      path: '/login',
-      query: { redirect: currentPath },
-    })
-  }
-
-  setTimeout(() => {
-    isRedirecting = false
-  }, 1000)
+  void logoutAndRedirect({
+    message,
+    skipMessage,
+  }).finally(() => {
+    setTimeout(() => {
+      isRedirecting = false
+    }, 1000)
+  })
 }
 
 export const setLoggingOut = (value: boolean): void => {
@@ -162,11 +136,9 @@ service.interceptors.response.use(
     const userStore = useUserStore()
     const authFailure = resolveAuthFailure(res)
     if (userStore.hasToken() && authFailure.matched) {
-      void logoutAndRedirect({
-        message: '登录状态已失效，请重新登录',
-        skipMessage: isLogoutInProgress(),
-      })
-      return Promise.reject(createHandledError(authFailure.message || '登录状态已失效，请重新登录'))
+      const message = authFailure.message || '登录状态已失效，请重新登录'
+      handleTokenExpired(message, isLogoutInProgress())
+      return Promise.reject(createHandledError(message))
     }
 
     if (res.code === BIZ_CODE.SUCCESS) {
@@ -178,18 +150,21 @@ service.interceptors.response.use(
     }
 
     if (res.code === BIZ_CODE.TOKEN_EXPIRED) {
-      handleTokenExpired(isLoggingOut)
-      return Promise.reject(createHandledError('登录已过期，请重新登录'))
+      const message = extractErrorMessage(res, '登录已过期，请重新登录')
+      handleTokenExpired(message, isLoggingOut)
+      return Promise.reject(createHandledError(message))
     }
 
     if (res.code === BIZ_CODE.UNAUTHORIZED && isTokenExpiredError(res.msg || '')) {
-      handleTokenExpired(isLoggingOut)
-      return Promise.reject(createHandledError('登录已过期，请重新登录'))
+      const message = extractErrorMessage(res, '登录状态已失效，请重新登录')
+      handleTokenExpired(message, isLoggingOut)
+      return Promise.reject(createHandledError(message))
     }
 
     if (isTokenExpiredError(res.msg || '')) {
-      handleTokenExpired(isLoggingOut)
-      return Promise.reject(createHandledError('登录已过期，请重新登录'))
+      const message = extractErrorMessage(res, '登录状态已失效，请重新登录')
+      handleTokenExpired(message, isLoggingOut)
+      return Promise.reject(createHandledError(message))
     }
 
     showGlobalError(res, {
@@ -201,7 +176,7 @@ service.interceptors.response.use(
     removePendingRequest(error.config as InternalAxiosRequestConfig)
 
     if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-      return Promise.reject(error)
+      return Promise.reject(markGlobalErrorHandled(error))
     }
 
     const config = error.config as InternalAxiosRequestConfig
@@ -213,10 +188,7 @@ service.interceptors.response.use(
     const userStore = useUserStore()
     const authFailure = resolveAuthFailure(error)
     if (userStore.hasToken() && authFailure.matched) {
-      void logoutAndRedirect({
-        message: '登录状态已失效，请重新登录',
-        skipMessage: isLogoutInProgress(),
-      })
+      handleTokenExpired(authFailure.message || '登录状态已失效，请重新登录', isLogoutInProgress())
       return Promise.reject(markGlobalErrorHandled(error))
     }
 
@@ -228,12 +200,12 @@ service.interceptors.response.use(
     const errorMessage = extractErrorMessage(error, '网络异常，请稍后重试')
 
     if (status === HTTP_STATUS.UNAUTHORIZED && isTokenExpiredError(errorMessage)) {
-      handleTokenExpired(isLoggingOut)
+      handleTokenExpired(errorMessage, isLoggingOut)
       return Promise.reject(markGlobalErrorHandled(error))
     }
 
     if (isTokenExpiredError(errorMessage)) {
-      handleTokenExpired(isLoggingOut)
+      handleTokenExpired(errorMessage, isLoggingOut)
       return Promise.reject(markGlobalErrorHandled(error))
     }
 

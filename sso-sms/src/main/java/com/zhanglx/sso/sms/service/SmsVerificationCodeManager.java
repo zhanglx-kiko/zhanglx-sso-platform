@@ -11,5 +11,13 @@ public interface SmsVerificationCodeManager {
 
     SmsVerificationCodeSendResult sendCode(SmsVerificationCodeSendCommand command);
 
+    /**
+     * 仅校验验证码，不消费验证码。
+     */
+    void checkCode(SmsVerificationCodeVerifyCommand command);
+
+    /**
+     * 校验验证码并消费验证码。
+     */
     void verifyCode(SmsVerificationCodeVerifyCommand command);
 }

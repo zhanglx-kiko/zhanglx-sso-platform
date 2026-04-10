@@ -104,7 +104,20 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
     }
 
     @Override
+    public void checkCode(SmsVerificationCodeVerifyCommand command) {
+        validateVerificationCode(command);
+    }
+
+    @Override
     public void verifyCode(SmsVerificationCodeVerifyCommand command) {
+        String codeKey = validateVerificationCode(command);
+        stringRedisTemplate.delete(codeKey);
+    }
+
+    /**
+     * 校验验证码内容，并返回验证码缓存键。
+     */
+    private String validateVerificationCode(SmsVerificationCodeVerifyCommand command) {
         SmsVerificationCodeVerifyCommand normalizedCommand = normalizeVerifyCommand(command);
         String codeKey = buildCacheKey(CODE_CACHE_PREFIX, normalizedCommand);
         String storedCode = stringRedisTemplate.opsForValue().get(codeKey);
@@ -116,7 +129,7 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
             throw new BusinessException("invalid.verification.code");
         }
 
-        stringRedisTemplate.delete(codeKey);
+        return codeKey;
     }
 
     /**
@@ -180,6 +193,7 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         if (!CODE_PATTERN.matcher(normalizedVerificationCode).matches()) {
             throw new BusinessException("sms.verification.code.length.invalid");
         }
+
         return normalizedVerificationCode;
     }
 
