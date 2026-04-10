@@ -63,7 +63,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         if (memberLoginDTO == null
                 || !StringUtils.hasText(memberLoginDTO.getPhoneNumber())
                 || !StringUtils.hasText(memberLoginDTO.getPassword())) {
-            throw new BusinessException("member.account.empty");
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_EMPTY);
         }
 
         MemberUserPO memberUserPO = memberUserService.findByPhoneNumber(memberLoginDTO.getPhoneNumber());
@@ -102,7 +102,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     public LoginVO register(MemberRegisterDTO memberRegisterDTO) {
         MemberUserPO existMember = memberUserService.findByPhoneNumber(memberRegisterDTO.getPhoneNumber());
         if (existMember != null) {
-            throw BusinessException.conflict("member.phone.already.bound");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_ALREADY_BOUND);
         }
 
         memberVerificationCodeService.verifyCode(
@@ -132,7 +132,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Override
     public void sendVerificationCode(MemberVerificationCodeSendDTO sendDTO, Long memberId) {
         SmsSceneType sceneType = SmsSceneType.resolve(sendDTO.getScene())
-                .orElseThrow(() -> new BusinessException("member.verification.scene.invalid"));
+                .orElseThrow(() -> new BusinessException(MemberErrorCode.MEMBER_VERIFICATION_SCENE_INVALID));
 
         switch (sceneType) {
             case REGISTER -> sendRegisterVerificationCode(sendDTO.getPhoneNumber());
@@ -140,7 +140,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             case BIND_PHONE -> sendBindPhoneVerificationCode(sendDTO.getPhoneNumber(), memberId);
             case CHANGE_BOUND_PHONE, VERIFY_BIND_PHONE ->
                     sendCurrentBoundPhoneVerificationCode(sceneType, sendDTO.getPhoneNumber(), memberId);
-            default -> throw new BusinessException("member.verification.scene.invalid");
+            default -> throw new BusinessException(MemberErrorCode.MEMBER_VERIFICATION_SCENE_INVALID);
         }
     }
 
@@ -181,7 +181,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
      */
     private void sendRegisterVerificationCode(String phoneNumber) {
         if (memberUserService.findByPhoneNumber(phoneNumber) != null) {
-            throw BusinessException.conflict("member.phone.already.bound");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_ALREADY_BOUND);
         }
 
         memberVerificationCodeService.sendCode(SmsSceneType.REGISTER, phoneNumber, null);
@@ -203,12 +203,12 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private void sendBindPhoneVerificationCode(String phoneNumber, Long memberId) {
         MemberUserPO currentMember = requireLoginMember(memberId);
         if (phoneNumber.equals(currentMember.getPhoneNumber())) {
-            throw BusinessException.badRequest("member.phone.bind.same.as.current");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_BIND_SAME_AS_CURRENT);
         }
 
         MemberUserPO existMember = memberUserService.findByPhoneNumber(phoneNumber);
         if (existMember != null && !existMember.getId().equals(memberId)) {
-            throw BusinessException.conflict("member.phone.already.bound");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_ALREADY_BOUND);
         }
 
         memberVerificationCodeService.sendCode(SmsSceneType.BIND_PHONE, phoneNumber, memberId);
@@ -220,7 +220,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private void sendCurrentBoundPhoneVerificationCode(SmsSceneType sceneType, String phoneNumber, Long memberId) {
         MemberUserPO currentMember = requireLoginMember(memberId);
         if (!StringUtils.hasText(currentMember.getPhoneNumber()) || !currentMember.getPhoneNumber().equals(phoneNumber)) {
-            throw BusinessException.badRequest("member.phone.not.current.bound");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_NOT_CURRENT_BOUND);
         }
         memberVerificationCodeService.sendCode(sceneType, phoneNumber, memberId);
     }

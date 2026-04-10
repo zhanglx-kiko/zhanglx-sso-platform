@@ -7,6 +7,7 @@ import com.zhanglx.sso.auth.domain.command.AuthLoginLogRecordCommand;
 import com.zhanglx.sso.auth.domain.dto.AuthLoginLogQueryDTO;
 import com.zhanglx.sso.auth.domain.po.AuthLoginLogPO;
 import com.zhanglx.sso.auth.domain.vo.AuthLoginLogVO;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.mapper.AuthLoginLogMapper;
 import com.zhanglx.sso.auth.service.AuthLoginLogService;
 import com.zhanglx.sso.core.exception.BusinessException;
@@ -89,7 +90,7 @@ public class AuthLoginLogServiceImpl implements AuthLoginLogService {
     public AuthLoginLogVO getDetail(Long id) {
         AuthLoginLogPO loginLogPO = authLoginLogMapper.selectById(id);
         if (loginLogPO == null) {
-            throw BusinessException.notFound("登录日志不存在");
+            throw BusinessException.of(AuthManageErrorCode.LOGIN_LOG_NOT_FOUND);
         }
         return toVO(loginLogPO);
     }

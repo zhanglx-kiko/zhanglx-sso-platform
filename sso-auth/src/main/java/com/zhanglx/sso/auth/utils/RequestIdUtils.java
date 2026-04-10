@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.utils;
 
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.core.exception.BusinessException;
 import org.springframework.util.StringUtils;
 
@@ -10,9 +11,6 @@ import java.util.*;
  */
 public final class RequestIdUtils {
 
-    /**
-     * 私有构造方法，禁止外部实例化。
-     */
     private RequestIdUtils() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -32,7 +30,6 @@ public final class RequestIdUtils {
             if (id <= 0) {
                 throw invalidId(fieldName, rawId, null);
             }
-
             return id;
         } catch (NumberFormatException e) {
             throw invalidId(fieldName, rawId, e);
@@ -45,7 +42,7 @@ public final class RequestIdUtils {
 
     public static List<Long> parseIds(Collection<String> rawIds, String fieldName) {
         if (rawIds == null || rawIds.isEmpty()) {
-            return Collections.emptyList(); // 返回空 Set，交由 Controller 的 Assert 去校验
+            return Collections.emptyList();
         }
 
         return rawIds.stream()
@@ -63,19 +60,13 @@ public final class RequestIdUtils {
         if (!StringUtils.hasText(rawIds)) {
             return Collections.emptyList();
         }
-
-        List<String> idList = Arrays.asList(rawIds.split(","));
-        return parseIds(idList, fieldName);
+        return parseIds(Arrays.asList(rawIds.split(",")), fieldName);
     }
 
-    /**
-     * 处理内部辅助逻辑。
-     */
     private static String normalize(String rawId) {
         if (rawId == null) {
             return null;
         }
-
         String value = rawId.trim();
         return value.isEmpty() ? null : value;
     }
@@ -84,10 +75,9 @@ public final class RequestIdUtils {
      * 构建参数非法时的业务异常。
      */
     private static BusinessException invalidId(String fieldName, String rawId, Exception e) {
-        String message = String.format("无效的%s: %s", fieldName, Objects.toString(rawId, "null"));
+        Object[] args = {fieldName, Objects.toString(rawId, "null")};
         return e == null
-                ? BusinessException.badRequest(message)
-                : BusinessException.badRequest(message, e);
+                ? BusinessException.of(AuthManageErrorCode.REQUEST_ID_INVALID, args)
+                : BusinessException.of(AuthManageErrorCode.REQUEST_ID_INVALID, e, args);
     }
-
 }

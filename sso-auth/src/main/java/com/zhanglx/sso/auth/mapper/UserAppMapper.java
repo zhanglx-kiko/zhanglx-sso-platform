@@ -28,6 +28,16 @@ public interface UserAppMapper extends IBaseMapperX<UserAppPO> {
     Long countByAppCode(@Param("appCode") String appCode);
 
     /**
+     * 查询第一个占用应用的用户账号。
+     */
+    @Select("SELECT u.username " +
+            "FROM t_auth_user_app ua " +
+            "INNER JOIN t_sys_user u ON u.id = ua.user_id AND u.del_flag = 0 " +
+            "WHERE ua.app_code = #{appCode} AND ua.del_flag = 0 " +
+            "ORDER BY ua.id ASC LIMIT 1")
+    String selectFirstUsernameByAppCode(@Param("appCode") String appCode);
+
+    /**
      * 根据用户标识逻辑删除应用关联关系。
      */
     @Update("UPDATE t_auth_user_app SET del_flag = id WHERE user_id = #{userId} AND del_flag = 0")

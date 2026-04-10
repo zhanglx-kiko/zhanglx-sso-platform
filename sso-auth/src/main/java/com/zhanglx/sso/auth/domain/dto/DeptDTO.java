@@ -43,7 +43,7 @@ public class DeptDTO extends BaseDTO implements TreeNode<DeptDTO, Long> {
     /**
      * 部门名称。
      */
-    @NotBlank(message = "部门名称不能为空")
+    @NotBlank(message = "{dept.name.cannot.be.blank}")
     @Schema(description = "部门名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String deptName;
 

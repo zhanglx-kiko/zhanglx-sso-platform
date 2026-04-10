@@ -24,14 +24,14 @@ public class PostDTO extends BaseDTO {
     /**
      * 岗位编码。
      */
-    @NotBlank(message = "岗位编码不能为空")
+    @NotBlank(message = "{post.code.cannot.be.blank}")
     @Schema(description = "岗位编码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String postCode;
 
     /**
      * 岗位名称。
      */
-    @NotBlank(message = "岗位名称不能为空")
+    @NotBlank(message = "{post.name.cannot.be.blank}")
     @Schema(description = "岗位名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String postName;
 

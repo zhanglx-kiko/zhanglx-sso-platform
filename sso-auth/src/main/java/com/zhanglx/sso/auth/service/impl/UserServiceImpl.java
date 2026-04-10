@@ -12,6 +12,7 @@ import com.zhanglx.sso.auth.domain.po.DeptPO;
 import com.zhanglx.sso.auth.domain.po.SysUserSocialPO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.enums.*;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.*;
 import com.zhanglx.sso.auth.service.UserService;
@@ -87,7 +88,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserDTO addWxUser(UserDTO user, String openId) {
-        AssertUtils.notBlank(openId, "user.openId.cannot.be.blank");
+        AssertUtils.notBlank(openId, UserErrorCode.USER_OPEN_ID_REQUIRED);
         validateDept(user.getDeptId());
         checkUsernameUnique(user.getUsername(), null);
         checkPhoneUnique(user.getPhoneNumber(), null);
@@ -124,7 +125,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO findUserByUsername(String username) {
-        AssertUtils.notBlank(username, "user.username.cannot.be.blank");
+        AssertUtils.notBlank(username, UserErrorCode.USERNAME_REQUIRED);
         UserPO userPO = userMapper.selectOne(UserPO::getUsername, username);
         if (userPO == null) {
             return null;
@@ -138,7 +139,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserInfo(UserBaseDTO userInfo) {
-        AssertUtils.notNull(userInfo.getId(), "business.data.invalid");
+        AssertUtils.notNull(userInfo.getId(), AuthManageErrorCode.USER_ID_REQUIRED);
         validateDept(userInfo.getDeptId());
         checkPhoneUnique(userInfo.getPhoneNumber(), userInfo.getId());
 
@@ -186,7 +187,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchRemoveUsers(List<Long> userIds) {
-        AssertUtils.notEmpty(userIds, "user ids cannot be empty");
+        AssertUtils.notEmpty(userIds, AuthManageErrorCode.USER_IDS_EMPTY);
         List<Long> normalizedUserIds = userIds.stream().filter(Objects::nonNull).distinct().toList();
         authOperationGuard.checkDeleteUsersNotContainsSelf(normalizedUserIds);
         normalizedUserIds.forEach(this::removeUserById);
@@ -225,7 +226,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getUserByOpenId(String openId) {
-        AssertUtils.notBlank(openId, "user.openId.cannot.be.blank");
+        AssertUtils.notBlank(openId, UserErrorCode.USER_OPEN_ID_REQUIRED);
         SysUserSocialPO userSocialPO = sysUserSocialMapper.selectOne(
                 SysUserSocialPO::getIdentityType, SocialIdentityTypeEnum.WECHAT_OPEN,
                 SysUserSocialPO::getIdentifier, openId
@@ -258,7 +259,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long userId, UserStatusEnum status) {
         AssertUtils.notNull(userId, UserErrorCode.USER_INFO_NOT_FOUND);
-        AssertUtils.notNull(status, "status cannot be null");
+        AssertUtils.notNull(status, AuthManageErrorCode.USER_STATUS_REQUIRED);
         if (UserStatusEnum.DISABLED.matches(status)) {
             authOperationGuard.checkDisableUserNotSelf(userId);
         }
@@ -297,9 +298,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-/**
- * 校验参数和业务约束。
- */
     /**
      * 校验部门是否存在且可用。
      */
@@ -308,8 +306,8 @@ public class UserServiceImpl implements UserService {
             return;
         }
         DeptPO deptPO = deptMapper.selectById(deptId);
-        AssertUtils.notNull(deptPO, "department does not exist");
-        AssertUtils.isTrue(EnableStatusEnum.isEnabled(deptPO.getStatus()), "department is disabled");
+        AssertUtils.notNull(deptPO, AuthManageErrorCode.USER_DEPT_NOT_FOUND, deptId);
+        AssertUtils.isTrue(EnableStatusEnum.isEnabled(deptPO.getStatus()), AuthManageErrorCode.USER_DEPT_DISABLED, deptPO.getDeptName());
     }
 
 /**
@@ -319,7 +317,7 @@ public class UserServiceImpl implements UserService {
      * 校验用户名是否唯一。
      */
     private void checkUsernameUnique(String username, Long excludeId) {
-        AssertUtils.notBlank(username, "user.username.cannot.be.blank");
+        AssertUtils.notBlank(username, UserErrorCode.USERNAME_REQUIRED);
 
         LambdaQueryWrapperX<UserPO> wrapper = new LambdaQueryWrapperX<UserPO>();
         wrapper.eq(UserPO::getUsername, username);
@@ -347,7 +345,7 @@ public class UserServiceImpl implements UserService {
         if (excludeId != null) {
             wrapper.ne(UserPO::getId, excludeId);
         }
-        AssertUtils.isTrue(userMapper.selectCount(wrapper) == 0, "phone number already exists");
+        AssertUtils.isTrue(userMapper.selectCount(wrapper) == 0, AuthManageErrorCode.USER_PHONE_ALREADY_EXISTS, phoneNumber);
     }
 
     /**

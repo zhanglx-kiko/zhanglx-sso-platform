@@ -32,14 +32,14 @@ public class PermissionVO extends BaseVO {
      * 权限项名称。
      */
     @Schema(description = "权限项名称", name = "name", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    @NotBlank(message = "权限项名称不能为空")
+    @NotBlank(message = "{permission.name.cannot.be.blank}")
     private String name;
 
     /**
      * 权限项标识。
      */
     @Schema(description = "权限项标识", name = "identification", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    @NotBlank(message = "权限项标识不能为空")
+    @NotBlank(message = "{permission.identification.cannot.be.blank}")
     private String identification;
 
     /**
@@ -90,7 +90,7 @@ public class PermissionVO extends BaseVO {
      * 类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口。
      */
     @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", example = "", type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
-    @NotNull(message = "类型不能为空")
+    @NotNull(message = "{permission.type.cannot.be.blank}")
     private PermissionTypeEnum type;
 
     /**

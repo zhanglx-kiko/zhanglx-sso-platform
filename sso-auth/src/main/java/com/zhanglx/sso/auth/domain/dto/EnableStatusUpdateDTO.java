@@ -15,7 +15,7 @@ public class EnableStatusUpdateDTO {
     /**
      * 启停状态。
      */
-    @NotNull(message = "状态不能为空")
+    @NotNull(message = "{status.cannot.be.blank}")
     @Schema(description = "启停状态", requiredMode = Schema.RequiredMode.REQUIRED)
     private EnableStatusEnum status;
 }

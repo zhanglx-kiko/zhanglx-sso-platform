@@ -28,6 +28,16 @@ public interface RoleDeptMapper extends IBaseMapperX<RoleDeptPO> {
     Long countByDeptId(@Param("deptId") Long deptId);
 
     /**
+     * 查询第一个引用部门数据权限的角色名称。
+     */
+    @Select("SELECT r.role_name " +
+            "FROM t_auth_role_dept rd " +
+            "INNER JOIN t_auth_role r ON r.id = rd.role_id AND r.del_flag = 0 " +
+            "WHERE rd.dept_id = #{deptId} AND rd.del_flag = 0 " +
+            "ORDER BY rd.id ASC LIMIT 1")
+    String selectFirstRoleNameByDeptId(@Param("deptId") Long deptId);
+
+    /**
      * 根据角色ID逻辑删除部门授权关系。
      */
     @Update("UPDATE t_auth_role_dept SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0")

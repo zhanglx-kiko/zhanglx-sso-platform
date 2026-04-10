@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.dto.PostDTO;
 import com.zhanglx.sso.auth.domain.dto.PostQueryDTO;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.service.PostService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
@@ -73,7 +74,7 @@ public class AuthPostController {
     @SaCheckPermission("post:remove")
     @OperationLog(module = "岗位管理", feature = "岗位", operationType = "DELETE", operationName = "批量删除岗位", operationDesc = "批量删除后台岗位", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> ids) {
-        AssertUtils.notEmpty(ids, "岗位 ID 列表不能为空");
+        AssertUtils.notEmpty(ids, AuthManageErrorCode.POST_IDS_EMPTY);
         postService.batchDelete(RequestIdUtils.parseIds(ids, "postId"));
     }
 

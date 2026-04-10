@@ -8,13 +8,14 @@ import com.zhanglx.sso.auth.domain.po.PostPO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.po.UserPostPO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
-import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
+import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.PostMapper;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.mapper.UserPostMapper;
 import com.zhanglx.sso.auth.service.PostService;
+import com.zhanglx.sso.auth.service.support.AuthReferenceCheckSupport;
 import com.zhanglx.sso.auth.utils.ISystemManageMapper;
-import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class PostServiceImpl implements PostService {
      * 用户岗位映射器。
      */
     private final UserPostMapper userPostMapper;
+    private final AuthReferenceCheckSupport authReferenceCheckSupport;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -86,14 +88,14 @@ public class PostServiceImpl implements PostService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         PostPO exist = getPostOrThrow(id);
-        AssertUtils.isTrue(userPostMapper.countByPostId(exist.getId()) == 0, AuthOperationErrorCode.CURRENT_POST_IS_STILL_ASSIGNED_TO_USERS, exist.getPostName());
+        authReferenceCheckSupport.ensurePostCanDelete(exist.getId(), exist.getPostName());
         postMapper.deleteByIdWithFill(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDelete(List<Long> ids) {
-        AssertUtils.notEmpty(ids, "business.resource.not.found");
+        AssertUtils.notEmpty(ids, AuthManageErrorCode.POST_IDS_EMPTY);
         ids.stream().filter(Objects::nonNull).distinct().forEach(this::delete);
     }
 
@@ -135,7 +137,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDTO> listByUser(Long userId) {
-        AssertUtils.notNull(userId, "user id cannot be null");
+        AssertUtils.notNull(userId, AuthManageErrorCode.USER_ID_REQUIRED);
         List<Long> postIds = userPostMapper.selectPostIdsByUserId(userId);
         if (postIds == null || postIds.isEmpty()) {
             return List.of();
@@ -148,7 +150,7 @@ public class PostServiceImpl implements PostService {
     @Transactional(rollbackFor = Exception.class)
     public List<PostDTO> bindUserPosts(Long userId, List<Long> postIds) {
         UserPO user = userMapper.selectById(userId);
-        AssertUtils.notNull(user, "user not found");
+        AssertUtils.notNull(user, UserErrorCode.USER_NOT_FOUND, userId);
 
         List<Long> normalizedIds = normalizeIds(postIds);
         if (normalizedIds.isEmpty()) {
@@ -157,8 +159,8 @@ public class PostServiceImpl implements PostService {
         }
 
         List<PostPO> posts = postMapper.selectByIds(normalizedIds);
-        AssertUtils.isTrue(posts.size() == normalizedIds.size(), "invalid post id exists");
-        posts.forEach(post -> AssertUtils.isTrue(EnableStatusEnum.isEnabled(post.getStatus()), "disabled post cannot be assigned"));
+        AssertUtils.isTrue(posts.size() == normalizedIds.size(), AuthManageErrorCode.POST_IDS_INVALID);
+        posts.forEach(post -> AssertUtils.isTrue(EnableStatusEnum.isEnabled(post.getStatus()), AuthManageErrorCode.POST_DISABLED_CANNOT_ASSIGN, post.getPostName()));
 
         Set<Long> target = new LinkedHashSet<>(normalizedIds);
         Set<Long> current = new LinkedHashSet<>(Optional.ofNullable(userPostMapper.selectPostIdsByUserId(userId)).orElse(List.of()));
@@ -186,9 +188,9 @@ public class PostServiceImpl implements PostService {
      * 根据标识查询目标数据，不存在时抛出异常。
      */
     private PostPO getPostOrThrow(Long id) {
-        AssertUtils.notNull(id, "business.resource.not.found");
+        AssertUtils.notNull(id, AuthManageErrorCode.POST_ID_REQUIRED);
         PostPO exist = postMapper.selectById(id);
-        AssertUtils.notNull(exist, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(exist, AuthManageErrorCode.POST_NOT_FOUND);
         return exist;
     }
 
@@ -196,24 +198,24 @@ public class PostServiceImpl implements PostService {
      * 校验编码是否唯一。
      */
     private void validateCodeUnique(String postCode, Long excludeId) {
-        AssertUtils.notBlank(postCode, "post code cannot be blank");
+        AssertUtils.notBlank(postCode, AuthManageErrorCode.POST_CODE_REQUIRED);
         LambdaQueryWrapperX<PostPO> wrapper = new LambdaQueryWrapperX<PostPO>().eq(PostPO::getPostCode, postCode);
         if (excludeId != null) {
             wrapper.ne(PostPO::getId, excludeId);
         }
-        AssertUtils.isTrue(postMapper.selectCount(wrapper) == 0, "post code already exists");
+        AssertUtils.isTrue(postMapper.selectCount(wrapper) == 0, AuthManageErrorCode.POST_CODE_ALREADY_EXISTS, postCode);
     }
 
     /**
      * 校验名称是否唯一。
      */
     private void validateNameUnique(String postName, Long excludeId) {
-        AssertUtils.notBlank(postName, "post name cannot be blank");
+        AssertUtils.notBlank(postName, AuthManageErrorCode.POST_NAME_REQUIRED);
         LambdaQueryWrapperX<PostPO> wrapper = new LambdaQueryWrapperX<PostPO>().eq(PostPO::getPostName, postName);
         if (excludeId != null) {
             wrapper.ne(PostPO::getId, excludeId);
         }
-        AssertUtils.isTrue(postMapper.selectCount(wrapper) == 0, "post name already exists");
+        AssertUtils.isTrue(postMapper.selectCount(wrapper) == 0, AuthManageErrorCode.POST_NAME_ALREADY_EXISTS, postName);
     }
 
     /**

@@ -23,7 +23,7 @@ public class UserDTO extends UserBaseDTO {
     /**
      * 账号。
      */
-    @NotBlank(message = "账号不能为空")
+    @NotBlank(message = "{user.username.cannot.be.blank}")
     @Schema(description = "Username", name = "username", example = "", type = "String",
             requiredMode = Schema.RequiredMode.REQUIRED,
             accessMode = Schema.AccessMode.READ_WRITE)

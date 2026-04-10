@@ -9,11 +9,12 @@ import com.zhanglx.sso.auth.domain.dto.DictTypeQueryDTO;
 import com.zhanglx.sso.auth.domain.po.DictDataPO;
 import com.zhanglx.sso.auth.domain.po.DictTypePO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.mapper.DictDataMapper;
 import com.zhanglx.sso.auth.mapper.DictTypeMapper;
 import com.zhanglx.sso.auth.service.DictionaryService;
+import com.zhanglx.sso.auth.service.support.AuthReferenceCheckSupport;
 import com.zhanglx.sso.auth.utils.ISystemManageMapper;
-import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class DictionaryServiceImpl implements DictionaryService {
      * 字典数据映射器。
      */
     private final DictDataMapper dictDataMapper;
+    private final AuthReferenceCheckSupport authReferenceCheckSupport;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -87,8 +89,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteType(Long id) {
         DictTypePO exist = getTypeOrThrow(id);
-        AssertUtils.isTrue(dictDataMapper.selectCount(new LambdaQueryWrapperX<DictDataPO>()
-                .eq(DictDataPO::getDictType, exist.getDictType())) == 0, "dictionary type still has dictionary data");
+        authReferenceCheckSupport.ensureDictTypeCanDelete(exist.getDictType());
         dictTypeMapper.deleteByIdWithFill(id);
     }
 
@@ -147,7 +148,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     @Transactional(rollbackFor = Exception.class)
     public DictDataDTO createData(DictDataDTO dto) {
         DictTypePO type = getTypeByCode(dto.getDictType());
-        AssertUtils.isTrue(EnableStatusEnum.isEnabled(type.getStatus()), "disabled dictionary type cannot create data");
+        AssertUtils.isTrue(EnableStatusEnum.isEnabled(type.getStatus()), AuthManageErrorCode.DICT_TYPE_DISABLED_CANNOT_CREATE_DATA, type.getDictName());
         validateDataUnique(dto.getDictType(), dto.getDictLabel(), dto.getDictValue(), null);
 
         DictDataPO po = ISystemManageMapper.INSTANCE.toPO(dto);
@@ -240,7 +241,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     @Override
     public List<DictDataDTO> listDataByType(String dictType, EnableStatusEnum status) {
-        AssertUtils.notBlank(dictType, "dict type cannot be blank");
+        AssertUtils.notBlank(dictType, AuthManageErrorCode.DICT_TYPE_REQUIRED);
         List<DictDataPO> list = dictDataMapper.selectList(new LambdaQueryWrapperX<DictDataPO>()
                 .eq(DictDataPO::getDictType, dictType)
                 .eqIfPresent(DictDataPO::getStatus, status)
@@ -252,9 +253,9 @@ public class DictionaryServiceImpl implements DictionaryService {
      * 根据标识查询目标数据，不存在时抛出异常。
      */
     private DictTypePO getTypeOrThrow(Long id) {
-        AssertUtils.notNull(id, "dict type id cannot be null");
+        AssertUtils.notNull(id, AuthManageErrorCode.DICT_TYPE_ID_REQUIRED);
         DictTypePO type = dictTypeMapper.selectById(id);
-        AssertUtils.notNull(type, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(type, AuthManageErrorCode.DICT_TYPE_NOT_FOUND);
         return type;
     }
 
@@ -262,9 +263,9 @@ public class DictionaryServiceImpl implements DictionaryService {
      * 根据编码查询字典类型。
      */
     private DictTypePO getTypeByCode(String dictType) {
-        AssertUtils.notBlank(dictType, "dict type cannot be blank");
+        AssertUtils.notBlank(dictType, AuthManageErrorCode.DICT_TYPE_REQUIRED);
         DictTypePO type = dictTypeMapper.selectOne(DictTypePO::getDictType, dictType);
-        AssertUtils.notNull(type, "dictionary type not found");
+        AssertUtils.notNull(type, AuthManageErrorCode.DICT_TYPE_NOT_FOUND);
         return type;
     }
 
@@ -272,9 +273,9 @@ public class DictionaryServiceImpl implements DictionaryService {
      * 根据标识查询目标数据，不存在时抛出异常。
      */
     private DictDataPO getDataOrThrow(Long id) {
-        AssertUtils.notNull(id, "dict data id cannot be null");
+        AssertUtils.notNull(id, AuthManageErrorCode.DICT_DATA_ID_REQUIRED);
         DictDataPO data = dictDataMapper.selectById(id);
-        AssertUtils.notNull(data, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(data, AuthManageErrorCode.DICT_DATA_NOT_FOUND);
         return data;
     }
 
@@ -282,21 +283,21 @@ public class DictionaryServiceImpl implements DictionaryService {
      * 校验字典类型是否唯一。
      */
     private void validateTypeUnique(String dictType, Long excludeId) {
-        AssertUtils.notBlank(dictType, "dict type cannot be blank");
+        AssertUtils.notBlank(dictType, AuthManageErrorCode.DICT_TYPE_REQUIRED);
         LambdaQueryWrapperX<DictTypePO> wrapper = new LambdaQueryWrapperX<DictTypePO>()
                 .eq(DictTypePO::getDictType, dictType);
         if (excludeId != null) {
             wrapper.ne(DictTypePO::getId, excludeId);
         }
-        AssertUtils.isTrue(dictTypeMapper.selectCount(wrapper) == 0, "dict type already exists");
+        AssertUtils.isTrue(dictTypeMapper.selectCount(wrapper) == 0, AuthManageErrorCode.DICT_TYPE_ALREADY_EXISTS, dictType);
     }
 
     /**
      * 校验字典数据标签和值是否唯一。
      */
     private void validateDataUnique(String dictType, String dictLabel, String dictValue, Long excludeId) {
-        AssertUtils.notBlank(dictLabel, "dict label cannot be blank");
-        AssertUtils.notBlank(dictValue, "dict value cannot be blank");
+        AssertUtils.notBlank(dictLabel, AuthManageErrorCode.DICT_LABEL_REQUIRED);
+        AssertUtils.notBlank(dictValue, AuthManageErrorCode.DICT_VALUE_REQUIRED);
 
         LambdaQueryWrapperX<DictDataPO> labelWrapper = new LambdaQueryWrapperX<DictDataPO>()
                 .eq(DictDataPO::getDictType, dictType)
@@ -308,7 +309,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             labelWrapper.ne(DictDataPO::getId, excludeId);
             valueWrapper.ne(DictDataPO::getId, excludeId);
         }
-        AssertUtils.isTrue(dictDataMapper.selectCount(labelWrapper) == 0, "duplicate dict label exists under the same type");
-        AssertUtils.isTrue(dictDataMapper.selectCount(valueWrapper) == 0, "duplicate dict value exists under the same type");
+        AssertUtils.isTrue(dictDataMapper.selectCount(labelWrapper) == 0, AuthManageErrorCode.DICT_LABEL_ALREADY_EXISTS, dictType, dictLabel);
+        AssertUtils.isTrue(dictDataMapper.selectCount(valueWrapper) == 0, AuthManageErrorCode.DICT_VALUE_ALREADY_EXISTS, dictType, dictValue);
     }
 }

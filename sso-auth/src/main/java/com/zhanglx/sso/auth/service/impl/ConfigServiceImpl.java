@@ -8,12 +8,12 @@ import com.zhanglx.sso.auth.domain.po.ConfigPO;
 import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.enums.YesNoEnum;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.mapper.ConfigMapper;
 import com.zhanglx.sso.auth.service.ConfigService;
 import com.zhanglx.sso.auth.service.runtime.ConfigValueMaskingSupport;
 import com.zhanglx.sso.auth.service.runtime.DatabaseSystemConfigProvider;
 import com.zhanglx.sso.auth.utils.ISystemManageMapper;
-import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ConfigDTO create(ConfigDTO dto) {
-        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(dto.getConfigType()), "built-in config cannot be created from api");
+        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(dto.getConfigType()), AuthManageErrorCode.CONFIG_BUILT_IN_CREATE_FORBIDDEN);
         validateKeyUnique(dto.getConfigKey(), null);
         ConfigPO po = ISystemManageMapper.INSTANCE.toPO(dto);
         if (po.getConfigType() == null) {
@@ -66,8 +66,8 @@ public class ConfigServiceImpl implements ConfigService {
     @Transactional(rollbackFor = Exception.class)
     public ConfigDTO update(Long id, ConfigDTO dto) {
         ConfigPO exist = getConfigOrThrow(id);
-        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(exist.getConfigType()), "built-in config cannot be modified");
-        AssertUtils.isTrue(exist.getConfigType() == dto.getConfigType(), "config type cannot be changed");
+        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(exist.getConfigType()), AuthManageErrorCode.CONFIG_BUILT_IN_UPDATE_FORBIDDEN);
+        AssertUtils.isTrue(exist.getConfigType() == dto.getConfigType(), AuthManageErrorCode.CONFIG_TYPE_CANNOT_CHANGE);
         String oldConfigKey = exist.getConfigKey();
         validateKeyUnique(dto.getConfigKey(), id);
 
@@ -99,7 +99,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         ConfigPO exist = getConfigOrThrow(id);
-        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(exist.getConfigType()), "built-in config cannot be deleted");
+        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(exist.getConfigType()), AuthManageErrorCode.CONFIG_BUILT_IN_DELETE_FORBIDDEN);
         configMapper.deleteByIdWithFill(id);
         systemConfigProvider.refresh(exist.getConfigKey());
     }
@@ -111,9 +111,9 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     public ConfigDTO getByKey(String configKey) {
-        AssertUtils.notBlank(configKey, "config key cannot be blank");
+        AssertUtils.notBlank(configKey, AuthManageErrorCode.CONFIG_KEY_REQUIRED);
         ConfigPO po = configMapper.selectOne(ConfigPO::getConfigKey, configKey);
-        AssertUtils.notNull(po, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(po, AuthManageErrorCode.CONFIG_NOT_FOUND);
         return toSafeDTO(po);
     }
 
@@ -155,9 +155,9 @@ public class ConfigServiceImpl implements ConfigService {
      * 根据标识查询目标数据，不存在时抛出异常。
      */
     private ConfigPO getConfigOrThrow(Long id) {
-        AssertUtils.notNull(id, "config id cannot be null");
+        AssertUtils.notNull(id, AuthManageErrorCode.CONFIG_ID_REQUIRED);
         ConfigPO exist = configMapper.selectById(id);
-        AssertUtils.notNull(exist, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(exist, AuthManageErrorCode.CONFIG_NOT_FOUND);
         return exist;
     }
 
@@ -165,13 +165,13 @@ public class ConfigServiceImpl implements ConfigService {
      * 校验配置键是否唯一。
      */
     private void validateKeyUnique(String configKey, Long excludeId) {
-        AssertUtils.notBlank(configKey, "config key cannot be blank");
+        AssertUtils.notBlank(configKey, AuthManageErrorCode.CONFIG_KEY_REQUIRED);
         LambdaQueryWrapperX<ConfigPO> wrapper = new LambdaQueryWrapperX<ConfigPO>()
                 .eq(ConfigPO::getConfigKey, configKey);
         if (excludeId != null) {
             wrapper.ne(ConfigPO::getId, excludeId);
         }
-        AssertUtils.isTrue(configMapper.selectCount(wrapper) == 0, "config key already exists");
+        AssertUtils.isTrue(configMapper.selectCount(wrapper) == 0, AuthManageErrorCode.CONFIG_KEY_ALREADY_EXISTS, configKey);
     }
 
     /**

@@ -10,6 +10,7 @@ import com.zhanglx.sso.auth.enums.DataScopeEnum;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.event.RolePermissionChangedEvent;
 import com.zhanglx.sso.auth.event.RoleUsersChangedEvent;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
 import com.zhanglx.sso.auth.mapper.*;
 import com.zhanglx.sso.auth.service.PermissionService;
@@ -18,7 +19,6 @@ import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.IRoleMapper;
 import com.zhanglx.sso.core.domain.page.PageQuery;
 import com.zhanglx.sso.core.exception.BusinessException;
-import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionDiffUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionUtils;
@@ -100,9 +100,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO loadRole(Long roleId) {
-        AssertUtils.notNull(roleId, "role.id.cannot.be.blank");
+        AssertUtils.notNull(roleId, AuthManageErrorCode.ROLE_ID_REQUIRED);
         RolePO rolePO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(rolePO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(rolePO, AuthManageErrorCode.ROLE_NOT_FOUND);
         RoleDTO roleDTO = IRoleMapper.INSTANCE.toDTO(rolePO);
         roleDTO.setRolePermissions(permissionService.selPermissionByRoleId(roleId));
         return roleDTO;
@@ -110,9 +110,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleInfoVO selectRoleDetail(Long roleId) {
-        AssertUtils.notNull(roleId, "role.id.cannot.be.blank");
+        AssertUtils.notNull(roleId, AuthManageErrorCode.ROLE_ID_REQUIRED);
         RolePO rolePO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(rolePO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(rolePO, AuthManageErrorCode.ROLE_NOT_FOUND);
         RoleInfoVO roleVO = IRoleMapper.INSTANCE.toVO(rolePO);
         roleVO.setUserIds(userRoleRelationshipMappingMapper.selUserIdListByRoleId(roleId));
         return roleVO;
@@ -120,9 +120,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleInfoVO bindUsers(Long roleId, List<Long> userIds) {
-        AssertUtils.notNull(roleId, "business.data.invalid");
+        AssertUtils.notNull(roleId, AuthManageErrorCode.ROLE_ID_REQUIRED);
         RolePO role = roleMapper.selectById(roleId);
-        AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(role, AuthManageErrorCode.ROLE_NOT_FOUND);
 
         List<Long> existingUserIds = userRoleRelationshipMappingMapper.selectList(
                 new LambdaQueryWrapperX<UserRoleRelationshipMappingPO>()
@@ -137,7 +137,7 @@ public class RoleServiceImpl implements RoleService {
 
         List<Long> normalizedUserIds = userIds.stream().filter(Objects::nonNull).distinct().toList();
         List<UserPO> userList = userMapper.selectByIds(normalizedUserIds);
-        AssertUtils.isTrue(userList.size() == normalizedUserIds.size(), "瀛樺湪鏃犳晥鐨勭敤鎴?ID");
+        AssertUtils.isTrue(userList.size() == normalizedUserIds.size(), AuthManageErrorCode.ROLE_USER_IDS_INVALID);
         authOperationGuard.checkRoleUsersBindingDoesNotRemoveCurrentUser(existingUserIds, normalizedUserIds);
 
         CollectionDiffUtils.DiffResult<Long> diff = CollectionDiffUtils.compare(existingUserIds, normalizedUserIds);
@@ -168,7 +168,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO updateRole(Long id, RoleDTO roleDTO) {
         RolePO exist = roleMapper.selectById(id);
-        AssertUtils.notNull(exist, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(exist, AuthManageErrorCode.ROLE_NOT_FOUND);
 
         String appCode = normalizeAppCode(roleDTO.getAppCode() == null ? exist.getAppCode() : roleDTO.getAppCode());
         validateApp(appCode);
@@ -199,7 +199,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO delRole(Long id) {
         RolePO role = roleMapper.selectById(id);
-        AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(role, AuthManageErrorCode.ROLE_NOT_FOUND);
         ensureCurrentUserRoleUnaffected(Collections.singleton(id), AuthOperationErrorCode.DELETE_CURRENT_USER_ROLE_FORBIDDEN);
 
         roleMapper.deleteByIdWithFill(id);
@@ -211,9 +211,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleDTO associatePermissions(Long roleId, List<RolePermissionRelationshipMappingDTO> permissions) {
-        AssertUtils.notNull(roleId, "business.data.invalid");
+        AssertUtils.notNull(roleId, AuthManageErrorCode.ROLE_ID_REQUIRED);
         RolePO roleResultPO = roleMapper.selectById(roleId);
-        AssertUtils.notNull(roleResultPO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(roleResultPO, AuthManageErrorCode.ROLE_NOT_FOUND);
 
         if (CollectionUtils.isEmpty(permissions)) {
             ensureCurrentUserRoleUnaffected(Collections.singleton(roleId),
@@ -231,9 +231,9 @@ public class RoleServiceImpl implements RoleService {
                         (existing, replacement) -> replacement
                 ));
         List<Long> newPermissionIds = permissionRequestMap.keySet().stream().toList();
-        AssertUtils.notEmpty(newPermissionIds, "role.permission.id.cannot.be.blank");
+        AssertUtils.notEmpty(newPermissionIds, AuthManageErrorCode.ROLE_PERMISSION_IDS_EMPTY);
         List<PermissionPO> permissionList = permissionMapper.selectByIds(newPermissionIds);
-        AssertUtils.isTrue(permissionList.size() == newPermissionIds.size(), "瀛樺湪鏃犳晥鐨勬潈闄?ID");
+        AssertUtils.isTrue(permissionList.size() == newPermissionIds.size(), AuthManageErrorCode.ROLE_PERMISSION_IDS_INVALID);
 
         List<RolePermissionRelationshipMappingPO> existingMappings = rolePermissionRelationshipMappingMapper.selectList(
                 new LambdaQueryWrapperX<RolePermissionRelationshipMappingPO>()
@@ -299,7 +299,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void batchDelRole(List<Long> idList) {
-        AssertUtils.notEmpty(idList = idList.stream().filter(Objects::nonNull).distinct().toList(), "business.data.invalid");
+        AssertUtils.notEmpty(idList = idList.stream().filter(Objects::nonNull).distinct().toList(), AuthManageErrorCode.ROLE_IDS_EMPTY);
         List<RolePO> existRoles = roleMapper.selectByIds(idList);
         if (CollectionUtils.isEmpty(existRoles)) {
             return;
@@ -315,7 +315,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> selectRolesForUser(String userAccount) {
-        AssertUtils.notBlank(userAccount, "business.data.invalid");
+        AssertUtils.notBlank(userAccount, AuthManageErrorCode.PERMISSION_USERNAME_REQUIRED);
         if (Strings.CI.equals("guest_username", userAccount)) {
             return Lists.newArrayList(RoleDTO.builder().roleName("guest").roleCode("role_guest").build());
         }
@@ -329,7 +329,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<RoleDTO> selectRolesForUser(Long userId) {
-        AssertUtils.notNull(userId, "business.data.invalid");
+        AssertUtils.notNull(userId, AuthManageErrorCode.USER_ID_REQUIRED);
         List<Long> roleIds = userRoleRelationshipMappingMapper.selRoleIdsByUserId(userId);
         if (CollectionUtils.isEmpty(roleIds)) {
             return Lists.newArrayList();
@@ -344,7 +344,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleDTO updateStatus(Long roleId, EnableStatusEnum status) {
         RolePO role = roleMapper.selectById(roleId);
-        AssertUtils.notNull(role, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(role, AuthManageErrorCode.ROLE_NOT_FOUND);
         if (EnableStatusEnum.isDisabled(status)) {
             ensureCurrentUserRoleUnaffected(Collections.singleton(roleId), AuthOperationErrorCode.DISABLE_CURRENT_USER_ROLE_FORBIDDEN);
         }
@@ -361,8 +361,8 @@ public class RoleServiceImpl implements RoleService {
      */
     private void validateApp(String appCode) {
         AppPO app = appMapper.selectOne(AppPO::getAppCode, appCode);
-        AssertUtils.notNull(app, "鎵€灞炲簲鐢ㄤ笉瀛樺湪");
-        AssertUtils.isTrue(EnableStatusEnum.isEnabled(app.getStatus()), "鎵€灞炲簲鐢ㄥ凡鍋滅敤");
+        AssertUtils.notNull(app, AuthManageErrorCode.APP_NOT_FOUND, appCode);
+        AssertUtils.isTrue(EnableStatusEnum.isEnabled(app.getStatus()), AuthManageErrorCode.APP_DISABLED, app.getAppName());
     }
 
     /**
@@ -376,8 +376,8 @@ public class RoleServiceImpl implements RoleService {
      * 校验角色编码和名称是否唯一。
      */
     private void validateRoleUnique(String appCode, String roleCode, String roleName, Long excludeId) {
-        AssertUtils.notBlank(roleCode, "role.code.cannot.be.blank");
-        AssertUtils.notBlank(roleName, "role.name.cannot.be.blank");
+        AssertUtils.notBlank(roleCode, AuthManageErrorCode.ROLE_CODE_REQUIRED);
+        AssertUtils.notBlank(roleName, AuthManageErrorCode.ROLE_NAME_REQUIRED);
 
         LambdaQueryWrapperX<RolePO> codeWrapper = new LambdaQueryWrapperX<RolePO>()
                 .eq(RolePO::getAppCode, appCode)
@@ -389,8 +389,8 @@ public class RoleServiceImpl implements RoleService {
             codeWrapper.ne(RolePO::getId, excludeId);
             nameWrapper.ne(RolePO::getId, excludeId);
         }
-        AssertUtils.isTrue(roleMapper.selectCount(codeWrapper) == 0, "瑙掕壊缂栫爜宸插瓨鍦?");
-        AssertUtils.isTrue(roleMapper.selectCount(nameWrapper) == 0, "瑙掕壊鍚嶇О宸插瓨鍦?");
+        AssertUtils.isTrue(roleMapper.selectCount(codeWrapper) == 0, AuthManageErrorCode.ROLE_CODE_ALREADY_EXISTS, roleCode);
+        AssertUtils.isTrue(roleMapper.selectCount(nameWrapper) == 0, AuthManageErrorCode.ROLE_NAME_ALREADY_EXISTS, roleName);
     }
 
     /**

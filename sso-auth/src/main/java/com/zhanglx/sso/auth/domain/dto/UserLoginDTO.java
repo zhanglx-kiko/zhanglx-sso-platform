@@ -33,14 +33,14 @@ public class UserLoginDTO extends BaseDTO {
     /**
      * 用户名
      */
-    @NotBlank(message = "账号不能为空")
+    @NotBlank(message = "{user.username.cannot.be.blank}")
     @Schema(description = "username", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String username;
 
     /**
      * 密码
      */
-    @NotBlank(message = "密码不能为空")
+    @NotBlank(message = "{user.password.cannot.be.blank}")
     @Schema(description = "密码", name = "password", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     @XssPolicy(XssPolicyMode.NONE)
     private String password;

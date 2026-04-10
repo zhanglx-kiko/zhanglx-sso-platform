@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.AppDTO;
 import com.zhanglx.sso.auth.domain.dto.AppQueryDTO;
 import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.service.AppService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
@@ -73,7 +74,7 @@ public class AuthAppController {
     @SaCheckPermission("app:remove")
     @OperationLog(module = "应用管理", feature = "应用", operationType = "DELETE", operationName = "批量删除应用", operationDesc = "批量删除接入应用", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> ids) {
-        AssertUtils.notEmpty(ids, "应用 ID 列表不能为空");
+        AssertUtils.notEmpty(ids, AuthManageErrorCode.APP_IDS_EMPTY);
         appService.batchDelete(RequestIdUtils.parseIds(ids, "appId"));
     }
 

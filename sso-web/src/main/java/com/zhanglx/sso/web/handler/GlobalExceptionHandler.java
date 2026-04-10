@@ -1,11 +1,6 @@
 package com.zhanglx.sso.web.handler;
 
-import cn.dev33.satoken.exception.DisableServiceException;
-import cn.dev33.satoken.exception.NotLoginException;
-import cn.dev33.satoken.exception.NotPermissionException;
-import cn.dev33.satoken.exception.NotRoleException;
-import cn.dev33.satoken.exception.SaTokenException;
-import cn.dev33.satoken.exception.SameTokenInvalidException;
+import cn.dev33.satoken.exception.*;
 import com.zhanglx.sso.common.result.Result;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.web.utils.I18nUtils;
@@ -69,19 +64,19 @@ public class GlobalExceptionHandler {
                 e.getService(),
                 e.getMessage(),
                 e);
-        return Result.error(401, "账号已被禁用，请联系管理员");
+        return Result.error(401, resolveMessage("user.account.disabled.contact.admin"));
     }
 
     @ExceptionHandler(SameTokenInvalidException.class)
     public Result<Void> handleSameTokenInvalidException(SameTokenInvalidException e) {
         log.warn("同端互斥令牌校验失败: {}", e.getMessage(), e);
-        return Result.error(401, "登录状态校验失败，请重新登录");
+        return Result.error(401, resolveMessage("login.state.check.failed"));
     }
 
     @ExceptionHandler(SaTokenException.class)
     public Result<Void> handleSaTokenException(SaTokenException e) {
         log.warn("Sa-Token 异常: {}", e.getMessage(), e);
-        return Result.error(401, "登录状态已失效，请重新登录");
+        return Result.error(401, resolveMessage("login.state.expired"));
     }
 
     @ExceptionHandler(NotPermissionException.class)
@@ -101,6 +96,7 @@ public class GlobalExceptionHandler {
     public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
+                .map(this::resolveMessage)
                 .collect(Collectors.joining("; "));
         log.warn("请求体校验失败: {}", message);
         return Result.error(400, resolveMessage("parameter.error") + ": " + message);
@@ -111,6 +107,7 @@ public class GlobalExceptionHandler {
     public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
         String message = e.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
+                .map(this::resolveMessage)
                 .collect(Collectors.joining("; "));
         log.warn("参数校验失败: {}", message);
         return Result.error(400, resolveMessage("parameter.error") + ": " + message);
@@ -121,6 +118,7 @@ public class GlobalExceptionHandler {
     public Result<Void> handleBindException(BindException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .map(this::resolveMessage)
                 .collect(Collectors.joining("; "));
         log.warn("参数绑定失败: {}", message);
         return Result.error(400, resolveMessage("parameter.error") + ": " + message);
@@ -144,21 +142,21 @@ public class GlobalExceptionHandler {
         String name = e.getName() == null ? "parameter" : e.getName();
         String value = e.getValue() == null ? "null" : String.valueOf(e.getValue());
         log.warn("参数类型不匹配: {}={}", name, value, e);
-        return Result.error(400, resolveMessage("parameter.error") + ": 参数 [" + name + "] 值 [" + value + "] 类型不正确");
+        return Result.error(400, resolveMessage("parameter.type.mismatch", name, value));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
         log.warn("缺少请求参数: {}", e.getParameterName(), e);
-        return Result.error(400, resolveMessage("parameter.error") + ": 缺少参数 [" + e.getParameterName() + "]");
+        return Result.error(400, resolveMessage("parameter.missing", e.getParameterName()));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.warn("上传文件过大: {}", e.getMessage(), e);
-        return Result.error(400, "上传文件大小超出限制");
+        return Result.error(400, resolveMessage("upload.size.exceeded"));
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
@@ -179,7 +177,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public Result<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         log.warn("请求方法不支持: {}", e.getMethod(), e);
-        return Result.error(405, resolveMessage("method.not.allowed") + ": " + e.getMethod());
+        return Result.error(405, resolveMessage("method.not.allowed.with.method", e.getMethod()));
     }
 
     @ExceptionHandler(Exception.class)
@@ -200,6 +198,14 @@ public class GlobalExceptionHandler {
     /**
      * 解析业务异常文案，确保返回给前端的是稳定消息而不是调试堆栈。
      */
+    private String resolveMessage(String messageKeyOrMessage, Object... args) {
+        String resolved = i18nUtils.getMessage(messageKeyOrMessage, args);
+        return resolved == null || resolved.isBlank() ? messageKeyOrMessage : resolved;
+    }
+
+    /**
+     * 解析业务异常文案，确保返回给前端的是稳定消息而不是调试堆栈。
+     */
     private String resolveBusinessMessage(BusinessException exception) {
         String resolved = i18nUtils.getMessage(exception.getMessageKey(), exception.getArgs());
         return resolved == null || resolved.isBlank() ? exception.getMessageKey() : resolved;
@@ -212,7 +218,7 @@ public class GlobalExceptionHandler {
         if (NotLoginException.NOT_TOKEN.equals(exception.getType())) {
             return resolveMessage("login.required");
         }
-        return "登录状态已失效，请重新登录";
+        return resolveMessage("login.state.expired");
     }
 
     /**

@@ -5,18 +5,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.domain.dto.AppDTO;
 import com.zhanglx.sso.auth.domain.dto.AppQueryDTO;
 import com.zhanglx.sso.auth.domain.po.AppPO;
-import com.zhanglx.sso.auth.domain.po.RolePO;
 import com.zhanglx.sso.auth.domain.po.UserAppPO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.enums.UserTypeEnum;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
+import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.AppMapper;
-import com.zhanglx.sso.auth.mapper.RoleMapper;
 import com.zhanglx.sso.auth.mapper.UserAppMapper;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AppService;
+import com.zhanglx.sso.auth.service.support.AuthReferenceCheckSupport;
 import com.zhanglx.sso.auth.utils.ISystemManageMapper;
-import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +38,6 @@ public class AppServiceImpl implements AppService {
      */
     private final AppMapper appMapper;
     /**
-     * 角色映射器。
-     */
-    private final RoleMapper roleMapper;
-    /**
      * 用户映射器。
      */
     private final UserMapper userMapper;
@@ -49,6 +45,7 @@ public class AppServiceImpl implements AppService {
      * 用户应用映射器。
      */
     private final UserAppMapper userAppMapper;
+    private final AuthReferenceCheckSupport authReferenceCheckSupport;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -94,16 +91,14 @@ public class AppServiceImpl implements AppService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         AppPO exist = getAppOrThrow(id);
-        AssertUtils.isTrue(userAppMapper.countByAppCode(exist.getAppCode()) == 0, "Current app is still assigned to users and cannot be deleted");
-        AssertUtils.isTrue(roleMapper.selectCount(new LambdaQueryWrapperX<RolePO>()
-                .eq(RolePO::getAppCode, exist.getAppCode())) == 0, "Current app still has roles and cannot be deleted");
+        authReferenceCheckSupport.ensureAppCanDelete(exist.getAppCode(), exist.getAppName());
         appMapper.deleteByIdWithFill(id);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDelete(List<Long> ids) {
-        AssertUtils.notEmpty(ids, "app ids cannot be empty");
+        AssertUtils.notEmpty(ids, AuthManageErrorCode.APP_IDS_EMPTY);
         ids.stream().filter(Objects::nonNull).distinct().forEach(this::delete);
     }
 
@@ -146,7 +141,7 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public List<AppDTO> listByUser(Long userId) {
-        AssertUtils.notNull(userId, "user id cannot be null");
+        AssertUtils.notNull(userId, AuthManageErrorCode.USER_ID_REQUIRED);
         List<String> appCodes = userAppMapper.selectAppCodesByUserId(userId);
         if (appCodes == null || appCodes.isEmpty()) {
             return List.of();
@@ -161,7 +156,7 @@ public class AppServiceImpl implements AppService {
     @Transactional(rollbackFor = Exception.class)
     public List<AppDTO> bindUserApps(Long userId, List<String> appCodes) {
         UserPO user = userMapper.selectById(userId);
-        AssertUtils.notNull(user, "user not found");
+        AssertUtils.notNull(user, UserErrorCode.USER_NOT_FOUND, userId);
 
         List<String> normalizedCodes = normalizeAppCodes(appCodes);
         if (normalizedCodes.isEmpty()) {
@@ -171,11 +166,11 @@ public class AppServiceImpl implements AppService {
 
         List<AppPO> apps = appMapper.selectList(new LambdaQueryWrapperX<AppPO>()
                 .in(AppPO::getAppCode, normalizedCodes));
-        AssertUtils.isTrue(apps.size() == normalizedCodes.size(), "invalid app code exists");
+        AssertUtils.isTrue(apps.size() == normalizedCodes.size(), AuthManageErrorCode.APP_CODE_INVALID);
 
         apps.forEach(app -> {
-            AssertUtils.isTrue(EnableStatusEnum.isEnabled(app.getStatus()), "disabled app cannot be assigned");
-            AssertUtils.isTrue(UserTypeEnum.SYSTEM.matches(app.getUserType()), "only system-user apps support user assignment");
+            AssertUtils.isTrue(EnableStatusEnum.isEnabled(app.getStatus()), AuthManageErrorCode.APP_DISABLED_CANNOT_ASSIGN, app.getAppName());
+            AssertUtils.isTrue(UserTypeEnum.SYSTEM.matches(app.getUserType()), AuthManageErrorCode.APP_ONLY_SYSTEM_USER_ASSIGNMENT_SUPPORTED, app.getAppName());
         });
 
         Set<String> target = new LinkedHashSet<>(normalizedCodes);
@@ -204,9 +199,9 @@ public class AppServiceImpl implements AppService {
      * 根据标识查询目标数据，不存在时抛出异常。
      */
     private AppPO getAppOrThrow(Long id) {
-        AssertUtils.notNull(id, "app id cannot be null");
+        AssertUtils.notNull(id, AuthManageErrorCode.APP_ID_REQUIRED);
         AppPO exist = appMapper.selectById(id);
-        AssertUtils.notNull(exist, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(exist, AuthManageErrorCode.APP_NOT_FOUND);
         return exist;
     }
 
@@ -214,24 +209,24 @@ public class AppServiceImpl implements AppService {
      * 校验编码是否唯一。
      */
     private void validateCodeUnique(String appCode, Long excludeId) {
-        AssertUtils.notBlank(appCode, "app code cannot be blank");
+        AssertUtils.notBlank(appCode, AuthManageErrorCode.APP_CODE_REQUIRED);
         LambdaQueryWrapperX<AppPO> wrapper = new LambdaQueryWrapperX<AppPO>().eq(AppPO::getAppCode, appCode);
         if (excludeId != null) {
             wrapper.ne(AppPO::getId, excludeId);
         }
-        AssertUtils.isTrue(appMapper.selectCount(wrapper) == 0, "app code already exists");
+        AssertUtils.isTrue(appMapper.selectCount(wrapper) == 0, AuthManageErrorCode.APP_CODE_ALREADY_EXISTS, appCode);
     }
 
     /**
      * 校验名称是否唯一。
      */
     private void validateNameUnique(String appName, Long excludeId) {
-        AssertUtils.notBlank(appName, "app name cannot be blank");
+        AssertUtils.notBlank(appName, AuthManageErrorCode.APP_NAME_REQUIRED);
         LambdaQueryWrapperX<AppPO> wrapper = new LambdaQueryWrapperX<AppPO>().eq(AppPO::getAppName, appName);
         if (excludeId != null) {
             wrapper.ne(AppPO::getId, excludeId);
         }
-        AssertUtils.isTrue(appMapper.selectCount(wrapper) == 0, "app name already exists");
+        AssertUtils.isTrue(appMapper.selectCount(wrapper) == 0, AuthManageErrorCode.APP_NAME_ALREADY_EXISTS, appName);
     }
 
     /**

@@ -25,7 +25,7 @@ public class PermissionExcelVO {
      * 类型。
      */
     @ExcelProperty(value = "类型(-1平台 0模块 1菜单 2按钮 3接口)", index = 0)
-    @NotNull(message = "类型不能为空")
+    @NotNull(message = "{permission.type.cannot.be.blank}")
     @Min(value = -1, message = "类型暂只支持-1到3")
     @Max(value = 3, message = "类型暂只支持-1到3")
     private Integer type;
@@ -40,7 +40,7 @@ public class PermissionExcelVO {
      * 名称。
      */
     @ExcelProperty(value = "权限项名称", index = 2)
-    @NotBlank(message = "权限项名称不能为空")
+    @NotBlank(message = "{permission.name.cannot.be.blank}")
     @Length(max = 16, message = "权限项名称不能超过16个字符")
     private String name;
 
@@ -48,7 +48,7 @@ public class PermissionExcelVO {
      * 标识。
      */
     @ExcelProperty(value = "权限项标识", index = 3)
-    @NotBlank(message = "权限项标识不能为空")
+    @NotBlank(message = "{permission.identification.cannot.be.blank}")
     @Length(max = 128, message = "权限项标识不能超过128个字符")
     private String identification;
 
@@ -85,7 +85,7 @@ public class PermissionExcelVO {
      * 显示顺序。
      */
     @ExcelProperty(value = "显示序号", index = 8)
-    @NotNull(message = "显示序号不能为空")
+    @NotNull(message = "{permission.display.no.cannot.be.blank}")
     @Min(value = 1, message = "显示序号不能小于1")
     @Max(value = 999, message = "显示序号不能大于999")
     private Integer displayNo;

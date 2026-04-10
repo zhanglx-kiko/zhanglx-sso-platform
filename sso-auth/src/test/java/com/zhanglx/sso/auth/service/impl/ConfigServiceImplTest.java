@@ -5,6 +5,7 @@ import com.zhanglx.sso.auth.domain.po.ConfigPO;
 import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.enums.YesNoEnum;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.mapper.ConfigMapper;
 import com.zhanglx.sso.auth.service.runtime.ConfigValueMaskingSupport;
 import com.zhanglx.sso.auth.service.runtime.DatabaseSystemConfigProvider;
@@ -15,7 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -44,9 +46,10 @@ class ConfigServiceImplTest {
     void shouldRejectCreateBuiltInConfigFromApi() {
         ConfigDTO dto = buildDto(ConfigTypeEnum.BUILT_IN);
 
-        assertThatThrownBy(() -> configService.create(dto))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("built-in config cannot be created from api");
+        BusinessException exception = catchThrowableOfType(() -> configService.create(dto), BusinessException.class);
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessageKey()).isEqualTo(AuthManageErrorCode.CONFIG_BUILT_IN_CREATE_FORBIDDEN.getMessageKey());
+        assertThat(exception.getCode()).isEqualTo(AuthManageErrorCode.CONFIG_BUILT_IN_CREATE_FORBIDDEN.getCode());
 
         verifyNoInteractions(configMapper, systemConfigProvider, configValueMaskingSupport);
     }
@@ -55,9 +58,10 @@ class ConfigServiceImplTest {
     void shouldRejectUpdateBuiltInConfig() {
         when(configMapper.selectById(1L)).thenReturn(buildPo(1L, ConfigTypeEnum.BUILT_IN));
 
-        assertThatThrownBy(() -> configService.update(1L, buildDto(ConfigTypeEnum.BUILT_IN)))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("built-in config cannot be modified");
+        BusinessException exception = catchThrowableOfType(() -> configService.update(1L, buildDto(ConfigTypeEnum.BUILT_IN)), BusinessException.class);
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessageKey()).isEqualTo(AuthManageErrorCode.CONFIG_BUILT_IN_UPDATE_FORBIDDEN.getMessageKey());
+        assertThat(exception.getCode()).isEqualTo(AuthManageErrorCode.CONFIG_BUILT_IN_UPDATE_FORBIDDEN.getCode());
 
         verify(configMapper, never()).updateById(org.mockito.ArgumentMatchers.any(ConfigPO.class));
     }
@@ -66,9 +70,10 @@ class ConfigServiceImplTest {
     void shouldRejectDeleteBuiltInConfig() {
         when(configMapper.selectById(1L)).thenReturn(buildPo(1L, ConfigTypeEnum.BUILT_IN));
 
-        assertThatThrownBy(() -> configService.delete(1L))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("built-in config cannot be deleted");
+        BusinessException exception = catchThrowableOfType(() -> configService.delete(1L), BusinessException.class);
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessageKey()).isEqualTo(AuthManageErrorCode.CONFIG_BUILT_IN_DELETE_FORBIDDEN.getMessageKey());
+        assertThat(exception.getCode()).isEqualTo(AuthManageErrorCode.CONFIG_BUILT_IN_DELETE_FORBIDDEN.getCode());
 
         verify(configMapper, never()).deleteByIdWithFill(1L);
     }
@@ -77,9 +82,10 @@ class ConfigServiceImplTest {
     void shouldRejectChangingConfigTypeForCustomConfig() {
         when(configMapper.selectById(1L)).thenReturn(buildPo(1L, ConfigTypeEnum.CUSTOM));
 
-        assertThatThrownBy(() -> configService.update(1L, buildDto(ConfigTypeEnum.BUILT_IN)))
-                .isInstanceOf(BusinessException.class)
-                .hasMessageContaining("config type cannot be changed");
+        BusinessException exception = catchThrowableOfType(() -> configService.update(1L, buildDto(ConfigTypeEnum.BUILT_IN)), BusinessException.class);
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessageKey()).isEqualTo(AuthManageErrorCode.CONFIG_TYPE_CANNOT_CHANGE.getMessageKey());
+        assertThat(exception.getCode()).isEqualTo(AuthManageErrorCode.CONFIG_TYPE_CANNOT_CHANGE.getCode());
 
         verify(configMapper, never()).updateById(org.mockito.ArgumentMatchers.any(ConfigPO.class));
     }

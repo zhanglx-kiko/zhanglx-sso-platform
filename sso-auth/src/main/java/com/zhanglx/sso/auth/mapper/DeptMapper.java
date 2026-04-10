@@ -23,4 +23,16 @@ public interface DeptMapper extends IBaseMapperX<DeptPO> {
      */
     @Select("SELECT COUNT(1) FROM t_sys_user WHERE dept_id = #{deptId} AND del_flag = 0")
     Long countUsers(@Param("deptId") Long deptId);
+
+    /**
+     * 查询第一个子部门名称。
+     */
+    @Select("SELECT dept_name FROM t_auth_dept WHERE parent_id = #{parentId} AND del_flag = 0 ORDER BY id ASC LIMIT 1")
+    String selectFirstChildDeptName(@Param("parentId") Long parentId);
+
+    /**
+     * 查询第一个占用部门的用户账号。
+     */
+    @Select("SELECT username FROM t_sys_user WHERE dept_id = #{deptId} AND del_flag = 0 ORDER BY id ASC LIMIT 1")
+    String selectFirstUsernameByDeptId(@Param("deptId") Long deptId);
 }

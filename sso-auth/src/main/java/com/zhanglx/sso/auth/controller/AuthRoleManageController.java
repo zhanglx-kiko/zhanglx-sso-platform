@@ -8,6 +8,7 @@ import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.dto.RoleDTO;
 import com.zhanglx.sso.auth.domain.dto.RolePermissionRelationshipMappingDTO;
 import com.zhanglx.sso.auth.domain.vo.RoleInfoVO;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.service.RoleService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.domain.page.PageQuery;
@@ -77,7 +78,7 @@ public class AuthRoleManageController {
     @SaCheckPermission("role:remove")
     @OperationLog(module = "角色管理", feature = "角色", operationType = "DELETE", operationName = "批量删除角色", operationDesc = "批量删除后台角色", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> ids) {
-        AssertUtils.notEmpty(ids, "角色 ID 列表不能为空");
+        AssertUtils.notEmpty(ids, AuthManageErrorCode.ROLE_IDS_EMPTY);
         roleService.batchDelRole(RequestIdUtils.parseIds(ids, "roleId"));
     }
 

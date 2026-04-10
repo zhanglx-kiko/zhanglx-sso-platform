@@ -1,6 +1,7 @@
 package com.zhanglx.sso.core.config;
 
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.CoreErrorCode;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.DeserializationContext;
@@ -26,8 +27,7 @@ public class StringToLongDeserializer extends ValueDeserializer<Long> {
         try {
             return Long.parseLong(value.trim());
         } catch (NumberFormatException e) {
-            throw BusinessException.badRequest("无法将字符串 [" + value + "] 转换为 Long 类型", e);
+            throw BusinessException.of(CoreErrorCode.LONG_PARSE_FAILED, e, value.trim());
         }
     }
-
 }

@@ -72,6 +72,12 @@ public class AssertUtils {
         }
     }
 
+    public static void isFalse(boolean expression, ErrorCode errorCode, Object... args) {
+        if (expression) {
+            throwException(errorCode, args);
+        }
+    }
+
     // ==========================================
     // Null 值断言
     // ==========================================

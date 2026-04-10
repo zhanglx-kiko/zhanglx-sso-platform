@@ -32,14 +32,14 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
     /**
      * 权限项名称。
      */
-    @NotBlank(message = "权限项名称不能为空")
+    @NotBlank(message = "{permission.name.cannot.be.blank}")
     @Schema(description = "权限项名称", name = "name", example = "平台 模块 菜单 按钮 接口", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String name;
 
     /**
      * 权限项标识。
      */
-    @NotBlank(message = "权限项标识不能为空")
+    @NotBlank(message = "{permission.identification.cannot.be.blank}")
     @Schema(description = "权限项标识", name = "identification", example = "system:user:list", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String identification;
 
@@ -91,7 +91,7 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
     /**
      * 类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口。
      */
-    @NotNull(message = "类型不能为空")
+    @NotNull(message = "{permission.type.cannot.be.blank}")
     @Schema(description = "类型，-1 平台，0 模块，1 菜单，2 按钮，3 接口", name = "type", allowableValues = {"-1", "0", "1", "2", "3"}, type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private PermissionTypeEnum type;
 

@@ -2,6 +2,7 @@ package com.zhanglx.sso.core.utils.tree;
 
 import com.zhanglx.sso.core.domain.tree.TreeNode;
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.CoreErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.type.CollectionType;
@@ -22,7 +23,7 @@ public class GenericTreeIOUtils {
             mapper.writeValue(out, roots);
         } catch (Exception e) {
             log.error("Generic tree export failed", e);
-            throw BusinessException.internalError("树形数据导出异常", e);
+            throw BusinessException.of(CoreErrorCode.TREE_EXPORT_FAILED, e);
         }
     }
 
@@ -42,13 +43,10 @@ public class GenericTreeIOUtils {
             return flatList;
         } catch (Exception e) {
             log.error("Generic tree import failed", e);
-            throw BusinessException.internalError("树形数据导入异常", e);
+            throw BusinessException.of(CoreErrorCode.TREE_IMPORT_FAILED, e);
         }
     }
 
-    /**
-     * flattenNode处理逻辑。
-     */
     private static <T extends TreeNode<T, ID>, ID> void flattenNode(T node, ID parentId, List<T> flatList) {
         node.setParentId(parentId);
         flatList.add(node);
@@ -61,5 +59,4 @@ public class GenericTreeIOUtils {
             node.setChildren(null);
         }
     }
-
 }

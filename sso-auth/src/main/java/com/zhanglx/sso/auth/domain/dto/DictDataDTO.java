@@ -31,28 +31,28 @@ public class DictDataDTO extends BaseDTO {
     /**
      * 字典标签。
      */
-    @NotBlank(message = "字典标签不能为空")
+    @NotBlank(message = "{dict.label.cannot.be.blank}")
     @Schema(description = "字典标签", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictLabel;
 
     /**
      * 字典值。
      */
-    @NotBlank(message = "字典值不能为空")
+    @NotBlank(message = "{dict.value.cannot.be.blank}")
     @Schema(description = "字典值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictValue;
 
     /**
      * 字典类型编码。
      */
-    @NotBlank(message = "字典类型不能为空")
+    @NotBlank(message = "{dict.type.cannot.be.blank}")
     @Schema(description = "字典类型编码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictType;
 
     /**
      * 状态：1-启用，0-停用。
      */
-    @NotNull(message = "状态不能为空")
+    @NotNull(message = "{status.cannot.be.blank}")
     @Schema(description = "状态：1-启用，0-停用")
     private EnableStatusEnum status;
 

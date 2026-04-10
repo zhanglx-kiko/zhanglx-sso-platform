@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.service.impl;
 
+import com.zhanglx.sso.auth.exception.MemberErrorCode;
 import com.zhanglx.sso.auth.service.MemberVerificationCodeService;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.sms.enums.SmsSceneType;
@@ -70,7 +71,7 @@ public class MemberVerificationCodeServiceImpl implements MemberVerificationCode
      */
     private SmsSceneType requireScene(SmsSceneType sceneType) {
         if (sceneType == null) {
-            throw new BusinessException("member.verification.scene.invalid");
+            throw new BusinessException(MemberErrorCode.MEMBER_VERIFICATION_SCENE_INVALID);
         }
 
         return sceneType;
@@ -90,7 +91,7 @@ public class MemberVerificationCodeServiceImpl implements MemberVerificationCode
      */
     private String normalizePhoneNumber(String phoneNumber) {
         if (!StringUtils.hasText(phoneNumber)) {
-            throw new BusinessException("member.phone.cannot.be.blank");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_REQUIRED);
         }
 
         return phoneNumber.trim();
@@ -101,7 +102,7 @@ public class MemberVerificationCodeServiceImpl implements MemberVerificationCode
      */
     private String normalizeVerificationCode(String verificationCode) {
         if (!StringUtils.hasText(verificationCode)) {
-            throw new BusinessException("member.verification.code.cannot.be.blank");
+            throw new BusinessException(MemberErrorCode.MEMBER_VERIFICATION_CODE_REQUIRED);
         }
         return verificationCode.trim();
     }

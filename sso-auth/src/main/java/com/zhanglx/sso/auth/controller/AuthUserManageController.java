@@ -7,6 +7,7 @@ import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 import com.zhanglx.sso.auth.domain.dto.UserStatusUpdateDTO;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
@@ -83,7 +84,7 @@ public class AuthUserManageController {
     @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @OperationLog(module = "用户管理", feature = "用户", operationType = "DELETE", operationName = "批量删除用户", operationDesc = "批量删除后台用户", includeResponseBody = false)
     public void batchDelete(@RequestBody List<String> userIds) {
-        AssertUtils.notEmpty(userIds, "userIds cannot be empty");
+        AssertUtils.notEmpty(userIds, AuthManageErrorCode.USER_IDS_EMPTY);
         List<Long> parsedUserIds = RequestIdUtils.parseIds(userIds, "userId");
         authOperationGuard.checkDeleteUsersNotContainsSelf(parsedUserIds);
         userService.batchRemoveUsers(parsedUserIds);

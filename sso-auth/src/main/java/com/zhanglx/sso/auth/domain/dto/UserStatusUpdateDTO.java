@@ -15,7 +15,7 @@ public class UserStatusUpdateDTO {
     /**
      * 用户状态。
      */
-    @NotNull(message = "状态不能为空")
+    @NotNull(message = "{status.cannot.be.blank}")
     @Schema(description = "用户状态", requiredMode = Schema.RequiredMode.REQUIRED)
     private UserStatusEnum status;
 }

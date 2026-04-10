@@ -26,7 +26,7 @@ public class ForgotPasswordVerificationCodeVerifyDTO {
     /**
      * 6 位短信验证码。
      */
-    @NotBlank(message = "验证码不能为空")
+    @NotBlank(message = "{verification.code.cannot.be.blank}")
     @Pattern(regexp = "^\\d{6}$", message = "{sms.verification.code.length.invalid}")
     @Schema(description = "6 位短信验证码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123456")
     private String verificationCode;

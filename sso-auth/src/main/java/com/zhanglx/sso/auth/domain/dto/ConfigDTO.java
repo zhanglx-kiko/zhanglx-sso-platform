@@ -27,49 +27,49 @@ public class ConfigDTO extends BaseDTO {
     /**
      * 参数名称。
      */
-    @NotBlank(message = "参数名称不能为空")
+    @NotBlank(message = "{config.name.cannot.be.blank}")
     @Schema(description = "参数名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String configName;
 
     /**
      * 参数键。
      */
-    @NotBlank(message = "参数键不能为空")
+    @NotBlank(message = "{config.key.cannot.be.blank}")
     @Schema(description = "参数键", requiredMode = Schema.RequiredMode.REQUIRED)
     private String configKey;
 
     /**
      * 参数值。
      */
-    @NotBlank(message = "参数值不能为空")
+    @NotBlank(message = "{config.value.cannot.be.blank}")
     @Schema(description = "参数值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String configValue;
 
     /**
      * 参数分组。
      */
-    @NotBlank(message = "参数分组不能为空")
+    @NotBlank(message = "{config.group.cannot.be.blank}")
     @Schema(description = "参数分组", requiredMode = Schema.RequiredMode.REQUIRED)
     private String configGroup;
 
     /**
      * 是否敏感参数。
      */
-    @NotNull(message = "敏感标识不能为空")
+    @NotNull(message = "{config.sensitive.flag.cannot.be.blank}")
     @Schema(description = "是否敏感参数")
     private YesNoEnum sensitiveFlag;
 
     /**
      * 参数状态。
      */
-    @NotNull(message = "参数状态不能为空")
+    @NotNull(message = "{config.status.cannot.be.blank}")
     @Schema(description = "参数状态")
     private EnableStatusEnum status;
 
     /**
      * 参数类型。
      */
-    @NotNull(message = "参数类型不能为空")
+    @NotNull(message = "{config.type.cannot.be.blank}")
     @Schema(description = "参数类型")
     private ConfigTypeEnum configType;
 

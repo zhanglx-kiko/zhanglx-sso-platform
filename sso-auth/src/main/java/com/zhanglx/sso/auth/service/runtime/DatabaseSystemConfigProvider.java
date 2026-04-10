@@ -3,6 +3,7 @@ package com.zhanglx.sso.auth.service.runtime;
 import com.zhanglx.sso.auth.config.ConfigRuntimeCacheProperties;
 import com.zhanglx.sso.auth.domain.po.ConfigPO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.mapper.ConfigMapper;
 import com.zhanglx.sso.core.config.runtime.SystemConfigProvider;
 import com.zhanglx.sso.core.exception.SystemConfigException;
@@ -89,7 +90,7 @@ public class DatabaseSystemConfigProvider implements SystemConfigProvider {
      * 按键读取原始配置记录，供管理后台和脱敏转换复用。
      */
     public ConfigPO getRawConfig(String configKey) {
-        AssertUtils.notBlank(configKey, "config key cannot be blank");
+        AssertUtils.notBlank(configKey, AuthManageErrorCode.CONFIG_KEY_REQUIRED);
         return configMapper.selectOne(ConfigPO::getConfigKey, configKey.trim());
     }
 
@@ -97,7 +98,7 @@ public class DatabaseSystemConfigProvider implements SystemConfigProvider {
      * 加载缓存，如果本地没有或已过期则重新查库。
      */
     private CacheEntry getOrLoad(String configKey) {
-        AssertUtils.notBlank(configKey, "config key cannot be blank");
+        AssertUtils.notBlank(configKey, AuthManageErrorCode.CONFIG_KEY_REQUIRED);
         String normalizedKey = configKey.trim();
         CacheEntry cached = cache.get(normalizedKey);
         if (cached != null && !cached.isExpired()) {

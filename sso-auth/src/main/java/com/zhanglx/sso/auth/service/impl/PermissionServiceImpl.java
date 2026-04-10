@@ -12,6 +12,8 @@ import com.zhanglx.sso.auth.domain.vo.PermissionVO;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
 import com.zhanglx.sso.auth.enums.PermissionTypeEnum;
 import com.zhanglx.sso.auth.event.PermissionChangedEvent;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
+import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.listener.excel.BestEffortImportListener;
 import com.zhanglx.sso.auth.mapper.PermissionMapper;
 import com.zhanglx.sso.auth.mapper.RolePermissionRelationshipMappingMapper;
@@ -21,7 +23,6 @@ import com.zhanglx.sso.auth.utils.IPermissionMapper;
 import com.zhanglx.sso.auth.utils.excel.ExportProgressManager;
 import com.zhanglx.sso.auth.utils.excel.ImportProgressManager;
 import com.zhanglx.sso.core.exception.BusinessException;
-import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.strategy.TreeFilterStrategy;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionUtils;
@@ -102,7 +103,8 @@ public class PermissionServiceImpl implements PermissionService {
         // 查询全局是否存在重复的权限标识。
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification()))) {
-            throw new BusinessException(CommonErrorCode.CONFLICT);
+            throw new BusinessException(AuthManageErrorCode.PERMISSION_IDENTIFICATION_ALREADY_EXISTS,
+                    permissionDTO.getIdentification());
         }
 
         PermissionPO permissionPO = IPermissionMapper.INSTANCE.toPO(permissionDTO);
@@ -167,10 +169,10 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO delPermission(Long id) {
-        AssertUtils.notNull(id, "business.data.invalid");
+        AssertUtils.notNull(id, AuthManageErrorCode.PERMISSION_ID_REQUIRED);
 
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(permissionPO, AuthManageErrorCode.PERMISSION_NOT_FOUND);
 
         // 递归删除当前节点及其所有子孙节点。
         recursiveDelFuncPerm(Lists.newArrayList(IPermissionMapper.INSTANCE.toDTO(permissionPO)));
@@ -224,7 +226,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public List<PermissionDTO> batchDelPermission(List<Long> idList) {
-        AssertUtils.notEmpty(idList, "business.data.invalid");
+        AssertUtils.notEmpty(idList, AuthManageErrorCode.PERMISSION_IDS_EMPTY);
 
         List<PermissionDTO> results = Lists.newArrayList();
         AtomicInteger counter = new AtomicInteger(0);
@@ -248,12 +250,13 @@ public class PermissionServiceImpl implements PermissionService {
     @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO updatePermission(Long id, PermissionDTO permissionDTO) {
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(permissionPO, AuthManageErrorCode.PERMISSION_NOT_FOUND);
 
         if (permissionMapper.exists(new LambdaQueryWrapperX<PermissionPO>()
                 .eq(PermissionPO::getIdentification, permissionDTO.getIdentification())
                 .ne(PermissionPO::getId, id))) {
-            throw new BusinessException(CommonErrorCode.CONFLICT);
+            throw new BusinessException(AuthManageErrorCode.PERMISSION_IDENTIFICATION_ALREADY_EXISTS,
+                    permissionDTO.getIdentification());
         }
 
         PermissionPO updateMenu = IPermissionMapper.INSTANCE.toPO(permissionDTO);
@@ -406,10 +409,10 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionVO> selPermissionByIdentification(String username, List<String> identifications, List<PermissionTypeEnum> permissionTypes) {
-        AssertUtils.notBlank(username, "business.data.invalid");
+        AssertUtils.notBlank(username, AuthManageErrorCode.PERMISSION_USERNAME_REQUIRED);
 
         UserDTO user = userService.findUserByUsername(username);
-        AssertUtils.notNull(user, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(user, UserErrorCode.BUSINESS_USER_NOT_FOUND);
 
         List<PermissionPO> results = permissionMapper.selectByUserWithIdentityAndType(
                 user.getId(),
@@ -425,7 +428,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<PermissionVO> selPermissionByRoleId(long roleId) {
-        AssertUtils.notNull(roleId, "business.data.invalid");
+        AssertUtils.notNull(roleId, AuthManageErrorCode.PERMISSION_ROLE_ID_REQUIRED);
 
         List<PermissionPO> result = permissionMapper.selPermissionByRoleId(roleId);
         if (CollectionUtils.isNotEmpty(result)) {
@@ -446,10 +449,10 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public PermissionDTO getPermission(Long id) {
-        AssertUtils.notNull(id, "business.data.invalid");
+        AssertUtils.notNull(id, AuthManageErrorCode.PERMISSION_ID_REQUIRED);
 
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(permissionPO, AuthManageErrorCode.PERMISSION_NOT_FOUND);
         return IPermissionMapper.INSTANCE.toDTO(permissionPO);
     }
 
@@ -457,11 +460,11 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = PermissionCacheConstants.PERMISSION_TREE_CACHE, allEntries = true)
     public PermissionDTO updateStatus(Long id, EnableStatusEnum status) {
-        AssertUtils.notNull(id, "business.data.invalid");
-        AssertUtils.notNull(status, "business.data.invalid");
+        AssertUtils.notNull(id, AuthManageErrorCode.PERMISSION_ID_REQUIRED);
+        AssertUtils.notNull(status, AuthManageErrorCode.PERMISSION_STATUS_REQUIRED);
 
         PermissionPO permissionPO = permissionMapper.selectById(id);
-        AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
+        AssertUtils.notNull(permissionPO, AuthManageErrorCode.PERMISSION_NOT_FOUND);
 
         permissionPO.setStatus(status);
         PermissionPO updatePO = new PermissionPO();
@@ -601,7 +604,7 @@ public class PermissionServiceImpl implements PermissionService {
         try {
             // 使用物理临时文件代替内存流，避免大文件场景下出现 OOM。
             tempErrorFile = File.createTempFile("error_import_" + taskId, ".xlsx");
-            FesodSheet.write(tempErrorFile, PermissionExcelVO.class).sheet("失败数据").doWrite(failedData);
+            FesodSheet.write(tempErrorFile, PermissionExcelVO.class).sheet("澶辫触鏁版嵁").doWrite(failedData);
 
             // 待补充: 调用 OSS 客户端将 tempErrorFile 上传到 MinIO 或阿里云。
             return "http://your-oss-url/error_import_" + taskId + ".xlsx";
@@ -647,12 +650,12 @@ public class PermissionServiceImpl implements PermissionService {
 
         // 既不在缓存，也不在数据库，还不在当前批次中时，说明它是孤儿节点。
         if (!batchMap.containsKey(identification)) {
-            throw BusinessException.badRequest("映射失败：找不到identification [" + identification + "]");
+            throw BusinessException.of(AuthManageErrorCode.PERMISSION_IDENTIFICATION_MAPPING_NOT_FOUND, identification);
         }
 
         // 检测循环依赖，例如 A -> B -> A。
         if (visiting.contains(identification)) {
-            throw BusinessException.badRequest("侦测到循环依赖：identification [" + identification + "] 构成了死循环");
+            throw BusinessException.of(AuthManageErrorCode.PERMISSION_IDENTIFICATION_CYCLE_DETECTED, identification);
         }
 
         visiting.add(identification);
@@ -740,7 +743,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public List<String> selectPermissionCodesByUserId(Long userId) {
-        AssertUtils.notNull(userId, "business.data.invalid");
+        AssertUtils.notNull(userId, AuthManageErrorCode.USER_ID_REQUIRED);
 
         List<String> permissionCodes = permissionMapper.selectPermissionCodesByUserId(userId);
 

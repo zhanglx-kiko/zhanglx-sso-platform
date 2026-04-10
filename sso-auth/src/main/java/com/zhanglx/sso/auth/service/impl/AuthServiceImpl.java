@@ -4,11 +4,7 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
-import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
-import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeSendDTO;
-import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeVerifyDTO;
-import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
-import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.*;
 import com.zhanglx.sso.auth.domain.po.UserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.domain.vo.SmsVerificationCodeSendVO;
@@ -79,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
         if (userLoginDTO == null
                 || !StringUtils.hasText(userLoginDTO.getUsername())
                 || !StringUtils.hasText(userLoginDTO.getPassword())) {
-            throw new BusinessException("user.account.empty");
+            throw new BusinessException(UserErrorCode.USER_ACCOUNT_EMPTY);
         }
 
         LambdaQueryWrapperX<UserPO> queryWrapper = new LambdaQueryWrapperX<>();
@@ -216,7 +212,7 @@ public class AuthServiceImpl implements AuthService {
      */
     private void ensurePhoneBound(UserPO userPO) {
         if (!StringUtils.hasText(userPO.getPhoneNumber())) {
-            throw BusinessException.badRequest("user.phone.not.bound");
+            throw new BusinessException(UserErrorCode.USER_PHONE_NOT_BOUND);
         }
     }
 

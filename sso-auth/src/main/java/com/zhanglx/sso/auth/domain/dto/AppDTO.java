@@ -25,14 +25,14 @@ public class AppDTO extends BaseDTO {
     /**
      * 应用编码。
      */
-    @NotBlank(message = "应用编码不能为空")
+    @NotBlank(message = "{app.code.cannot.be.blank}")
     @Schema(description = "应用编码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appCode;
 
     /**
      * 应用名称。
      */
-    @NotBlank(message = "应用名称不能为空")
+    @NotBlank(message = "{app.name.cannot.be.blank}")
     @Schema(description = "应用名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String appName;
 

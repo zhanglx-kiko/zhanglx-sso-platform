@@ -17,10 +17,7 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 import java.io.Serializable;
 
 /**
- * 作者：Zhang L X
- * 创建时间：2026/2/12 16:46
- * 类名：UserPasswordDTO
- * 说明：系统用户修改密码请求对象。
+ * 系统用户修改密码请求对象。
  */
 @Data
 @SuperBuilder
@@ -41,7 +38,7 @@ public class UserPasswordDTO implements Serializable {
     /**
      * 旧密码。
      */
-    @NotBlank(message = "旧密码不能为空")
+    @NotBlank(message = "{user.old.password.cannot.be.blank}")
     @Schema(description = "旧密码", name = "oldPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     @XssPolicy(XssPolicyMode.NONE)
     private String oldPassword;
@@ -49,9 +46,8 @@ public class UserPasswordDTO implements Serializable {
     /**
      * 新密码。
      */
-    @NotBlank(message = "新密码不能为空")
+    @NotBlank(message = "{user.new.password.cannot.be.blank}")
     @Schema(description = "新密码", name = "newPassword", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     @XssPolicy(XssPolicyMode.NONE)
     private String newPassword;
-
 }

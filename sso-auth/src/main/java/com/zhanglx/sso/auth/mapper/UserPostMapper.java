@@ -28,6 +28,16 @@ public interface UserPostMapper extends IBaseMapperX<UserPostPO> {
     Long countByPostId(@Param("postId") Long postId);
 
     /**
+     * 查询第一个占用岗位的用户账号。
+     */
+    @Select("SELECT u.username " +
+            "FROM t_auth_user_post up " +
+            "INNER JOIN t_sys_user u ON u.id = up.user_id AND u.del_flag = 0 " +
+            "WHERE up.post_id = #{postId} AND up.del_flag = 0 " +
+            "ORDER BY up.id ASC LIMIT 1")
+    String selectFirstUsernameByPostId(@Param("postId") Long postId);
+
+    /**
      * 根据用户ID逻辑删除岗位关联关系。
      */
     @Update("UPDATE t_auth_user_post SET del_flag = id WHERE user_id = #{userId} AND del_flag = 0")

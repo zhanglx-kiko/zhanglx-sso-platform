@@ -5,6 +5,7 @@ import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
 import com.zhanglx.sso.auth.domain.dto.PermissionQueryDTO;
 import com.zhanglx.sso.auth.domain.vo.PermissionVO;
+import com.zhanglx.sso.auth.exception.AuthManageErrorCode;
 import com.zhanglx.sso.auth.service.PermissionService;
 import com.zhanglx.sso.auth.utils.RequestIdUtils;
 import com.zhanglx.sso.core.utils.AssertUtils;
@@ -75,7 +76,7 @@ public class AuthPermissionManageController {
     @SaCheckPermission("permission:remove")
     @OperationLog(module = "权限管理", feature = "权限", operationType = "DELETE", operationName = "批量删除权限", operationDesc = "批量删除权限节点", includeResponseBody = false)
     public List<PermissionDTO> batchDelete(@RequestBody List<String> ids) {
-        AssertUtils.notEmpty(ids, "权限 ID 列表不能为空");
+        AssertUtils.notEmpty(ids, AuthManageErrorCode.PERMISSION_IDS_EMPTY);
         return permissionService.batchDelPermission(RequestIdUtils.parseIds(ids, "permissionId"));
     }
 

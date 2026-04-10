@@ -25,21 +25,21 @@ public class DictTypeDTO extends BaseDTO {
     /**
      * 字典名称。
      */
-    @NotBlank(message = "字典名称不能为空")
+    @NotBlank(message = "{dict.name.cannot.be.blank}")
     @Schema(description = "字典名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictName;
 
     /**
      * 字典类型编码。
      */
-    @NotBlank(message = "字典类型不能为空")
+    @NotBlank(message = "{dict.type.cannot.be.blank}")
     @Schema(description = "字典类型编码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictType;
 
     /**
      * 状态：1-启用，0-停用。
      */
-    @NotNull(message = "状态不能为空")
+    @NotNull(message = "{status.cannot.be.blank}")
     @Schema(description = "状态：1-启用，0-停用")
     private EnableStatusEnum status;
 

@@ -61,7 +61,7 @@ public class MemberUserServiceImpl implements MemberUserService {
         MemberUserPO memberUserPO = getById(memberId);
         if (StringUtils.hasText(updateDTO.getPhoneNumber())
                 && !updateDTO.getPhoneNumber().equals(memberUserPO.getPhoneNumber())) {
-            throw BusinessException.badRequest("member.phone.update.requires.verification");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_UPDATE_REQUIRES_VERIFICATION);
         }
 
         memberUserPO.setNickname(updateDTO.getNickname());
@@ -87,12 +87,12 @@ public class MemberUserServiceImpl implements MemberUserService {
     public MemberInfoVO bindPhone(Long memberId, MemberBindPhoneDTO bindPhoneDTO) {
         MemberUserPO memberUserPO = getById(memberId);
         if (bindPhoneDTO.getPhoneNumber().equals(memberUserPO.getPhoneNumber())) {
-            throw BusinessException.badRequest("member.phone.bind.same.as.current");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_BIND_SAME_AS_CURRENT);
         }
 
         MemberUserPO existMember = findByPhoneNumber(bindPhoneDTO.getPhoneNumber());
         if (existMember != null && !existMember.getId().equals(memberId)) {
-            throw BusinessException.conflict("member.phone.already.bound");
+            throw new BusinessException(MemberErrorCode.MEMBER_PHONE_ALREADY_BOUND);
         }
 
         memberVerificationCodeService.verifyCode(
@@ -131,7 +131,7 @@ public class MemberUserServiceImpl implements MemberUserService {
 
     @Override
     public MemberUserPO getByPhoneNumber(String phoneNumber) {
-        AssertUtils.notBlank(phoneNumber, "member.phone.cannot.be.blank");
+        AssertUtils.notBlank(phoneNumber, MemberErrorCode.MEMBER_PHONE_REQUIRED);
         MemberUserPO memberUserPO = findByPhoneNumber(phoneNumber);
         AssertUtils.notNull(memberUserPO, MemberErrorCode.MEMBER_NOT_FOUND);
         return memberUserPO;

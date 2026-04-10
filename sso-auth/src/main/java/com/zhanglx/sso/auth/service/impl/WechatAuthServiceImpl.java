@@ -11,6 +11,7 @@ import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.enums.SocialIdentityTypeEnum;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
+import com.zhanglx.sso.auth.exception.WechatErrorCode;
 import com.zhanglx.sso.auth.mapper.MemberSocialMapper;
 import com.zhanglx.sso.auth.mapper.MemberUserMapper;
 import com.zhanglx.sso.auth.service.MemberUserService;
@@ -100,8 +101,8 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     @Transactional(rollbackFor = Exception.class)
     public LoginVO loginMemberByWechatCode(String code) {
         JsonNode response = fetchWechatSession(code);
-        String openId = response.get("openid").asText();
-        String unionId = response.has("unionid") ? response.get("unionid").asText() : null;
+        String openId = response.get("openid").asString();
+        String unionId = response.has("unionid") ? response.get("unionid").asString() : null;
 
         MemberSocialPO socialPO = memberSocialMapper.selectOne(
                 MemberSocialPO::getIdentityType, SocialIdentityTypeEnum.WX_MINI,
@@ -147,7 +148,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
      */
     private JsonNode fetchWechatSession(String code) {
         if (!StringUtils.hasText(code)) {
-            throw BusinessException.badRequest("wechat.code.cannot.be.blank");
+            throw new BusinessException(WechatErrorCode.WECHAT_CODE_REQUIRED);
         }
 
         String url = String.format(
@@ -165,14 +166,14 @@ public class WechatAuthServiceImpl implements WechatAuthService {
                 return response;
             }
 
-            String errorMsg = response != null && response.has("errmsg") ? response.get("errmsg").asText() : "unknown error";
+            String errorMsg = response != null && response.has("errmsg") ? response.get("errmsg").asString() : "unknown error";
             log.warn("WeChat login validation failed, errmsg={}", errorMsg);
-            throw BusinessException.badRequest("wechat.login.failed");
+            throw new BusinessException(WechatErrorCode.WECHAT_LOGIN_FAILED);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
             log.error("Failed to call WeChat login API", e);
-            throw BusinessException.badGateway("technical.wechat.service.error", e);
+            throw BusinessException.of(WechatErrorCode.WECHAT_SERVICE_ERROR, e);
         }
     }
 

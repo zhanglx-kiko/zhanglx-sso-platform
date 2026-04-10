@@ -24,9 +24,6 @@ public interface RoleMapper extends IBaseMapperX<RolePO> {
      * @param userAccount 用户账号
      * @return 当前账号绑定的角色列表
      */
-    /**
-     * 根据用户账号查询可用角色列表。
-     */
     @Results(id = "rolePoResultMap", value = {
             @Result(property = "dataScope", column = "data_scope", javaType = DataScopeEnum.class,
                     typeHandler = AutoEnumTypeHandler.class),
@@ -43,5 +40,11 @@ public interface RoleMapper extends IBaseMapperX<RolePO> {
             "  AND urm.del_flag = 0 " +
             "  AND u.del_flag = 0")
     List<RolePO> selectRolesForUser(@Param("userAccount") String userAccount);
+
+    /**
+     * 查询第一个绑定到应用的角色名称。
+     */
+    @Select("SELECT role_name FROM t_auth_role WHERE app_code = #{appCode} AND del_flag = 0 ORDER BY id ASC LIMIT 1")
+    String selectFirstRoleNameByAppCode(@Param("appCode") String appCode);
 
 }

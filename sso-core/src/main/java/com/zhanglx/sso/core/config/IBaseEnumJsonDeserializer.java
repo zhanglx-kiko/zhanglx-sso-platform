@@ -1,11 +1,17 @@
 package com.zhanglx.sso.core.config;
 
 import com.zhanglx.sso.core.enums.IBaseEnum;
+import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.CoreErrorCode;
 import com.zhanglx.sso.core.utils.enums.EnumUtils;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
-import tools.jackson.databind.*;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * 基础枚举反序列化器。
@@ -60,7 +66,7 @@ public class IBaseEnumJsonDeserializer extends ValueDeserializer<Object> {
             return byCode;
         }
 
-        throw com.zhanglx.sso.core.exception.BusinessException.badRequest("Unsupported enum code: " + code);
+        throw BusinessException.of(CoreErrorCode.ENUM_CODE_UNSUPPORTED, code);
     }
 
     @Override
