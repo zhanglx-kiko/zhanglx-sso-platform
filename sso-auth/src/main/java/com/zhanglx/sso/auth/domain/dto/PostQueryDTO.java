@@ -8,11 +8,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
 /**
  * 岗位分页查询参数对象。
  */
-
-
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -21,12 +20,21 @@ import lombok.experimental.SuperBuilder;
 @Schema(name = "PostQueryDTO", description = "岗位分页查询参数")
 public class PostQueryDTO extends PageQuery {
 
+    /**
+     * 岗位编码。
+     */
     @Schema(description = "岗位编码")
     private String postCode;
 
+    /**
+     * 岗位名称。
+     */
     @Schema(description = "岗位名称")
     private String postName;
 
+    /**
+     * 状态：1-启用，0-停用。
+     */
     @Schema(description = "状态：1-启用，0-停用")
     private EnableStatusEnum status;
 }

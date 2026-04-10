@@ -11,9 +11,9 @@ public final class PermissionCacheConstants {
      */
     public static final String PERMISSION_TREE_CACHE = "PermissionTree";
 
-/**
- * 私有构造方法，禁止外部实例化。
- */
+    /**
+     * 私有构造方法，禁止外部实例化。
+     */
     private PermissionCacheConstants() {
     }
 }

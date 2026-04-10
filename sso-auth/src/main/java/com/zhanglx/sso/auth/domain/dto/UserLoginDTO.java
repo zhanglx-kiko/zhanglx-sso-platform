@@ -16,10 +16,7 @@ import lombok.experimental.SuperBuilder;
  * @Author: Zhang L X
  * @Create: 2026/2/10 20:48
  * @ClassName: UserLoginDTO
- * @Description:
- */
-/**
- * 系统用户登录请求对象。
+ * @Description: 系统用户登录请求对象。
  */
 
 @Data

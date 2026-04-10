@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 会员第三方账号持久化对象。
  */
@@ -22,15 +23,27 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_member_social", autoResultMap = true)
 public class MemberSocialPO extends BasePO {
 
+    /**
+     * 会员ID。
+     */
     @TableField(value = "member_id", jdbcType = JdbcType.BIGINT)
     private Long memberId;
 
+    /**
+     * 身份类型。
+     */
     @TableField(value = "identity_type", jdbcType = JdbcType.VARCHAR, typeHandler = AutoEnumTypeHandler.class)
     private SocialIdentityTypeEnum identityType;
 
+    /**
+     * 唯一标识。
+     */
     @TableField(value = "identifier", jdbcType = JdbcType.VARCHAR)
     private String identifier;
 
+    /**
+     * UnionId。
+     */
     @TableField(value = "union_id", jdbcType = JdbcType.VARCHAR)
     private String unionId;
 }

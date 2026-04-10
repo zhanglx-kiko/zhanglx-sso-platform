@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 角色部门关系持久化对象。
  */
@@ -20,9 +21,15 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_auth_role_dept", autoResultMap = true)
 public class RoleDeptPO extends BasePO {
 
+    /**
+     * 角色ID。
+     */
     @TableField(value = "role_id", jdbcType = JdbcType.BIGINT)
     private Long roleId;
 
+    /**
+     * 部门ID。
+     */
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;
 }

@@ -28,6 +28,9 @@ public interface RoleMapper extends IBaseMapperX<RolePO> {
      * @param userAccount 用户账号
      * @return 当前账号绑定的角色列表
      */
+    /**
+     * 根据用户账号查询可用角色列表。
+     */
     @Results(id = "rolePoResultMap", value = {
             @Result(property = "dataScope", column = "data_scope", javaType = DataScopeEnum.class,
                     typeHandler = AutoEnumTypeHandler.class),

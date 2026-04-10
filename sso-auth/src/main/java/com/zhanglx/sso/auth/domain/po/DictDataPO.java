@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 字典数据持久化对象。
  */
@@ -22,21 +23,39 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_sys_dict_data", autoResultMap = true)
 public class DictDataPO extends BasePO {
 
+    /**
+     * 字典排序号。
+     */
     @TableField(value = "dict_sort", jdbcType = JdbcType.INTEGER)
     private Integer dictSort;
 
+    /**
+     * 字典标签。
+     */
     @TableField(value = "dict_label", jdbcType = JdbcType.VARCHAR)
     private String dictLabel;
 
+    /**
+     * 字典值。
+     */
     @TableField(value = "dict_value", jdbcType = JdbcType.VARCHAR)
     private String dictValue;
 
+    /**
+     * 字典类型。
+     */
     @TableField(value = "dict_type", jdbcType = JdbcType.VARCHAR)
     private String dictType;
 
+    /**
+     * 状态。
+     */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private EnableStatusEnum status;
 
+    /**
+     * 备注。
+     */
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 }

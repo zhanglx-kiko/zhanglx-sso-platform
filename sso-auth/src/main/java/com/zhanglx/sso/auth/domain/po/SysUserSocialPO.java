@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 后台用户第三方账号持久化对象。
  */
@@ -22,15 +23,27 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_sys_user_social", autoResultMap = true)
 public class SysUserSocialPO extends BasePO {
 
+    /**
+     * 用户ID。
+     */
     @TableField(value = "user_id", jdbcType = JdbcType.BIGINT)
     private Long userId;
 
+    /**
+     * 身份类型。
+     */
     @TableField(value = "identity_type", jdbcType = JdbcType.VARCHAR, typeHandler = AutoEnumTypeHandler.class)
     private SocialIdentityTypeEnum identityType;
 
+    /**
+     * 唯一标识。
+     */
     @TableField(value = "identifier", jdbcType = JdbcType.VARCHAR)
     private String identifier;
 
+    /**
+     * 凭证。
+     */
     @TableField(value = "credential", jdbcType = JdbcType.VARCHAR)
     private String credential;
 }

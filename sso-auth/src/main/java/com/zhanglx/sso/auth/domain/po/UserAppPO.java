@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 用户应用关系持久化对象。
  */
@@ -20,9 +21,15 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_auth_user_app", autoResultMap = true)
 public class UserAppPO extends BasePO {
 
+    /**
+     * 用户ID。
+     */
     @TableField(value = "user_id", jdbcType = JdbcType.BIGINT)
     private Long userId;
 
+    /**
+     * 应用编码。
+     */
     @TableField(value = "app_code", jdbcType = JdbcType.VARCHAR)
     private String appCode;
 }

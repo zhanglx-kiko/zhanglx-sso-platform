@@ -7,16 +7,15 @@ import lombok.Data;
  * @Author: Zhang L X
  * @Create: 2026/3/27 16:22
  * @ClassName: ExportProgressDTO
- * @Description:
+ * @Description: 导出任务进度对象。
  */
-/**
- * 导出任务进度对象。
- */
-
 @Data
 @Builder
 public class ExportProgressDTO {
 
+    /**
+     * 任务ID。
+     */
     private String taskId;
     private Long totalRows;      // 导出总行数 (方便前端计算百分比)
     private Long processedRows;  // 已处理行数

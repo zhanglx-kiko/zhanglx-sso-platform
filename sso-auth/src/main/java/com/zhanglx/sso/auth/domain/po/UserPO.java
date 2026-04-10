@@ -28,12 +28,21 @@ import java.time.LocalDate;
 @TableName(value = "t_sys_user", autoResultMap = true)
 public class UserPO extends BasePO {
 
+    /**
+     * 用户名。
+     */
     @TableField(value = "username", jdbcType = JdbcType.VARCHAR)
     private String username;
 
+    /**
+     * 密码。
+     */
     @TableField(value = "password", jdbcType = JdbcType.VARCHAR)
     private String password;
 
+    /**
+     * 用户类型。
+     */
     @TableField(value = "user_type", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private UserTypeEnum userType;
 
@@ -43,27 +52,51 @@ public class UserPO extends BasePO {
     @TableField(exist = false)
     private String openId;
 
+    /**
+     * 昵称。
+     */
     @TableField(value = "nickname", jdbcType = JdbcType.VARCHAR)
     private String nickname;
 
+    /**
+     * 头像。
+     */
     @TableField(value = "avatar", jdbcType = JdbcType.VARCHAR)
     private String avatar;
 
+    /**
+     * 手机号。
+     */
     @TableField(value = "phone_number", jdbcType = JdbcType.VARCHAR)
     private String phoneNumber;
 
+    /**
+     * 性别。
+     */
     @TableField(value = "sex", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private GenderEnum sex;
 
+    /**
+     * 生日。
+     */
     @TableField(value = "birthday", jdbcType = JdbcType.DATE)
     private LocalDate birthday;
 
+    /**
+     * 邮箱。
+     */
     @TableField(value = "email", jdbcType = JdbcType.VARCHAR)
     private String email;
 
+    /**
+     * 是否允许并发登录。
+     */
     @TableField(value = "allow_concurrent_login", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private YesNoEnum allowConcurrentLogin;
 
+    /**
+     * 部门ID。
+     */
     @TableField(value = "dept_id", jdbcType = JdbcType.BIGINT)
     private Long deptId;
 

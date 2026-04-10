@@ -24,21 +24,39 @@ import org.apache.ibatis.type.JdbcType;
 @EqualsAndHashCode(callSuper = true)
 public class RolePO extends BasePO {
 
+    /**
+     * 角色名称。
+     */
     @TableField(value = "role_name", jdbcType = JdbcType.VARCHAR)
     private String roleName;
 
+    /**
+     * 角色编码。
+     */
     @TableField(value = "role_code", jdbcType = JdbcType.VARCHAR)
     private String roleCode;
 
+    /**
+     * 应用编码。
+     */
     @TableField(value = "app_code", jdbcType = JdbcType.VARCHAR)
     private String appCode;
 
+    /**
+     * 数据范围。
+     */
     @TableField(value = "data_scope", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private DataScopeEnum dataScope;
 
+    /**
+     * 状态。
+     */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private EnableStatusEnum status;
 
+    /**
+     * 备注。
+     */
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 }

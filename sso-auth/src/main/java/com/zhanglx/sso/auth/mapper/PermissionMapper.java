@@ -42,6 +42,9 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
             "FROM t_auth_permission " +
             "WHERE del_flag = 0 " +
             "ORDER BY parent_id ASC, display_no ASC")
+    /**
+     * 以流式方式读取全部权限数据。
+     */
     @Options(resultSetType = ResultSetType.FORWARD_ONLY, fetchSize = Integer.MIN_VALUE)
     @ResultType(PermissionPO.class)
     void streamAllPermissions(ResultHandler<PermissionPO> handler);
@@ -81,6 +84,9 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
     /**
      * 根据角色 ID 查询角色已绑定的权限列表。
      */
+    /**
+     * 根据角色ID查询已绑定权限列表。
+     */
     @ResultMap("permissionPoResultMap")
     @Select("SELECT p.id, p.name, p.identification, p.parent_id, p.identity_lineage, " +
             "p.com_path, p.path, p.icon_str, p.display_no, p.is_frame, p.type, p.status, p.remark " +
@@ -95,6 +101,9 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
     /**
      * 根据父级权限标识查询其全部子孙权限。
      */
+    /**
+     * 根据父级权限标识查询子孙权限列表。
+     */
     @ResultMap("permissionPoResultMap")
     @Select("SELECT id, name, identification, parent_id, identity_lineage, com_path, path, " +
             "icon_str, display_no, is_frame, type, status, remark " +
@@ -107,6 +116,9 @@ public interface PermissionMapper extends IBaseMapperX<PermissionPO> {
     /**
      * 根据用户 ID 查询用户拥有的全部权限标识集合。
      * 前端如果只需要按钮/接口权限，会在调用侧再按类型筛选。
+     */
+    /**
+     * 根据用户ID查询权限标识集合。
      */
     @Select("SELECT DISTINCT p.identification " +
             "FROM t_auth_user_role urm " +

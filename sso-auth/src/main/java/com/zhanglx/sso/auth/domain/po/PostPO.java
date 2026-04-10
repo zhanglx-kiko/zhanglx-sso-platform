@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 岗位持久化对象。
  */
@@ -22,15 +23,27 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_auth_post", autoResultMap = true)
 public class PostPO extends BasePO {
 
+    /**
+     * 岗位编码。
+     */
     @TableField(value = "post_code", jdbcType = JdbcType.VARCHAR)
     private String postCode;
 
+    /**
+     * 岗位名称。
+     */
     @TableField(value = "post_name", jdbcType = JdbcType.VARCHAR)
     private String postName;
 
+    /**
+     * 排序号。
+     */
     @TableField(value = "sort_num", jdbcType = JdbcType.INTEGER)
     private Integer sortNum;
 
+    /**
+     * 状态。
+     */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private EnableStatusEnum status;
 }

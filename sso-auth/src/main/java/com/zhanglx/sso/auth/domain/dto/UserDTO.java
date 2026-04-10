@@ -26,6 +26,9 @@ import lombok.experimental.SuperBuilder;
 @Schema(name = "UserDTO", description = "后台用户对象")
 public class UserDTO extends UserBaseDTO {
 
+    /**
+     * 账号。
+     */
     @NotBlank(message = "账号不能为空")
     @Schema(description = "账号", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String username;
@@ -36,14 +39,23 @@ public class UserDTO extends UserBaseDTO {
     @XssPolicy(XssPolicyMode.NONE)
     private String password;
 
+    /**
+     * wx用户唯一标识。
+     */
     @JsonIgnore
     @Schema(description = "wx用户唯一标识", name = "openId", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String openId;
 
+    /**
+     * 部门名称。
+     */
     @JsonIgnore
     @Schema(description = "部门名称", name = "deptName", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String deptName;
 
+    /**
+     * 状态。
+     */
     @Schema(description = "状态", name = "status", example = "0禁用, 1正常", defaultValue = "1", allowableValues = {"0", "1"}, type = "Integer", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private UserStatusEnum status;
 

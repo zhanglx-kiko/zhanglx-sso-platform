@@ -2,9 +2,9 @@ package com.zhanglx.sso.sms.support;
 
 public final class SmsMaskingUtils {
 
-/**
- * 私有构造方法，禁止外部实例化。
- */
+    /**
+     * 私有构造方法，禁止外部实例化。
+     */
     private SmsMaskingUtils() {
     }
 

@@ -9,14 +9,14 @@ import lombok.Data;
  * @ClassName: ImportProgressDTO
  * @Description: 进度缓存对象 (保存到 Redis)
  */
-/**
- * 导入任务进度对象。
- */
 
 @Data
 @Builder
 public class ImportProgressDTO {
 
+    /**
+     * 任务ID。
+     */
     private String taskId;
     private Integer processedRows; // 已处理总行数 (包含成功和失败)
     private Integer successCount;  // 成功入库数

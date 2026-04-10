@@ -10,11 +10,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
 /**
  * 字典数据数据传输对象。
  */
-
-
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -23,25 +22,43 @@ import lombok.experimental.SuperBuilder;
 @Schema(name = "DictDataDTO", description = "字典数据对象")
 public class DictDataDTO extends BaseDTO {
 
+    /**
+     * 排序号。
+     */
     @Schema(description = "排序号")
     private Integer dictSort;
 
+    /**
+     * 字典标签。
+     */
     @NotBlank(message = "字典标签不能为空")
     @Schema(description = "字典标签", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictLabel;
 
+    /**
+     * 字典值。
+     */
     @NotBlank(message = "字典值不能为空")
     @Schema(description = "字典值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictValue;
 
+    /**
+     * 字典类型编码。
+     */
     @NotBlank(message = "字典类型不能为空")
     @Schema(description = "字典类型编码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String dictType;
 
+    /**
+     * 状态：1-启用，0-停用。
+     */
     @NotNull(message = "状态不能为空")
     @Schema(description = "状态：1-启用，0-停用")
     private EnableStatusEnum status;
 
+    /**
+     * 备注。
+     */
     @Schema(description = "备注")
     private String remark;
 }

@@ -94,6 +94,9 @@ public class PermissionPO extends BasePO {
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 
+    /**
+     * 状态。
+     */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private EnableStatusEnum status;
 

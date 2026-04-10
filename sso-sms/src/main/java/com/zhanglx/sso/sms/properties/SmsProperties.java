@@ -16,29 +16,69 @@ import java.util.Map;
 public class SmsProperties {
 
     /**
-     * 当前启用的短信渠道编码。
-     */
-    private String provider = SmsProviderType.SMS_CHINESE.getCode();
-
-    /**
-     * 是否记录第三方原始响应摘要。
-     */
-    private boolean logResponseEnabled = true;
-
-    /**
      * 短信通渠道配置。
      */
     private final SmsChineseProperties smsChinese = new SmsChineseProperties();
-
     /**
      * 阿里云短信渠道配置。
      */
     private final AliyunProperties aliyun = new AliyunProperties();
-
+    /**
+     * 当前启用的短信渠道编码。
+     */
+    private String provider = SmsProviderType.SMS_CHINESE.getCode();
+    /**
+     * 是否记录第三方原始响应摘要。
+     */
+    private boolean logResponseEnabled = true;
     /**
      * 各短信场景的模板配置。
      */
     private Map<String, TemplateProperties> templates = createDefaultTemplates();
+
+    /**
+     * 创建默认短信模板映射。
+     */
+    private static Map<String, TemplateProperties> createDefaultTemplates() {
+        Map<String, TemplateProperties> templates = new LinkedHashMap<>();
+        templates.put(SmsSceneType.REGISTER.getCode(), createTemplate(
+                "登录/注册模板",
+                "100001",
+                "您的验证码为${code}。尊敬的客户，以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+        ));
+        templates.put(SmsSceneType.CHANGE_BOUND_PHONE.getCode(), createTemplate(
+                "修改绑定手机号模板",
+                "100002",
+                "尊敬的客户，您正在进行修改手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+        ));
+        templates.put(SmsSceneType.FORGOT_PASSWORD.getCode(), createTemplate(
+                "重置密码模板",
+                "100003",
+                "尊敬的客户，您正在进行重置密码操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+        ));
+        templates.put(SmsSceneType.BIND_PHONE.getCode(), createTemplate(
+                "绑定新手机号模板",
+                "100004",
+                "尊敬的客户，您正在进行绑定手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+        ));
+        templates.put(SmsSceneType.VERIFY_BIND_PHONE.getCode(), createTemplate(
+                "验证绑定手机号模板",
+                "100005",
+                "尊敬的客户，您正在验证绑定手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+        ));
+        return templates;
+    }
+
+    /**
+     * 创建短信模板默认配置。
+     */
+    private static TemplateProperties createTemplate(String description, String templateCode, String smsChineseContent) {
+        TemplateProperties template = new TemplateProperties();
+        template.setDescription(description);
+        template.setTemplateCode(templateCode);
+        template.setSmsChineseContent(smsChineseContent);
+        return template;
+    }
 
     /**
      * 短信通渠道配置。
@@ -154,49 +194,5 @@ public class SmsProperties {
          * 短信通渠道使用的短信正文模板。
          */
         private String smsChineseContent;
-    }
-
-    /**
-     * 创建默认短信模板映射。
-     */
-    private static Map<String, TemplateProperties> createDefaultTemplates() {
-        Map<String, TemplateProperties> templates = new LinkedHashMap<>();
-        templates.put(SmsSceneType.REGISTER.getCode(), createTemplate(
-                "登录/注册模板",
-                "100001",
-                "您的验证码为${code}。尊敬的客户，以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
-        ));
-        templates.put(SmsSceneType.CHANGE_BOUND_PHONE.getCode(), createTemplate(
-                "修改绑定手机号模板",
-                "100002",
-                "尊敬的客户，您正在进行修改手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
-        ));
-        templates.put(SmsSceneType.FORGOT_PASSWORD.getCode(), createTemplate(
-                "重置密码模板",
-                "100003",
-                "尊敬的客户，您正在进行重置密码操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
-        ));
-        templates.put(SmsSceneType.BIND_PHONE.getCode(), createTemplate(
-                "绑定新手机号模板",
-                "100004",
-                "尊敬的客户，您正在进行绑定手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
-        ));
-        templates.put(SmsSceneType.VERIFY_BIND_PHONE.getCode(), createTemplate(
-                "验证绑定手机号模板",
-                "100005",
-                "尊敬的客户，您正在验证绑定手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
-        ));
-        return templates;
-    }
-
-    /**
-     * 创建短信模板默认配置。
-     */
-    private static TemplateProperties createTemplate(String description, String templateCode, String smsChineseContent) {
-        TemplateProperties template = new TemplateProperties();
-        template.setDescription(description);
-        template.setTemplateCode(templateCode);
-        template.setSmsChineseContent(smsChineseContent);
-        return template;
     }
 }

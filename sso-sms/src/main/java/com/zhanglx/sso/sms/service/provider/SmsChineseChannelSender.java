@@ -96,9 +96,9 @@ public class SmsChineseChannelSender implements SmsChannelSender {
         }
     }
 
-/**
- * 解析短信通返回状态码。
- */
+    /**
+     * 解析短信通返回状态码。
+     */
     private int parseProviderCode(String responseBody) {
         if (!StringUtils.hasText(responseBody)) {
             return Integer.MIN_VALUE;

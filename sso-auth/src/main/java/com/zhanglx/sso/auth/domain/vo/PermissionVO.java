@@ -99,6 +99,9 @@ public class PermissionVO extends BaseVO {
     @Schema(description = "备注", name = "remark", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private String remark;
 
+    /**
+     * 状态。
+     */
     @Schema(description = "状态", name = "status", example = "", type = "Integer", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private EnableStatusEnum status;
 }

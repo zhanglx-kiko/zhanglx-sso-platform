@@ -36,9 +36,15 @@ public class UserRoleRelationshipMappingPO extends BasePO {
     @TableField(value = "role_id", jdbcType = JdbcType.BIGINT)
     private Long roleId;
 
+    /**
+     * 用户信息。
+     */
     @TableField(exist = false)
     private UserPO user;
 
+    /**
+     * 角色信息。
+     */
     @TableField(exist = false)
     private RolePO role;
 

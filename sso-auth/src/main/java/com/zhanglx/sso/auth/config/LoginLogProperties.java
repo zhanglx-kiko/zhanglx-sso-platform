@@ -7,10 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 登录日志配置。
  * 登录日志量级可控，但仍然必须异步化，避免高峰登录时把主链路绑死在 MySQL 上。
  */
-/**
- * 登录日志配置属性。
- */
-
 @Data
 @ConfigurationProperties(prefix = "sso.log.login")
 public class LoginLogProperties {

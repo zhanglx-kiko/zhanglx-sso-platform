@@ -17,10 +17,6 @@ import java.time.LocalDateTime;
 /**
  * 角色与权限项关系映射对象。
  */
-/**
- * 角色权限绑定请求对象。
- */
-
 @Data
 @SuperBuilder
 @NoArgsConstructor

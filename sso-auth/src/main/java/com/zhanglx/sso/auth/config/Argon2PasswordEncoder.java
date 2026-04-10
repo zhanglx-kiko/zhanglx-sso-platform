@@ -40,23 +40,56 @@ public class Argon2PasswordEncoder {
     private static final Pattern ARGON2_PARAM_PATTERN = Pattern.compile("m=(\\d+),t=(\\d+),p=(\\d+)");
 
     // 全局静态参数实例
+    /**
+     * 全局复用的 Argon2 计算实例。
+     */
     private Argon2Function argon2Function;
+
+    /**
+     * 当前节点加载后的全局 Argon2 参数快照。
+     */
     private Argon2Parameters globalParams;
 
     // CPU 密集型任务专用的受限平台线程池
+    /**
+     * 密码计算专用线程池。
+     */
     private ExecutorService cryptoExecutor;
 
     // 配置项（从配置中心或 application.yml 读取，确保集群一致）
+    /**
+     * Argon2 内存成本参数。
+     */
     @Value("${security.argon2.memory:65536}")
     private int memory;
+
+    /**
+     * Argon2 迭代次数。
+     */
     @Value("${security.argon2.iterations:3}")
     private int iterations;
+
+    /**
+     * Argon2 并行度参数。
+     */
     @Value("${security.argon2.parallelism:4}")
     private int parallelism;
+
+    /**
+     * Argon2 输出长度。
+     */
     @Value("${security.argon2.output-length:32}")
     private int outputLength;
+
+    /**
+     * Salt 长度。
+     */
     @Value("${security.argon2.salt-length:16}")
     private int saltLength;
+
+    /**
+     * 额外的 Pepper 配置。
+     */
     @Value("${security.argon2.pepper:}")
     private String pepper;
 

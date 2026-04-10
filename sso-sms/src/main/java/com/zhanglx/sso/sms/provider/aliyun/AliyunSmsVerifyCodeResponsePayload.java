@@ -38,11 +38,11 @@ public class AliyunSmsVerifyCodeResponsePayload {
                 .code(body == null ? null : body.getCode())
                 .success(body == null ? null : body.getSuccess())
                 .model(responseModel == null ? null : AliyunSmsVerifyCodeModel.builder()
-                        .verifyCode(responseModel.getVerifyCode())
-                        .requestId(responseModel.getRequestId())
-                        .outId(responseModel.getOutId())
-                        .bizId(responseModel.getBizId())
-                        .build())
+                                                      .verifyCode(responseModel.getVerifyCode())
+                                                      .requestId(responseModel.getRequestId())
+                                                      .outId(responseModel.getOutId())
+                                                      .bizId(responseModel.getBizId())
+                                                      .build())
                 .build();
     }
 

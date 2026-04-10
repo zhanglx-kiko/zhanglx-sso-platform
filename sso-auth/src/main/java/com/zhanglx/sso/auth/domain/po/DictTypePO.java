@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 字典类型持久化对象。
  */
@@ -22,15 +23,27 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_sys_dict_type", autoResultMap = true)
 public class DictTypePO extends BasePO {
 
+    /**
+     * 字典名称。
+     */
     @TableField(value = "dict_name", jdbcType = JdbcType.VARCHAR)
     private String dictName;
 
+    /**
+     * 字典类型。
+     */
     @TableField(value = "dict_type", jdbcType = JdbcType.VARCHAR)
     private String dictType;
 
+    /**
+     * 状态。
+     */
     @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
     private EnableStatusEnum status;
 
+    /**
+     * 备注。
+     */
     @TableField(value = "remark", jdbcType = JdbcType.VARCHAR)
     private String remark;
 }

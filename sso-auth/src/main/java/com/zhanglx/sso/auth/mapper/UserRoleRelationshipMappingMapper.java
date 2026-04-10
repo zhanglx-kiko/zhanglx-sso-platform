@@ -36,9 +36,15 @@ public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRole
     @Select("SELECT role_id FROM t_auth_user_role WHERE user_id = #{userId} AND del_flag = 0")
     List<Long> selRoleIdsByUserId(@Param("userId") Long userId);
 
+    /**
+     * 根据角色ID逻辑删除用户角色关联关系。
+     */
     @Update("UPDATE t_auth_user_role SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0")
     int deleteByRoleId(@Param("roleId") Long roleId);
 
+    /**
+     * 根据角色ID和用户ID列表逻辑删除指定用户角色关联关系。
+     */
     @Update("<script>" +
             "UPDATE t_auth_user_role SET del_flag = id WHERE role_id = #{roleId} AND del_flag = 0 AND user_id IN " +
             "<foreach item='userId' collection='userIds' open='(' separator=',' close=')'>" +
@@ -47,6 +53,9 @@ public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRole
             "</script>")
     int deleteByRoleIdAndUserIds(@Param("roleId") Long roleId, @Param("userIds") List<Long> userIds);
 
+    /**
+     * 根据角色ID列表批量逻辑删除用户角色关联关系。
+     */
     @Update("<script>" +
             "UPDATE t_auth_user_role SET del_flag = id WHERE role_id IN " +
             "<foreach item='roleId' collection='roleIds' open='(' separator=',' close=')'>" +
@@ -55,9 +64,15 @@ public interface UserRoleRelationshipMappingMapper extends IBaseMapperX<UserRole
             "</script>")
     int deleteByRoleIds(@Param("roleIds") List<Long> roleIds);
 
+    /**
+     * 根据用户ID逻辑删除用户角色关联关系。
+     */
     @Update("UPDATE t_auth_user_role SET del_flag = id WHERE user_id = #{userId} AND del_flag = 0")
     int deleteByUserId(@Param("userId") Long userId);
 
+    /**
+     * 根据用户ID列表批量逻辑删除用户角色关联关系。
+     */
     @Update("<script>" +
             "UPDATE t_auth_user_role SET del_flag = id WHERE user_id IN " +
             "<foreach item='userId' collection='userIds' open='(' separator=',' close=')'>" +

@@ -110,9 +110,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         stringRedisTemplate.delete(codeKey);
     }
 
-/**
- * 规范化输入参数。
- */
+    /**
+     * 规范化输入参数。
+     */
     private SmsVerificationCodeSendCommand normalizeSendCommand(SmsVerificationCodeSendCommand command) {
         if (command == null || command.getBusinessType() == null || command.getSceneType() == null) {
             throw BusinessException.internalError("technical.sms.request.invalid");
@@ -127,9 +127,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
                 .build();
     }
 
-/**
- * 规范化输入参数。
- */
+    /**
+     * 规范化输入参数。
+     */
     private SmsVerificationCodeVerifyCommand normalizeVerifyCommand(SmsVerificationCodeVerifyCommand command) {
         if (command == null || command.getBusinessType() == null || command.getSceneType() == null) {
             throw BusinessException.internalError("technical.sms.request.invalid");
@@ -144,9 +144,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
                 .build();
     }
 
-/**
- * 规范化手机号参数。
- */
+    /**
+     * 规范化手机号参数。
+     */
     private String normalizePhoneNumber(String phoneNumber) {
         if (!StringUtils.hasText(phoneNumber)) {
             throw new BusinessException("sms.verification.phone.cannot.be.blank");
@@ -159,9 +159,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         return normalizedPhoneNumber;
     }
 
-/**
- * 规范化验证码参数。
- */
+    /**
+     * 规范化验证码参数。
+     */
     private String normalizeVerificationCode(String verificationCode) {
         if (!StringUtils.hasText(verificationCode)) {
             throw new BusinessException("sms.verification.code.cannot.be.blank");
@@ -174,9 +174,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         return normalizedVerificationCode;
     }
 
-/**
- * 规范化业务主体标识。
- */
+    /**
+     * 规范化业务主体标识。
+     */
     private String normalizeSubjectKey(String subjectKey) {
         if (!StringUtils.hasText(subjectKey)) {
             return null;
@@ -184,9 +184,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         return subjectKey.trim();
     }
 
-/**
- * 规范化客户端 IP。
- */
+    /**
+     * 规范化客户端 IP。
+     */
     private String normalizeClientIp(String clientIp) {
         if (!StringUtils.hasText(clientIp)) {
             return null;
@@ -194,23 +194,23 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         return clientIp.trim();
     }
 
-/**
- * 构建缓存键。
- */
+    /**
+     * 构建缓存键。
+     */
     private String buildCacheKey(String prefix, SmsVerificationCodeSendCommand command) {
         return buildCacheKey(prefix, command.getBusinessType().getCode(), command.getSceneType().getCode(), command.getPhoneNumber(), command.getSubjectKey());
     }
 
-/**
- * 根据校验命令构建缓存键。
- */
+    /**
+     * 根据校验命令构建缓存键。
+     */
     private String buildCacheKey(String prefix, SmsVerificationCodeVerifyCommand command) {
         return buildCacheKey(prefix, command.getBusinessType().getCode(), command.getSceneType().getCode(), command.getPhoneNumber(), command.getSubjectKey());
     }
 
-/**
- * 构建缓存键。
- */
+    /**
+     * 构建缓存键。
+     */
     private String buildCacheKey(String prefix, String businessType, String sceneCode, String phoneNumber, String subjectKey) {
         StringBuilder builder = new StringBuilder(prefix)
                 .append(businessType)
@@ -223,16 +223,16 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         return builder.append(phoneNumber).toString();
     }
 
-/**
- * 构建手机号维度的限流键。
- */
+    /**
+     * 构建手机号维度的限流键。
+     */
     private String buildPhoneWindowKey(String phoneNumber) {
         return PHONE_WINDOW_CACHE_PREFIX + phoneNumber;
     }
 
-/**
- * 构建 IP 维度的限流键。
- */
+    /**
+     * 构建 IP 维度的限流键。
+     */
     private String buildIpDailyKey(String clientIp) {
         if (!StringUtils.hasText(clientIp)) {
             return null;
@@ -241,18 +241,18 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         return IP_DAILY_CACHE_PREFIX + currentDay + ":" + clientIp;
     }
 
-/**
- * 申请并校验互斥锁状态。
- */
+    /**
+     * 申请并校验互斥锁状态。
+     */
     private boolean acquireResendLock(String resendKey) {
         Boolean locked = stringRedisTemplate.opsForValue()
                 .setIfAbsent(resendKey, "1", properties.getResendIntervalSeconds(), TimeUnit.SECONDS);
         return Boolean.TRUE.equals(locked);
     }
 
-/**
- * 确保关键约束条件成立。
- */
+    /**
+     * 确保关键约束条件成立。
+     */
     private void ensurePhoneWindowLimit(String phoneNumber) {
         if (properties.getPhoneWindowSeconds() <= 0 || properties.getPhoneWindowMaxSends() <= 0) {
             return;
@@ -264,9 +264,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         }
     }
 
-/**
- * 确保关键约束条件成立。
- */
+    /**
+     * 确保关键约束条件成立。
+     */
     private void ensureIpDailyLimit(String clientIp) {
         if (!StringUtils.hasText(clientIp) || properties.getIpDailyMaxSends() <= 0) {
             return;
@@ -301,9 +301,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         decrementCounter(ipDailyKey);
     }
 
-/**
- * 读取当前计数值。
- */
+    /**
+     * 读取当前计数值。
+     */
     private Long readCounter(String key) {
         if (!StringUtils.hasText(key)) {
             return null;
@@ -323,9 +323,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         }
     }
 
-/**
- * 递增计数并刷新有效期。
- */
+    /**
+     * 递增计数并刷新有效期。
+     */
     private void incrementCounter(String key, long expireSeconds) {
         if (!StringUtils.hasText(key) || expireSeconds <= 0) {
             return;
@@ -342,9 +342,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         }
     }
 
-/**
- * 在失败场景下回退计数。
- */
+    /**
+     * 在失败场景下回退计数。
+     */
     private void decrementCounter(String key) {
         if (!StringUtils.hasText(key)) {
             return;
@@ -356,26 +356,26 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
         }
     }
 
-/**
- * 生成内部处理结果。
- */
+    /**
+     * 生成内部处理结果。
+     */
     private String generateVerificationCode() {
         int code = ThreadLocalRandom.current().nextInt(100000, 1000000);
         return String.format("%0" + FIXED_CODE_LENGTH + "d", code);
     }
 
-/**
- * 计算当天剩余的有效秒数。
- */
+    /**
+     * 计算当天剩余的有效秒数。
+     */
     private long resolveCurrentDayExpireSeconds() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
         ZonedDateTime nextDay = now.toLocalDate().plusDays(1).atStartOfDay(now.getZone());
         return Math.max(1L, Duration.between(now, nextDay).getSeconds());
     }
 
-/**
- * 构建外部流水号。
- */
+    /**
+     * 构建外部流水号。
+     */
     private String buildOutId(SmsVerificationCodeSendCommand command) {
         String subject = StringUtils.hasText(command.getSubjectKey()) ? command.getSubjectKey() : "anonymous";
         return command.getBusinessType().getCode()
@@ -384,9 +384,9 @@ public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeMan
                 + "-" + System.currentTimeMillis();
     }
 
-/**
- * 组装发送结果对象。
- */
+    /**
+     * 组装发送结果对象。
+     */
     private SmsVerificationCodeSendResult buildSendResult(String phoneNumber) {
         return SmsVerificationCodeSendResult.builder()
                 .maskedPhoneNumber(SmsMaskingUtils.maskPhone(phoneNumber))

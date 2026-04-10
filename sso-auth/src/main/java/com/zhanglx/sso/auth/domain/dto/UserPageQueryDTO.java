@@ -27,9 +27,15 @@ import lombok.experimental.SuperBuilder;
 @Schema(name = "UserPageQueryDTO", description = "用户查询对象")
 public class UserPageQueryDTO extends PageQuery {
 
+    /**
+     * 用户名。
+     */
     @Schema(description = "用户名", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private String username;
 
+    /**
+     * 部门id。
+     */
     @JsonSerialize(using = ToStringSerializer.class)
     @JsonDeserialize(using = StringToLongDeserializer.class)
     @Schema(description = "部门id", name = "deptId", example = "", type = "String", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)

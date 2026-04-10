@@ -6,22 +6,27 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 /**
  * 会员绑定手机号请求对象。
  */
-
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(name = "MemberBindPhoneDTO", description = "会员绑定手机号参数")
 public class MemberBindPhoneDTO {
 
+    /**
+     * 手机号。
+     */
     @NotBlank(message = "{member.phone.cannot.be.blank}")
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "{member.phone.invalid}")
     @Schema(description = "手机号", requiredMode = Schema.RequiredMode.REQUIRED, example = "13800138000")
     private String phoneNumber;
 
+    /**
+     * 6 位短信验证码。
+     */
     @NotBlank(message = "{member.verification.code.cannot.be.blank}")
     @Pattern(regexp = "^\\d{6}$", message = "{member.verification.code.length.invalid}")
     @Schema(description = "6 位短信验证码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123456")

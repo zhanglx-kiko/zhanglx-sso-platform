@@ -18,20 +18,22 @@ import java.io.Serializable;
  * @ClassName: ForgotPasswordDTO
  * @Description: 忘记密码请求参数
  */
-/**
- * 忘记密码请求参数对象。
- */
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(name = "ForgotPasswordDTO", description = "忘记密码请求参数")
 public class ForgotPasswordDTO implements Serializable {
 
+    /**
+     * 账号。
+     */
     @NotBlank(message = "账号不能为空")
     @Schema(description = "账号", name = "username", example = "", type = "String", requiredMode = Schema.RequiredMode.REQUIRED)
     private String username;
 
+    /**
+     * 新密码。
+     */
     @NotBlank(message = "新密码不能为空")
     @Size(min = 6, max = 32, message = "{user.password.length.invalid}")
     @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d).+$", message = "{user.password.pattern.invalid}")
@@ -39,6 +41,9 @@ public class ForgotPasswordDTO implements Serializable {
     @XssPolicy(XssPolicyMode.NONE)
     private String newPassword;
 
+    /**
+     * 6 位短信验证码。
+     */
     @NotBlank(message = "验证码不能为空")
     @Pattern(regexp = "^\\d{6}$", message = "{sms.verification.code.length.invalid}")
     @Schema(description = "6 位短信验证码", name = "verificationCode", example = "123456", type = "String", requiredMode = Schema.RequiredMode.REQUIRED)

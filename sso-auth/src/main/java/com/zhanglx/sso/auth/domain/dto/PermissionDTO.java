@@ -108,6 +108,9 @@ public class PermissionDTO extends BaseDTO implements TreeNode<PermissionDTO, Lo
     @Schema(description = "子权限项", name = "children", type = "List<PermissionDTO>", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_ONLY)
     private List<PermissionDTO> children = new ArrayList<>();
 
+    /**
+     * 状态。
+     */
     @Schema(description = "状态", name = "status", example = "1", type = "Integer", requiredMode = Schema.RequiredMode.NOT_REQUIRED, accessMode = Schema.AccessMode.READ_WRITE)
     private EnableStatusEnum status;
 }

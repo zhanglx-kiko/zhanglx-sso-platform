@@ -115,9 +115,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         }
     }
 
-/**
- * 获取渠道客户端实例。
- */
+    /**
+     * 获取渠道客户端实例。
+     */
     private AsyncClient getClient() {
         if (client != null) {
             return client;
@@ -144,9 +144,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         return client;
     }
 
-/**
- * 判断当前条件是否成立。
- */
+    /**
+     * 判断当前条件是否成立。
+     */
     private boolean isSuccess(AliyunSmsVerifyCodeResponsePayload payload) {
         if (payload == null) {
             return false;
@@ -159,9 +159,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         return httpOk && successFlag && codeOk && messageOk;
     }
 
-/**
- * 构建短信模板参数 JSON。
- */
+    /**
+     * 构建短信模板参数 JSON。
+     */
     private String buildTemplateParamJson(SmsSendRequest request) {
         Map<String, String> templateParams = request.getTemplateParams();
         if (templateParams == null || templateParams.isEmpty()) {
@@ -184,9 +184,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         }
     }
 
-/**
- * 整理第三方原始响应摘要。
- */
+    /**
+     * 整理第三方原始响应摘要。
+     */
     private String buildRawSummary(AliyunSmsVerifyCodeResponsePayload payload) {
         if (payload == null) {
             return null;
@@ -202,9 +202,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
                 + ", outId=" + (payload.getModel() == null ? null : payload.getModel().getOutId());
     }
 
-/**
- * 提炼失败原因，便于日志和异常输出。
- */
+    /**
+     * 提炼失败原因，便于日志和异常输出。
+     */
     private String resolveFailureReason(AliyunSmsVerifyCodeResponsePayload payload) {
         if (payload == null) {
             return "阿里云短信返回为空";
@@ -215,9 +215,9 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         return payload.getMessage();
     }
 
-/**
- * 记录内部校验或异常信息。
- */
+    /**
+     * 记录内部校验或异常信息。
+     */
     private void logFixedConfigMismatch(SmsProperties.AliyunProperties providerProperties) {
         if (!FIXED_SIGN_NAME.equals(providerProperties.getSignName())) {
             log.warn("阿里云短信 signName 已固定为 {}，当前配置值 {} 不生效", FIXED_SIGN_NAME, providerProperties.getSignName());

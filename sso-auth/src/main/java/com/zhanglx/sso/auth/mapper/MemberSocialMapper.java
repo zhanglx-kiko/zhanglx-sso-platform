@@ -9,6 +9,9 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface MemberSocialMapper extends IBaseMapperX<MemberSocialPO> {
 
+    /**
+     * 根据会员ID逻辑删除第三方账号关联数据。
+     */
     @Delete("DELETE FROM t_member_social WHERE member_id = #{memberId}")
     int deleteByMemberId(@Param("memberId") Long memberId);
 }

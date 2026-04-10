@@ -9,6 +9,9 @@ import org.apache.ibatis.annotations.Update;
 @Mapper
 public interface SysUserSocialMapper extends IBaseMapperX<SysUserSocialPO> {
 
+    /**
+     * 根据用户ID逻辑删除第三方账号关联数据。
+     */
     @Update("UPDATE t_sys_user_social SET del_flag = id WHERE user_id = #{userId} AND del_flag = 0")
     int deleteByUserId(@Param("userId") Long userId);
 }

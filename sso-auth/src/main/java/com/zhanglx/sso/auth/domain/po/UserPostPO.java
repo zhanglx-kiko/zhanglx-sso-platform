@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+
 /**
  * 用户岗位关系持久化对象。
  */
@@ -20,9 +21,15 @@ import org.apache.ibatis.type.JdbcType;
 @TableName(value = "t_auth_user_post", autoResultMap = true)
 public class UserPostPO extends BasePO {
 
+    /**
+     * 用户ID。
+     */
     @TableField(value = "user_id", jdbcType = JdbcType.BIGINT)
     private Long userId;
 
+    /**
+     * 岗位ID。
+     */
     @TableField(value = "post_id", jdbcType = JdbcType.BIGINT)
     private Long postId;
 }
