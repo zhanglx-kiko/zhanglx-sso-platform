@@ -11,7 +11,6 @@ import com.zhanglx.sso.sms.service.SmsVerificationCodeManager;
 import com.zhanglx.sso.sms.support.SmsMaskingUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -30,7 +29,6 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnBean(StringRedisTemplate.class)
 public class DefaultSmsVerificationCodeManager implements SmsVerificationCodeManager {
 
     private static final String CODE_CACHE_PREFIX = "sso:sms:verification:code:";

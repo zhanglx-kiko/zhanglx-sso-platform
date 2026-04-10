@@ -1,8 +1,11 @@
 package com.zhanglx.sso.web.handler;
 
+import cn.dev33.satoken.exception.DisableServiceException;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.exception.SaTokenException;
+import cn.dev33.satoken.exception.SameTokenInvalidException;
 import com.zhanglx.sso.common.result.Result;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.web.utils.I18nUtils;
@@ -29,14 +32,15 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.stream.Collectors;
 
 /**
- * GlobalException处理器。
+ * 全局异常处理器。
  */
 @Slf4j
 @RequiredArgsConstructor
 @RestControllerAdvice(basePackages = "com.zhanglx")
 public class GlobalExceptionHandler {
+
     /**
-     * i18nUtils。
+     * 国际化工具。
      */
     private final I18nUtils i18nUtils;
 
@@ -53,19 +57,42 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotLoginException.class)
     public Result<Void> handleNotLoginException(NotLoginException e) {
-        log.warn("未登录访问: {}", e.getMessage());
-        return Result.error(401, resolveMessage("login.required"));
+        log.warn("未登录访问，type={}, loginType={}, message={}", e.getType(), e.getLoginType(), e.getMessage(), e);
+        return Result.error(401, resolveNotLoginMessage(e));
+    }
+
+    @ExceptionHandler(DisableServiceException.class)
+    public Result<Void> handleDisableServiceException(DisableServiceException e) {
+        log.warn("账号或令牌已被禁用，loginType={}, loginId={}, service={}, message={}",
+                e.getLoginType(),
+                e.getLoginId(),
+                e.getService(),
+                e.getMessage(),
+                e);
+        return Result.error(401, "账号已被禁用，请联系管理员");
+    }
+
+    @ExceptionHandler(SameTokenInvalidException.class)
+    public Result<Void> handleSameTokenInvalidException(SameTokenInvalidException e) {
+        log.warn("同端互斥令牌校验失败: {}", e.getMessage(), e);
+        return Result.error(401, "登录状态校验失败，请重新登录");
+    }
+
+    @ExceptionHandler(SaTokenException.class)
+    public Result<Void> handleSaTokenException(SaTokenException e) {
+        log.warn("Sa-Token 异常: {}", e.getMessage(), e);
+        return Result.error(401, "登录状态已失效，请重新登录");
     }
 
     @ExceptionHandler(NotPermissionException.class)
     public Result<Void> handleNotPermissionException(NotPermissionException e) {
-        log.warn("无权限访问: {}", e.getPermission());
+        log.warn("无权限访问，permission={}", e.getPermission(), e);
         return Result.error(403, resolveMessage("permission.denied"));
     }
 
     @ExceptionHandler(NotRoleException.class)
     public Result<Void> handleNotRoleException(NotRoleException e) {
-        log.warn("角色不足: {}", e.getRole());
+        log.warn("角色不足，role={}", e.getRole(), e);
         return Result.error(403, resolveMessage("permission.denied"));
     }
 
@@ -107,7 +134,7 @@ public class GlobalExceptionHandler {
             return handleBusinessException(businessException);
         }
 
-        log.warn("请求体解析失败: {}", e.getMessage());
+        log.warn("请求体解析失败: {}", e.getMessage(), e);
         return Result.error(400, resolveMessage("parameter.error"));
     }
 
@@ -116,42 +143,42 @@ public class GlobalExceptionHandler {
     public Result<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         String name = e.getName() == null ? "parameter" : e.getName();
         String value = e.getValue() == null ? "null" : String.valueOf(e.getValue());
-        log.warn("参数类型不匹配: {}={}", name, value);
+        log.warn("参数类型不匹配: {}={}", name, value, e);
         return Result.error(400, resolveMessage("parameter.error") + ": 参数 [" + name + "] 值 [" + value + "] 类型不正确");
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
-        log.warn("缺少请求参数: {}", e.getParameterName());
+        log.warn("缺少请求参数: {}", e.getParameterName(), e);
         return Result.error(400, resolveMessage("parameter.error") + ": 缺少参数 [" + e.getParameterName() + "]");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        log.warn("上传文件过大: {}", e.getMessage());
+        log.warn("上传文件过大: {}", e.getMessage(), e);
         return Result.error(400, "上传文件大小超出限制");
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Result<Void> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        log.warn("接口不存在: {}", e.getRequestURL());
+        log.warn("接口不存在: {}", e.getRequestURL(), e);
         return Result.error(404, resolveMessage("business.resource.not.found"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Result<Void> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.warn("资源不存在: {}", e.getResourcePath());
+        log.warn("资源不存在: {}", e.getResourcePath(), e);
         return Result.error(404, resolveMessage("business.resource.not.found"));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public Result<Void> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
-        log.warn("请求方法不支持: {}", e.getMethod());
+        log.warn("请求方法不支持: {}", e.getMethod(), e);
         return Result.error(405, resolveMessage("method.not.allowed") + ": " + e.getMethod());
     }
 
@@ -163,7 +190,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 解析message。
+     * 解析通用消息，优先走国际化，取不到时原样返回。
      */
     private String resolveMessage(String messageKeyOrMessage) {
         String resolved = i18nUtils.getMessage(messageKeyOrMessage);
@@ -171,7 +198,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 解析businessMessage。
+     * 解析业务异常文案，确保返回给前端的是稳定消息而不是调试堆栈。
      */
     private String resolveBusinessMessage(BusinessException exception) {
         String resolved = i18nUtils.getMessage(exception.getMessageKey(), exception.getArgs());
@@ -179,7 +206,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 拆解businessException。
+     * 解析未登录文案，避免把底层 token 细节直接暴露给前端。
+     */
+    private String resolveNotLoginMessage(NotLoginException exception) {
+        if (NotLoginException.NOT_TOKEN.equals(exception.getType())) {
+            return resolveMessage("login.required");
+        }
+        return "登录状态已失效，请重新登录";
+    }
+
+    /**
+     * 从包装异常中拆出业务异常，便于沿用既有业务码和业务文案。
      */
     private BusinessException unwrapBusinessException(Throwable throwable) {
         Throwable current = throwable;

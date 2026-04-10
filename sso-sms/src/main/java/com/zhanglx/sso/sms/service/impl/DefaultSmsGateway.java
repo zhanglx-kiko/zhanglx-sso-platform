@@ -110,6 +110,7 @@ public class DefaultSmsGateway implements SmsGateway {
                     result.getOutId(),
                     result.getFailureReason());
         }
+
         throw SmsBusinessExceptionTranslator.translate(result);
     }
 }

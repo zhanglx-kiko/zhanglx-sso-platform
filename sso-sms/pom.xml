@@ -48,24 +48,18 @@
             <groupId>com.smschinese.local</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../短信/commons-logging-1.1.1.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>com.smschinese.local</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../短信/commons-httpclient-3.1.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>com.smschinese.local</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../短信/commons-codec-1.4.jar</systemPath>
         </dependency>
 
         <dependency>

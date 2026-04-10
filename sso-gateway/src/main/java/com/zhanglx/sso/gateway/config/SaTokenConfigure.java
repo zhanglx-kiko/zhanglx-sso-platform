@@ -1,10 +1,17 @@
 package com.zhanglx.sso.gateway.config;
 
+import cn.dev33.satoken.exception.DisableServiceException;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
+import cn.dev33.satoken.exception.SaTokenException;
+import cn.dev33.satoken.exception.SameTokenInvalidException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,21 +19,26 @@ import org.springframework.context.annotation.Configuration;
  * 作者：Zhang L X
  * 创建时间：2026/2/10 20:22
  * 类名：SaTokenConfigure
- * 说明：网关全局鉴权配置
+ * 说明：网关全局鉴权配置。
  */
+@Slf4j
 @Configuration
 public class SaTokenConfigure {
 
+    /**
+     * 会员端登录逻辑。
+     */
     private static final StpLogic MEMBER_STP_LOGIC = new StpLogic("member");
 
     @Bean
     public SaReactorFilter getSaReactorFilter() {
         return new SaReactorFilter()
-                // 拦截地址
+                // 拦截全部请求，再按白名单放行公共接口。
                 .addInclude("/**")
-                // 开放地址 (登录接口、静态资源等不需要鉴权)
+                // 开放地址：登录、忘记密码、会员注册、接口文档等无需鉴权。
                 .addExclude("/favicon.ico",
                         "/apis/v1/auth/s/login",
+                        "/apis/v1/auth/s/forgot-password/verification-code/send",
                         "/apis/v1/auth/s/forgot-password",
                         "/apis/v1/auth/m/login",
                         "/apis/v1/auth/m/register",
@@ -40,20 +52,73 @@ public class SaTokenConfigure {
                         "/swagger-ui/**",
                         "/webjars/**",
                         "/doc.html")
-                // 鉴权方法：每次请求都会执行
+                // 鉴权逻辑：会员端走 member 体系，其余业务走系统端登录态。
                 .setAuth(obj -> {
-                    // 登录校验 -- 拦截所有路由，并排除 /auth/doLogin 用于开放登录
                     SaRouter.match("/apis/v1/auth/m/**", r -> MEMBER_STP_LOGIC.checkLogin());
                     SaRouter.match("/apis/v1/user/m/**", r -> MEMBER_STP_LOGIC.checkLogin());
                     SaRouter.match("/**")
                             .notMatch("/apis/v1/auth/m/**", "/apis/v1/user/m/**")
                             .check(r -> StpUtil.checkLogin());
                 })
-                // 异常处理方法：每次 setAuth 函数出现异常时进入
-                .setError(e -> {
-                    // 返回 JSON 格式的错误信息
-                    return SaResult.error(e.getMessage());
-                });
+                // 统一把 Sa-Token 异常转成稳定结果，并把关键细节打进日志。
+                .setError(this::buildAuthErrorResult);
+    }
+
+    /**
+     * 统一网关鉴权异常返回，同时补全控制台日志，便于联调和排障。
+     */
+    private SaResult buildAuthErrorResult(Throwable throwable) {
+        if (throwable instanceof NotLoginException exception) {
+            log.warn("网关未登录或会话已失效，type={}, loginType={}, message={}",
+                    exception.getType(),
+                    exception.getLoginType(),
+                    exception.getMessage(),
+                    exception);
+            return SaResult.code(SaResult.CODE_NOT_LOGIN).setMsg(resolveNotLoginMessage(exception));
+        }
+
+        if (throwable instanceof DisableServiceException exception) {
+            log.warn("网关账号或令牌已被禁用，loginType={}, loginId={}, service={}, message={}",
+                    exception.getLoginType(),
+                    exception.getLoginId(),
+                    exception.getService(),
+                    exception.getMessage(),
+                    exception);
+            return SaResult.code(SaResult.CODE_NOT_LOGIN).setMsg("账号已被禁用，请联系管理员");
+        }
+
+        if (throwable instanceof NotPermissionException exception) {
+            log.warn("网关权限校验失败，permission={}", exception.getPermission(), exception);
+            return SaResult.code(SaResult.CODE_NOT_PERMISSION).setMsg("没有访问权限");
+        }
+
+        if (throwable instanceof NotRoleException exception) {
+            log.warn("网关角色校验失败，role={}", exception.getRole(), exception);
+            return SaResult.code(SaResult.CODE_NOT_PERMISSION).setMsg("没有访问权限");
+        }
+
+        if (throwable instanceof SameTokenInvalidException exception) {
+            log.warn("网关同端互斥令牌校验失败: {}", exception.getMessage(), exception);
+            return SaResult.code(SaResult.CODE_NOT_LOGIN).setMsg("登录状态校验失败，请重新登录");
+        }
+
+        if (throwable instanceof SaTokenException exception) {
+            log.warn("网关 Sa-Token 异常: {}", exception.getMessage(), exception);
+            return SaResult.code(SaResult.CODE_NOT_LOGIN).setMsg("登录状态已失效，请重新登录");
+        }
+
+        log.error("网关鉴权发生未知异常", throwable);
+        return SaResult.error("系统繁忙，请稍后再试");
+    }
+
+    /**
+     * 统一整理未登录场景返回文案，避免把原始 token 细节直接暴露给前端。
+     */
+    private String resolveNotLoginMessage(NotLoginException exception) {
+        if (NotLoginException.NOT_TOKEN.equals(exception.getType())) {
+            return "未登录，请先登录";
+        }
+        return "登录状态已失效，请重新登录";
     }
 
 }

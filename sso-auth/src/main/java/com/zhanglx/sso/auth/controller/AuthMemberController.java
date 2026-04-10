@@ -1,7 +1,11 @@
 package com.zhanglx.sso.auth.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import com.zhanglx.sso.auth.domain.dto.*;
+import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberVerificationCodeSendDTO;
+import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.service.MemberAuthService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
@@ -14,25 +18,34 @@ import com.zhanglx.sso.web.annotation.RequestRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 认证会员控制器。
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "C 端认证接口")
 @RequestMapping("/apis/v1/auth/m")
 public class AuthMemberController {
+
     /**
      * 会员认证服务。
      */
     private final MemberAuthService memberAuthService;
+
     /**
      * 微信认证服务。
      */
     private final WechatAuthService wechatAuthService;
+
     /**
      * 登录审计支持组件。
      */
@@ -84,8 +97,7 @@ public class AuthMemberController {
     @PostMapping("/verification-code/send")
     @RequestRateLimit(limit = 3, windowSeconds = 300, dimensions = {RateLimitDimension.IP, RateLimitDimension.URI}, customKey = "#sendDTO.phoneNumber + ':' + #sendDTO.scene")
     public void sendVerificationCode(@RequestBody @Validated MemberVerificationCodeSendDTO sendDTO) {
-        Long memberId = StpMemberUtil.isLogin() ? StpMemberUtil.getLoginIdAsLong() : null;
-        memberAuthService.sendVerificationCode(sendDTO, memberId);
+        memberAuthService.sendVerificationCode(sendDTO, resolveCurrentMemberIdSafely());
     }
 
     @Operation(summary = "会员微信登录")
@@ -149,5 +161,17 @@ public class AuthMemberController {
     @OperationLog(module = "会员认证", feature = "密码", operationType = "RESET", operationName = "会员忘记密码", operationDesc = "会员通过忘记密码流程重置密码", includeRequestBody = false, includeResponseBody = false)
     public void forgotPassword(@RequestBody @Validated MemberForgotPasswordDTO forgotPasswordDTO) {
         memberAuthService.forgotPassword(forgotPasswordDTO);
+    }
+
+    /**
+     * 公开接口可能会携带失效或冻结的会员 token，这里需要按匿名请求降级处理。
+     */
+    private Long resolveCurrentMemberIdSafely() {
+        try {
+            return StpMemberUtil.isLogin() ? StpMemberUtil.getLoginIdAsLong() : null;
+        } catch (Exception e) {
+            log.debug("会员公开接口忽略无效登录态: {}", e.getMessage(), e);
+            return null;
+        }
     }
 }
