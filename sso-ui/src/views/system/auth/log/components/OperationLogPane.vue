@@ -1,10 +1,6 @@
 ﻿<template>
   <div class="page-shell">
-    <AuthSearchSection
-      title="操作日志检索"
-      description="默认按最近 7 天、最新优先查询；超过普通分页窗口后会自动切换到深分页模式。"
-      :model="queryForm"
-    >
+    <AuthSearchSection :model="queryForm">
       <el-form-item label="应用编码">
         <el-select v-model="queryForm.appCode" clearable placeholder="全部应用">
           <el-option
@@ -90,10 +86,7 @@
       class="panel panel--table"
     >
       <div class="panel-header">
-        <div>
-          <h2 class="panel-title">操作日志列表</h2>
-          <p class="panel-subtitle">深分页模式下仅支持连续上一页、下一页浏览，链路追踪值支持一键复制。</p>
-        </div>
+        <h2 class="panel-title">操作日志列表</h2>
       </div>
 
       <el-alert

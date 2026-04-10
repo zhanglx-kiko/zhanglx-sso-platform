@@ -1,10 +1,6 @@
 ﻿<template>
   <div class="page-shell">
-    <AuthSearchSection
-      title="登录日志检索"
-      description="默认查询最近 7 天，支持按用户、事件、结果、IP 和时间范围筛选。"
-      :model="queryForm"
-    >
+    <AuthSearchSection :model="queryForm">
       <el-form-item label="用户标识">
         <el-input v-model="queryForm.userId" placeholder="请输入用户标识" clearable @keyup.enter="handleSearch" />
       </el-form-item>
@@ -55,10 +51,7 @@
       class="panel panel--table"
     >
       <div class="panel-header">
-        <div>
-          <h2 class="panel-title">登录日志列表</h2>
-          <p class="panel-subtitle">支持复制链路追踪值和请求追踪值，失败原因只在详情中完整展示。</p>
-        </div>
+        <h2 class="panel-title">登录日志列表</h2>
       </div>
 
       <el-alert
@@ -89,7 +82,6 @@
         </el-table-column>
         <el-table-column prop="loginIp" label="登录 IP" min-width="136" />
         <el-table-column prop="deviceType" label="设备类型" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="clientType" label="客户端" min-width="120" show-overflow-tooltip />
         <el-table-column prop="appCode" label="应用编码" min-width="110" show-overflow-tooltip />
         <el-table-column prop="loginTime" label="登录时间" min-width="168" />
         <el-table-column prop="logoutTime" label="登出时间" min-width="168" />

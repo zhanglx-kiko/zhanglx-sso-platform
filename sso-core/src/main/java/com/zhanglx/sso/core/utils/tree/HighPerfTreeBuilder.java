@@ -42,7 +42,7 @@ public class HighPerfTreeBuilder {
 
         // 2. 建立索引 (利用 JDK 增强的 SequencedMap 保持顺序可预见性)
         Map<Long, T> nodeMap = rawData.stream()
-                .collect(Collectors.toMap(TreeNode::getId, node -> node, (k1, k2) -> k1, LinkedHashMap::new));
+                .collect(Collectors.toMap(TreeNode::treeNodeId, node -> node, (k1, k2) -> k1, LinkedHashMap::new));
 
         // 3. 计算有效节点 ID 集合 (构建时过滤核心)
         Set<Long> validIds = strategy.calculateValidNodeIds(rawData, nodeMap, userPermissions);
@@ -50,11 +50,11 @@ public class HighPerfTreeBuilder {
         // 4. O(N) 一次遍历组装树 + 容错处理
         List<T> roots = new ArrayList<>();
         for (T node : rawData) {
-            if (!validIds.contains(node.getId())) {
+            if (!validIds.contains(node.treeNodeId())) {
                 continue; // 实时剔除无权限节点
             }
 
-            Long parentId = node.getParentId();
+            Long parentId = node.treeParentId();
             // 优化：利用 Java 自动拆箱特性，前提是有 != null 护航，性能最高且避免 Long 缓存陷阱
             boolean isRoot = (parentId == null || parentId == 0L);
 
@@ -62,14 +62,14 @@ public class HighPerfTreeBuilder {
                 roots.add(node);
             } else {
                 T parent = nodeMap.get(parentId);
-                if (parent != null && validIds.contains(parent.getId())) {
-                    if (parent.getChildren() == null) {
-                        parent.setChildren(new ArrayList<>());
+                if (parent != null && validIds.contains(parent.treeNodeId())) {
+                    if (parent.treeChildren() == null) {
+                        parent.replaceTreeChildren(new ArrayList<>());
                     }
-                    parent.getChildren().add(node);
+                    parent.treeChildren().add(node);
                 } else {
                     // 容错降级：父节点缺失或无权限，自动将当前节点提升为临时根节点
-                    log.warn("Node ID [{}] promoted to root due to missing/unauthorized parent ID [{}]", node.getId(), parentId);
+                    log.warn("Node ID [{}] promoted to root due to missing/unauthorized parent ID [{}]", node.treeNodeId(), parentId);
                     meterRegistry.counter("tree.build.orphan.promoted").increment();
                     roots.add(node);
                 }
@@ -97,17 +97,17 @@ public class HighPerfTreeBuilder {
 
     private <T extends TreeNode<T, Long>> void dfsCheckCycle(T node, Set<Long> onStack) {
         // 当前节点入栈，标记为正在访问
-        onStack.add(node.getId());
+        onStack.add(node.treeNodeId());
 
-        List<T> children = node.getChildren();
+        List<T> children = node.treeChildren();
         if (children != null) {
             Iterator<T> iterator = children.iterator();
             while (iterator.hasNext()) {
                 T child = iterator.next();
 
                 // 如果子节点已经在当前的访问栈中，说明形成了闭环！
-                if (onStack.contains(child.getId())) {
-                    log.error("Breaking loop: Node {} -> Node {}", node.getId(), child.getId());
+                if (onStack.contains(child.treeNodeId())) {
+                    log.error("Breaking loop: Node {} -> Node {}", node.treeNodeId(), child.treeNodeId());
                     iterator.remove(); // 斩断循环引用
                     meterRegistry.counter("tree.build.cycle.detected").increment();
                 } else {
@@ -118,7 +118,7 @@ public class HighPerfTreeBuilder {
         }
 
         // 【灵魂代码】：回溯！当前节点及其子孙全部探测完毕，出栈
-        onStack.remove(node.getId());
+        onStack.remove(node.treeNodeId());
     }
 
 }

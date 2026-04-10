@@ -1,17 +1,10 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="在一个页面内维护字典类型和字典数据，便于统一查看类型编码、值域和启停状态。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="reloadAll">刷新数据</el-button>
-        <el-button type="primary" @click="openTypeDialog('create')">新增字典类型</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection title="类型筛选" description="先定位字典类型，再在右侧维护该类型下的字典数据。" :model="typeQuery">
+    <AuthSearchSection :model="typeQuery">
+        <template #toolbar>
+          <el-button plain @click="reloadAll">刷新数据</el-button>
+          <el-button type="primary" @click="openTypeDialog('create')">新增字典类型</el-button>
+        </template>
         <el-form-item label="关键字">
           <el-input v-model="typeQuery.searchKey" placeholder="名称 / 类型编码" clearable @keyup.enter="handleTypeSearch" />
         </el-form-item>
@@ -40,9 +33,7 @@
         <div class="panel-header">
           <div>
             <h2 class="panel-title">字典类型</h2>
-            <p class="panel-subtitle">点击某一行即可切换右侧的数据项列表。</p>
           </div>
-          <el-button type="primary" link @click="openTypeDialog('create')">新增类型</el-button>
         </div>
 
         <el-table
@@ -99,11 +90,6 @@
         <div class="panel-header">
           <div>
             <h2 class="panel-title">字典数据</h2>
-            <p class="panel-subtitle">
-              当前类型：
-              <strong>{{ selectedType?.dictName || '未选择' }}</strong>
-              <span v-if="selectedType">（{{ selectedType.dictType }}）</span>
-            </p>
           </div>
           <el-button type="primary" :disabled="!selectedType" @click="openDataDialog('create')">新增数据</el-button>
         </div>
@@ -266,10 +252,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchForm from '@/views/system/auth/components/AuthSearchForm.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
@@ -278,6 +262,7 @@ import {
   createDictTypeApi,
   deleteDictDataApi,
   deleteDictTypeApi,
+  getDictDataByTypeApi,
   getDictDataDetailApi,
   getDictDataPageApi,
   getDictTypeDetailApi,
@@ -311,7 +296,6 @@ interface DictDataFormModel {
   remark: string
 }
 
-const route = useRoute()
 const typeFormRef = ref<FormInstance>()
 const dataFormRef = ref<FormInstance>()
 
@@ -385,14 +369,20 @@ const dataRules: FormRules<DictDataFormModel> = {
   dictType: [{ required: true, message: '请选择字典类型', trigger: 'blur' }],
 }
 
-const pageTitle = computed(() => String(route.meta.title || '字典管理'))
+const getNextSortNum = <T extends { dictSort?: number }>(rows: T[]): number => {
+  const currentMax = rows.reduce((max, item) => Math.max(max, Number(item.dictSort ?? 0)), 0)
+  return currentMax + 1
+}
 
-const headerStats = computed(() => [
-  { label: '类型总量', value: typeTotal.value, hint: '按类型分页总数统计' },
-  { label: '当前数据量', value: dataTotal.value, hint: selectedType.value ? `当前类型：${selectedType.value.dictType}` : '请选择类型' },
-  { label: '启用类型', value: typeList.value.filter((item) => item.status === 1).length, hint: '当前页可用类型' },
-  { label: '启用数据', value: dataList.value.filter((item) => item.status === 1).length, hint: '当前类型下可用数据' },
-])
+const resolveNextDictDataSortNum = async (dictType: string, fallbackSortNum: number): Promise<number> => {
+  try {
+    const rows = await getDictDataByTypeApi(dictType)
+    return getNextSortNum(rows)
+  } catch (error) {
+    showGlobalError(error, { fallbackMessage: '加载字典排序失败' })
+    return fallbackSortNum
+  }
+}
 
 const resetTypeDialog = () => {
   typeDialog.submitting = false
@@ -608,6 +598,12 @@ const openDataDialog = async (mode: DialogMode, row?: DictDataDTO) => {
   dataDialog.mode = mode
   dataDialog.visible = true
   dataForm.dictType = selectedType.value.dictType
+
+  if (mode === 'create') {
+    dataForm.dictSort = getNextSortNum(dataList.value)
+    dataForm.dictSort = await resolveNextDictDataSortNum(dataForm.dictType, dataForm.dictSort)
+    return
+  }
 
   if (mode === 'edit' && row) {
     try {

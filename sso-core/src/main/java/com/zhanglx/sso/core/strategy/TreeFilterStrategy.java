@@ -26,7 +26,7 @@ public enum TreeFilterStrategy {
         public <T extends TreeNode<T, Long>> Set<Long> calculateValidNodeIds(
                 Collection<T> allNodes, Map<Long, T> nodeMap, Set<String> userPermissions) {
             return allNodes.stream()
-                    .map(TreeNode::getId)
+                    .map(TreeNode::treeNodeId)
                     .collect(Collectors.toSet());
         }
     },
@@ -41,24 +41,24 @@ public enum TreeFilterStrategy {
 
             // 1. 【极速放行】如果是超级管理员（拥有 * 权限），直接全量放行，拒绝无效计算
             if (isSuperAdmin(userPermissions)) {
-                return allNodes.stream().map(TreeNode::getId).collect(Collectors.toSet());
+                return allNodes.stream().map(TreeNode::treeNodeId).collect(Collectors.toSet());
             }
 
             Set<Long> validIds = new HashSet<>();
             for (T node : allNodes) {
                 // 2. 判空保护：排除目录节点可能没有 权限标识 的情况
-                String identification = node.getIdentification();
+                String identification = node.treeIdentification();
                 if (StringUtils.isNotBlank(identification) && userPermissions.contains(identification)) {
 
                     // 3. 【性能优化】直接操作 节点引用向上追溯，省去重复的 nodeMap.get()
                     T currNode = node;
                     while (currNode != null
-                            && currNode.getId() != null
-                            && currNode.getId() != 0L
+                            && currNode.treeNodeId() != null
+                            && currNode.treeNodeId() != 0L
                             // Set.add 返回 true 说明是新加入的，返回 false 说明此父链已经被别的子节点打通了，直接 break
-                            && validIds.add(currNode.getId())) {
+                            && validIds.add(currNode.treeNodeId())) {
 
-                        currNode = nodeMap.get(currNode.getParentId());
+                        currNode = nodeMap.get(currNode.treeParentId());
                     }
                 }
             }
@@ -75,31 +75,31 @@ public enum TreeFilterStrategy {
                 Collection<T> allNodes, Map<Long, T> nodeMap, Set<String> userPermissions) {
 
             if (isSuperAdmin(userPermissions)) {
-                return allNodes.stream().map(TreeNode::getId).collect(Collectors.toSet());
+                return allNodes.stream().map(TreeNode::treeNodeId).collect(Collectors.toSet());
             }
 
             Set<Long> validIds = new HashSet<>();
             for (T node : allNodes) {
                 // 判断自身是否有权限
-                String identification = node.getIdentification();
+                String identification = node.treeIdentification();
                 if (StringUtils.isNotBlank(identification) && userPermissions.contains(identification)) {
 
                     // 【严格校验】必须向上检查所有父节点。只要有一个父节点没权限，当前节点也必须作废！
                     boolean allAncestorsValid = true;
-                    T currNode = nodeMap.get(node.getParentId());
+                    T currNode = nodeMap.get(node.treeParentId());
 
-                    while (currNode != null && currNode.getId() != null && currNode.getId() != 0L) {
-                        String parentIden = currNode.getIdentification();
+                    while (currNode != null && currNode.treeNodeId() != null && currNode.treeNodeId() != 0L) {
+                        String parentIden = currNode.treeIdentification();
                         // 允许父级是纯目录（没有标识），如果有标识则必须在权限列表内
                         if (StringUtils.isNotBlank(parentIden) && !userPermissions.contains(parentIden)) {
                             allAncestorsValid = false;
                             break;
                         }
-                        currNode = nodeMap.get(currNode.getParentId());
+                        currNode = nodeMap.get(currNode.treeParentId());
                     }
 
                     if (allAncestorsValid) {
-                        validIds.add(node.getId());
+                        validIds.add(node.treeNodeId());
                     }
                 }
             }

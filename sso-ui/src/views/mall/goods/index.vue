@@ -20,7 +20,7 @@ const stats = [
 
 const cards = [
   { label: '总览', title: '商品总览', description: '适合展示商品数量、在售状态与最近变更。' },
-  { label: '分类', title: '类目层级', description: '可以继续把分类树和筛选条件接到同一页内。' },
+  { label: '分类', title: '类目层级', description: '可以继续把分类树和检索区接到同一页内。' },
   { label: '流程', title: '生命周期', description: '上架、下架、审核等节点都适合沉淀为统一流程。' },
   { label: '分析', title: '经营视角', description: '后续可接商品动销、库存预警和转化数据。' },
 ]

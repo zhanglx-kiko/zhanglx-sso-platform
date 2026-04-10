@@ -1,24 +1,13 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="统一维护角色模型、权限授权、用户归属以及数据范围策略，形成完整的后台权限闭环。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="loadRoles">刷新列表</el-button>
-        <el-button :disabled="!selectedRoleIds.length" @click="handleBatchDelete">
-          批量删除
-        </el-button>
-        <el-button type="primary" @click="openCreateDialog">新增角色</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection
-      title="筛选条件"
-      description="文档只支持 `searchKey`，会匹配角色编码、名称和应用编码。"
-      :model="queryForm"
-    >
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="loadRoles">刷新列表</el-button>
+          <el-button :disabled="!selectedRoleIds.length" @click="handleBatchDelete">
+            批量删除
+          </el-button>
+          <el-button type="primary" @click="openCreateDialog">新增角色</el-button>
+        </template>
         <el-form-item label="关键字">
           <el-input
             v-model="queryForm.searchKey"
@@ -37,9 +26,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">角色列表</h2>
-          <p class="panel-subtitle">
-            状态切换、用户绑定、权限树授权和自定义部门范围均已接上真实接口。
-          </p>
         </div>
       </div>
 
@@ -73,7 +59,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="220" show-overflow-tooltip />
-        <el-table-column prop="updateTime" label="更新时间" min-width="168" />
         <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
             <el-space :size="10" wrap>
@@ -136,6 +121,9 @@
             </el-descriptions-item>
             <el-descriptions-item label="备注">
               {{ detailData.remark || '--' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="更新时间">
+              {{ detailData.updateTime || '--' }}
             </el-descriptions-item>
             <el-descriptions-item label="已绑权限">
               <div class="permission-chip-list">
@@ -329,8 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import {
   ElMessage,
@@ -339,7 +326,6 @@ import {
   type FormRules,
   type TreeInstance,
 } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import {
   DEFAULT_BATCH_PAGE_SIZE,
@@ -394,7 +380,6 @@ interface RoleFormModel {
   remark: string
 }
 
-const route = useRoute()
 const userStore = useUserStore()
 const formRef = ref<FormInstance>()
 const permissionTreeRef = ref<TreeInstance>()
@@ -511,20 +496,6 @@ const formRules: FormRules<RoleFormModel> = {
   roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
   roleCode: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
 }
-
-const pageTitle = computed(() => String(route.meta.title || '角色管理'))
-
-const headerStats = computed(() => {
-  const enabledCount = roleList.value.filter((item) => item.status === 1).length
-  const customCount = roleList.value.filter((item) => item.dataScope === 5).length
-
-  return [
-    { label: '角色总量', value: total.value, hint: '按后端分页总数统计' },
-    { label: '当前页启用', value: enabledCount, hint: '可参与授权的角色' },
-    { label: '自定义范围', value: customCount, hint: '需要单独绑定部门范围的角色' },
-    { label: '当前应用', value: '系统用户', hint: '角色归属默认聚焦 B 端后台' },
-  ]
-})
 
 const getDataScopeLabel = (value?: number) => {
   return ROLE_DATA_SCOPE_OPTIONS.find((item) => item.value === value)?.label || '全部数据'

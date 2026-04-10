@@ -1,18 +1,11 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="维护岗位编码、名称、排序和启停状态，作为用户岗位绑定的基础数据来源。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="loadPosts">刷新列表</el-button>
-        <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-        <el-button type="primary" @click="openCreateDialog">新增岗位</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection title="筛选条件" description="支持按岗位编码、岗位名称和状态查询。" :model="queryForm">
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="loadPosts">刷新列表</el-button>
+          <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button type="primary" @click="openCreateDialog">新增岗位</el-button>
+        </template>
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="岗位编码 / 岗位名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -40,7 +33,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">岗位列表</h2>
-          <p class="panel-subtitle">岗位删除会校验是否仍有用户绑定。</p>
         </div>
       </div>
 
@@ -63,7 +55,6 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" min-width="168" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-space :size="10">
@@ -102,6 +93,7 @@
                 {{ detailData.status === 1 ? '启用' : '停用' }}
               </el-tag>
             </el-descriptions-item>
+            <el-descriptions-item label="更新时间">{{ detailData.updateTime || '--' }}</el-descriptions-item>
           </el-descriptions>
         </template>
       </div>
@@ -141,12 +133,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
-import { DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
+import { DEFAULT_BATCH_PAGE_SIZE, DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
 import {
   batchDeletePostsApi,
   createPostApi,
@@ -170,7 +160,6 @@ interface PostFormModel {
   status: number
 }
 
-const route = useRoute()
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
@@ -211,14 +200,40 @@ const formRules: FormRules<PostFormModel> = {
   postName: [{ required: true, message: '请输入岗位名称', trigger: 'blur' }],
 }
 
-const pageTitle = computed(() => String(route.meta.title || '岗位管理'))
+const getNextSortNum = <T extends { sortNum?: number }>(rows: T[]): number => {
+  const currentMax = rows.reduce((max, item) => Math.max(max, Number(item.sortNum ?? 0)), 0)
+  return currentMax + 1
+}
 
-const headerStats = computed(() => [
-  { label: '岗位总量', value: total.value, hint: '按后端分页总数统计' },
-  { label: '当前页启用', value: postList.value.filter((item) => item.status === 1).length, hint: '可绑定岗位' },
-  { label: '当前页停用', value: postList.value.filter((item) => item.status === 0).length, hint: '停用岗位会在绑定时置灰' },
-  { label: '排序容量', value: '0-9999', hint: '支持业务排序扩展' },
-])
+const resolveNextPostSortNum = async (fallbackSortNum: number): Promise<number> => {
+  try {
+    let pageNum = 1
+    let maxSortNum = 0
+    let total = 0
+
+    do {
+      const page = toPageResult(
+        await getPostPageApi({
+          pageNum,
+          pageSize: DEFAULT_BATCH_PAGE_SIZE,
+          searchKey: '',
+          postCode: '',
+          postName: '',
+          status: undefined,
+        }),
+      )
+
+      total = page.total
+      maxSortNum = Math.max(maxSortNum, ...page.records.map((item) => Number(item.sortNum ?? 0)))
+      pageNum += 1
+    } while ((pageNum - 1) * DEFAULT_BATCH_PAGE_SIZE < total)
+
+    return maxSortNum + 1
+  } catch (error) {
+    showGlobalError(error, { fallbackMessage: '加载岗位排序失败' })
+    return fallbackSortNum
+  }
+}
 
 const resetFormDialog = () => {
   formDialog.submitting = false
@@ -270,10 +285,12 @@ const openDetailDrawer = async (row: PostDTO) => {
   }
 }
 
-const openCreateDialog = () => {
+const openCreateDialog = async () => {
   resetFormDialog()
   formDialog.mode = 'create'
+  formModel.sortNum = getNextSortNum(postList.value)
   formDialog.visible = true
+  formModel.sortNum = await resolveNextPostSortNum(formModel.sortNum)
 }
 
 const openEditDialog = async (row: PostDTO) => {

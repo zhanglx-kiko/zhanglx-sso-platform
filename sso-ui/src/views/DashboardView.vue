@@ -1,18 +1,9 @@
 <template>
   <div class="page-shell">
-    <AppPageHeader
-      eyebrow="数据总览"
-      title="仪表盘"
-      description="从统一入口查看账号体系、权限结构与当前工作台的运行状态。"
-      :stats="overviewStats"
-    >
-      <template #actions>
-        <el-button plain @click="router.push('/system/auth/user')">查看管理员</el-button>
-        <el-button type="primary" @click="router.push('/system/auth/permission')">
-          进入权限中心
-        </el-button>
-      </template>
-    </AppPageHeader>
+    <div class="dashboard-toolbar">
+      <el-button plain @click="router.push('/system/auth/user')">查看管理员</el-button>
+      <el-button type="primary" @click="router.push('/system/auth/permission')">进入权限中心</el-button>
+    </div>
 
     <section class="metric-grid">
       <article v-for="item in metricCards" :key="item.label" class="metric-card dashboard-metric">
@@ -103,7 +94,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Connection, Document, Folder, Grid, Menu, Setting, User, UserFilled } from '@element-plus/icons-vue'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import { getDeptTreeApi } from '@/api/dept'
 import { getPermissionTreeApi } from '@/api/permission'
 import { getRolePageApi } from '@/api/role'
@@ -116,13 +106,6 @@ const userTotal = ref('--')
 const roleTotal = ref('--')
 const permissionTotal = ref('--')
 const deptTotal = ref('--')
-
-const overviewStats = computed(() => [
-  { label: '后台账号', value: userTotal.value, hint: '已纳入当前管理体系' },
-  { label: '角色模型', value: roleTotal.value, hint: '覆盖权限分工层级' },
-  { label: '权限节点', value: permissionTotal.value, hint: '菜单、按钮与接口统一管理' },
-  { label: '部门层级', value: deptTotal.value, hint: '支撑用户归属和数据范围' },
-])
 
 const metricCards = computed(() => [
   {
@@ -276,6 +259,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.dashboard-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
@@ -454,6 +444,10 @@ onMounted(() => {
 }
 
 @media (max-width: 1200px) {
+  .dashboard-toolbar {
+    justify-content: flex-start;
+  }
+
   .dashboard-grid,
   .dashboard-board {
     grid-template-columns: 1fr;

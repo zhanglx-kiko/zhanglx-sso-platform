@@ -1,11 +1,9 @@
 <template>
   <section class="panel panel--search">
-    <div class="panel-header">
-      <div>
-        <h2 class="panel-title">{{ title }}</h2>
-        <p class="panel-subtitle">{{ description }}</p>
+    <div v-if="$slots.toolbar" class="search-toolbar">
+      <div class="search-toolbar__actions">
+        <slot name="toolbar" />
       </div>
-      <slot name="header-extra" />
     </div>
 
     <AuthSearchForm
@@ -28,8 +26,6 @@ import AuthSearchForm from './AuthSearchForm.vue'
 type FormClassValue = string | string[] | Record<string, boolean>
 
 interface Props {
-  title: string
-  description: string
   model?: object
   compact?: boolean
   formClass?: FormClassValue
@@ -43,3 +39,22 @@ withDefaults(defineProps<Props>(), {
   actionsItemClass: '',
 })
 </script>
+
+<style scoped>
+.search-toolbar {
+  margin-bottom: 14px;
+}
+
+.search-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .search-toolbar__actions {
+    justify-content: flex-start;
+  }
+}
+</style>

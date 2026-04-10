@@ -1,13 +1,5 @@
 <template>
   <div class="page-shell">
-    <AppPageHeader
-      :eyebrow="eyebrow"
-      :title="title"
-      :description="description"
-      :stats="stats"
-      compact
-    />
-
     <section class="panel module-showcase">
       <div class="module-showcase__layout">
         <div class="module-showcase__copy">
@@ -29,8 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import AppPageHeader from '@/components/AppPageHeader.vue'
-
 interface ShowcaseStat {
   label: string
   value: string | number

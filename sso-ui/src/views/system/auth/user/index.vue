@@ -1,24 +1,13 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="维护后台账号的基础信息、部门归属、登录策略，以及与应用、岗位、角色的绑定关系。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="loadUsers">刷新列表</el-button>
-        <el-button :disabled="!selectedUserIds.length" @click="handleBatchDelete">
-          批量删除
-        </el-button>
-        <el-button type="primary" @click="openCreateDialog">新增用户</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection
-      title="筛选条件"
-      description="支持关键字、账号名和部门联动筛选，保留标准分页体验。"
-      :model="queryForm"
-    >
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="loadUsers">刷新列表</el-button>
+          <el-button :disabled="!selectedUserIds.length" @click="handleBatchDelete">
+            批量删除
+          </el-button>
+          <el-button type="primary" @click="openCreateDialog">新增用户</el-button>
+        </template>
         <el-form-item label="关键字">
           <el-input
             v-model="queryForm.searchKey"
@@ -58,9 +47,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">用户列表</h2>
-          <p class="panel-subtitle">
-            所有雪花编号均按字符串处理，状态开关与绑定关系已按文档接入。
-          </p>
         </div>
       </div>
 
@@ -353,11 +339,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import {
   ALLOW_CONCURRENT_OPTIONS,
@@ -417,7 +401,6 @@ interface UserFormModel extends UserCreateDTO {
   status: number
 }
 
-const route = useRoute()
 const userStore = useUserStore()
 const formRef = ref<FormInstance>()
 
@@ -513,21 +496,6 @@ const formRules: FormRules<UserFormModel> = {
   username: [{ required: true, message: '请输入登录账号', trigger: 'blur' }],
   nickname: [{ required: true, message: '请输入用户昵称', trigger: 'blur' }],
 }
-
-const pageTitle = computed(() => String(route.meta.title || '用户管理'))
-
-const headerStats = computed(() => {
-  const enabledCount = userList.value.filter((item) => item.status === 1).length
-  const disabledCount = userList.value.filter((item) => item.status === 0).length
-  const deptCoverage = new Set(userList.value.map((item) => item.deptId).filter(Boolean)).size
-
-  return [
-    { label: '用户总量', value: total.value, hint: '按后端分页总数统计' },
-    { label: '当前页启用', value: enabledCount, hint: '可正常登录的后台账号' },
-    { label: '当前页停用', value: disabledCount, hint: '已限制访问的后台账号' },
-    { label: '部门覆盖', value: deptCoverage, hint: '当前页涉及的部门数量' },
-  ]
-})
 
 const getGenderLabel = (value?: number) => {
   return GENDER_OPTIONS.find((item) => item.value === value)?.label || '未知'

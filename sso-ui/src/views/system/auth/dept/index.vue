@@ -1,17 +1,10 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="按树形结构维护部门层级、启停状态和父子关系，为用户归属与角色数据范围提供基础数据。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="toggleExpand">{{ expandAll ? '收起树' : '展开树' }}</el-button>
-        <el-button type="primary" @click="openCreateDialog()">新增根部门</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection title="筛选条件" description="支持按部门名称和状态过滤，部门树会按后端返回结果渲染。" :model="queryForm">
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="toggleExpand">{{ expandAll ? '收起树' : '展开树' }}</el-button>
+          <el-button type="primary" @click="openCreateDialog()">新增根部门</el-button>
+        </template>
         <el-form-item label="部门名称">
           <el-input v-model="queryForm.deptName" placeholder="请输入部门名称" clearable @keyup.enter="loadDeptTree" />
         </el-form-item>
@@ -30,7 +23,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">部门树</h2>
-          <p class="panel-subtitle">禁用部门会级联影响子部门，因此状态切换前建议先确认树结构。</p>
         </div>
       </div>
 
@@ -59,7 +51,6 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="updateTime" label="更新时间" min-width="168" />
         <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
             <el-space :size="10" wrap>
@@ -86,6 +77,7 @@
                 {{ detailData.status === 1 ? '启用' : '停用' }}
               </el-tag>
             </el-descriptions-item>
+            <el-descriptions-item label="更新时间">{{ detailData.updateTime || '--' }}</el-descriptions-item>
           </el-descriptions>
         </template>
       </div>
@@ -134,10 +126,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -150,7 +140,7 @@ import {
 } from '@/api/dept'
 import { showGlobalError } from '@/stores/globalError'
 import type { DeptDTO } from '@/types/system'
-import { countTreeNodes } from '@/utils/admin'
+import { findNodeById } from '@/utils/admin'
 
 type FormMode = 'create' | 'edit'
 
@@ -162,7 +152,6 @@ interface DeptFormModel {
   status: number
 }
 
-const route = useRoute()
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
@@ -205,20 +194,26 @@ const formRules: FormRules<DeptFormModel> = {
   deptName: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
 }
 
-const pageTitle = computed(() => String(route.meta.title || '部门管理'))
+const getNextSortNum = <T extends { sortNum?: number }>(rows: T[]): number => {
+  const currentMax = rows.reduce((max, item) => Math.max(max, Number(item.sortNum ?? 0)), 0)
+  return currentMax + 1
+}
 
-const headerStats = computed(() => {
-  const totalNodes = countTreeNodes(deptTree.value)
-  const disabledCount = countDisabledNodes(deptTree.value)
-  const rootCount = deptTree.value.length
+const getCurrentLevelDepts = (nodes: DeptDTO[], parentId: string): DeptDTO[] => {
+  if (parentId === '0') return nodes
+  return findNodeById(nodes, parentId)?.children || []
+}
 
-  return [
-    { label: '部门总量', value: totalNodes, hint: '按当前树结构统计' },
-    { label: '根节点', value: rootCount, hint: '顶层部门数量' },
-    { label: '停用部门', value: disabledCount, hint: '含树内停用节点' },
-    { label: '树状态', value: expandAll.value ? '展开' : '收起', hint: '便于快速浏览层级' },
-  ]
-})
+const resolveNextDeptSortNum = async (parentId: string, fallbackSortNum: number): Promise<number> => {
+  try {
+    const fullTree = await getDeptTreeApi()
+    parentTreeOptions.value = cloneTree(fullTree)
+    return getNextSortNum(getCurrentLevelDepts(fullTree, parentId))
+  } catch (error) {
+    showGlobalError(error, { fallbackMessage: '加载当前层级排序失败' })
+    return fallbackSortNum
+  }
+}
 
 const cloneTree = (nodes: DeptDTO[]): DeptDTO[] => {
   return nodes.map((item) => ({
@@ -234,13 +229,6 @@ const stripSelfAndDescendants = (nodes: DeptDTO[], blockedId: string): DeptDTO[]
       ...item,
       children: stripSelfAndDescendants(item.children || [], blockedId),
     }))
-}
-
-const countDisabledNodes = (nodes: DeptDTO[]): number => {
-  return nodes.reduce((total, node) => {
-    const current = node.status === 0 ? 1 : 0
-    return total + current + countDisabledNodes(node.children || [])
-  }, 0)
 }
 
 const resetFormDialog = () => {
@@ -289,12 +277,14 @@ const openDetailDrawer = async (row: DeptDTO) => {
   }
 }
 
-const openCreateDialog = (parent?: DeptDTO) => {
+const openCreateDialog = async (parent?: DeptDTO) => {
   resetFormDialog()
   formDialog.mode = 'create'
   parentTreeOptions.value = cloneTree(deptTree.value)
   formModel.parentId = parent?.id || '0'
+  formModel.sortNum = getNextSortNum(getCurrentLevelDepts(deptTree.value, formModel.parentId))
   formDialog.visible = true
+  formModel.sortNum = await resolveNextDeptSortNum(formModel.parentId, formModel.sortNum)
 }
 
 const openEditDialog = async (row: DeptDTO) => {

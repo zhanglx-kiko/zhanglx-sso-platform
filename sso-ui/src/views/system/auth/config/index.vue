@@ -1,18 +1,11 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="维护系统参数键值、内置属性和备注信息，为默认密码、开关型配置等能力提供统一入口。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="loadConfigs">刷新列表</el-button>
-        <el-button plain @click="handleRefreshRuntimeCache">刷新运行时缓存</el-button>
-        <el-button type="primary" @click="openCreateDialog">新增参数</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection title="筛选条件" description="支持按参数名称、参数键、分组、敏感标识和状态筛选。" :model="queryForm">
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="loadConfigs">刷新列表</el-button>
+          <el-button plain @click="handleRefreshRuntimeCache">刷新运行时缓存</el-button>
+          <el-button type="primary" @click="openCreateDialog">新增参数</el-button>
+        </template>
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="参数名称 / 参数键" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -55,7 +48,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">参数列表</h2>
-          <p class="panel-subtitle">系统内置参数仅支持查看，不能在管理台新增、修改或删除。</p>
         </div>
       </div>
 
@@ -86,7 +78,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="updateTime" label="更新时间" min-width="168" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-space :size="10">
@@ -127,6 +118,7 @@
               {{ detailData.configType === 1 ? '系统内置' : '普通配置' }}
             </el-descriptions-item>
             <el-descriptions-item label="备注">{{ detailData.remark || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="更新时间">{{ detailData.updateTime || '--' }}</el-descriptions-item>
           </el-descriptions>
         </template>
       </div>
@@ -185,10 +177,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { CONFIG_TYPE_OPTIONS, DEFAULT_PAGE_SIZE, STATUS_OPTIONS, YES_NO_OPTIONS } from '@/constants/admin'
 import {
@@ -217,7 +207,6 @@ interface ConfigFormModel {
   remark: string
 }
 
-const route = useRoute()
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
@@ -265,15 +254,7 @@ const formRules: FormRules<ConfigFormModel> = {
   configValue: [{ required: true, message: '请输入参数值', trigger: 'blur' }],
 }
 
-const pageTitle = computed(() => String(route.meta.title || '系统参数'))
 const isBuiltInConfig = (config?: Pick<ConfigDTO, 'configType'> | ConfigFormModel | null) => Number(config?.configType ?? 0) === 1
-
-const headerStats = computed(() => [
-  { label: '参数总量', value: total.value, hint: '按后端分页总数统计' },
-  { label: '系统内置', value: configList.value.filter((item) => item.configType === 1).length, hint: '内置参数仅支持查看' },
-  { label: '敏感参数', value: configList.value.filter((item) => item.sensitiveFlag === 1).length, hint: '读取时统一脱敏显示' },
-  { label: '普通配置', value: configList.value.filter((item) => item.configType === 0).length, hint: '可由管理台维护的参数' },
-])
 
 const resetFormDialog = () => {
   formDialog.submitting = false

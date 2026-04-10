@@ -1,18 +1,11 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="统一维护系统应用与会员应用，为角色归属和用户应用授权提供候选数据源。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="loadApps">刷新列表</el-button>
-        <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-        <el-button type="primary" @click="openCreateDialog">新增应用</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection title="筛选条件" description="支持按应用编码、应用名称、状态和用户类型筛选。" :model="queryForm">
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="loadApps">刷新列表</el-button>
+          <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button type="primary" @click="openCreateDialog">新增应用</el-button>
+        </template>
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="编码 / 名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -50,7 +43,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">应用列表</h2>
-          <p class="panel-subtitle">用户绑定应用使用 `appCode`，角色归属也依赖应用编码。</p>
         </div>
       </div>
 
@@ -78,7 +70,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="220" show-overflow-tooltip />
-        <el-table-column prop="updateTime" label="更新时间" min-width="168" />
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-space :size="10">
@@ -118,6 +109,7 @@
               </el-tag>
             </el-descriptions-item>
             <el-descriptions-item label="备注">{{ detailData.remark || '--' }}</el-descriptions-item>
+            <el-descriptions-item label="更新时间">{{ detailData.updateTime || '--' }}</el-descriptions-item>
           </el-descriptions>
         </template>
       </div>
@@ -164,10 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { APP_USER_TYPE_OPTIONS, DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -194,7 +184,6 @@ interface AppFormModel {
   remark: string
 }
 
-const route = useRoute()
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
@@ -236,15 +225,6 @@ const formRules: FormRules<AppFormModel> = {
   appCode: [{ required: true, message: '请输入应用编码', trigger: 'blur' }],
   appName: [{ required: true, message: '请输入应用名称', trigger: 'blur' }],
 }
-
-const pageTitle = computed(() => String(route.meta.title || '应用管理'))
-
-const headerStats = computed(() => [
-  { label: '应用总量', value: total.value, hint: '按后端分页总数统计' },
-  { label: '系统应用', value: appList.value.filter((item) => item.userType === 1).length, hint: 'B 端后台可绑定应用' },
-  { label: '会员应用', value: appList.value.filter((item) => item.userType === 2).length, hint: 'C 端会员应用' },
-  { label: '当前页停用', value: appList.value.filter((item) => item.status === 0).length, hint: '停用应用不可继续授权' },
-])
 
 const getUserTypeLabel = (value?: number) => {
   return APP_USER_TYPE_OPTIONS.find((item) => item.value === value)?.label || '系统用户应用'

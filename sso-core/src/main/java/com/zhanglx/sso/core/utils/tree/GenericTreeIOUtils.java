@@ -48,15 +48,15 @@ public class GenericTreeIOUtils {
     }
 
     private static <T extends TreeNode<T, ID>, ID> void flattenNode(T node, ID parentId, List<T> flatList) {
-        node.setParentId(parentId);
+        node.assignTreeParentId(parentId);
         flatList.add(node);
 
-        List<T> children = node.getChildren();
+        List<T> children = node.treeChildren();
         if (children != null && !children.isEmpty()) {
             for (T child : children) {
-                flattenNode(child, node.getId(), flatList);
+                flattenNode(child, node.treeNodeId(), flatList);
             }
-            node.setChildren(null);
+            node.replaceTreeChildren(null);
         }
     }
 }

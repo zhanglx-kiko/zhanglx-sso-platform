@@ -1,22 +1,11 @@
 ﻿<template>
   <div class="page-shell">
-    <AppPageHeader
-      :title="pageTitle"
-      description="菜单、按钮和接口权限都收敛到同一棵树中管理，便于路由、菜单和授权规则保持一致。"
-      :stats="headerStats"
-    >
-      <template #actions>
-        <el-button plain @click="toggleExpand">{{ expandAll ? '收起树' : '展开树' }}</el-button>
-        <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-        <el-button type="primary" @click="openCreateDialog()">新增顶级节点</el-button>
-      </template>
-    </AppPageHeader>
-
-    <AuthSearchSection
-      title="筛选条件"
-      description="后端当前是精确匹配，不是模糊包含，建议按完整名称或标识筛选。"
-      :model="queryForm"
-    >
+    <AuthSearchSection :model="queryForm">
+        <template #toolbar>
+          <el-button plain @click="toggleExpand">{{ expandAll ? '收起树' : '展开树' }}</el-button>
+          <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button type="primary" @click="openCreateDialog()">新增顶级节点</el-button>
+        </template>
         <el-form-item label="权限名称 / 标识">
           <el-input
             v-model="queryForm.searchKey"
@@ -38,7 +27,6 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">权限树</h2>
-          <p class="panel-subtitle">支持状态切换、下级新增、整对象编辑以及级联删除提示。</p>
         </div>
       </div>
 
@@ -191,10 +179,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { PERMISSION_TYPE_OPTIONS, STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -208,7 +194,7 @@ import {
 } from '@/api/permission'
 import { showGlobalError } from '@/stores/globalError'
 import type { PermissionDTO } from '@/types/system'
-import { countTreeNodes, extractTreeIds, uniqueIds } from '@/utils/admin'
+import { extractTreeIds, uniqueIds } from '@/utils/admin'
 
 type FormMode = 'create' | 'edit'
 
@@ -227,14 +213,13 @@ interface PermissionFormModel {
   remark: string
 }
 
-const route = useRoute()
 const formRef = ref<FormInstance>()
 
 const loading = ref(false)
 const permissionTree = ref<PermissionDTO[]>([])
 const selectedIds = ref<string[]>([])
 const statusLoadingId = ref('')
-const expandAll = ref(true)
+const expandAll = ref(false)
 const tableKey = ref(0)
 
 const detailVisible = ref(false)
@@ -276,36 +261,6 @@ const treeSelectProps = {
 const formRules: FormRules<PermissionFormModel> = {
   name: [{ required: true, message: '请输入节点名称', trigger: 'blur' }],
   identification: [{ required: true, message: '请输入权限标识', trigger: 'blur' }],
-}
-
-const pageTitle = computed(() => String(route.meta.title || '权限管理'))
-
-const headerStats = computed(() => {
-  const totalNodes = countTreeNodes(permissionTree.value)
-  const menuCount = countNodesByType(permissionTree.value, 1)
-  const actionCount = countNodesByType(permissionTree.value, 2) + countNodesByType(permissionTree.value, 3)
-  const disabledCount = countDisabledNodes(permissionTree.value)
-
-  return [
-    { label: '节点总量', value: totalNodes, hint: '平台、模块、菜单、按钮和接口合一管理' },
-    { label: '菜单节点', value: menuCount, hint: '可作为侧边菜单或路由入口的节点' },
-    { label: '动作权限', value: actionCount, hint: '按钮与接口权限节点数量' },
-    { label: '停用节点', value: disabledCount, hint: '当前被禁用的权限节点' },
-  ]
-})
-
-const countNodesByType = (nodes: PermissionDTO[], type: number): number => {
-  return nodes.reduce((total, node) => {
-    const current = node.type === type ? 1 : 0
-    return total + current + countNodesByType(node.children || [], type)
-  }, 0)
-}
-
-const countDisabledNodes = (nodes: PermissionDTO[]): number => {
-  return nodes.reduce((total, node) => {
-    const current = node.status === 0 ? 1 : 0
-    return total + current + countDisabledNodes(node.children || [])
-  }, 0)
 }
 
 const getPermissionTypeLabel = (value?: number) => {

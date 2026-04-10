@@ -3,29 +3,47 @@ package com.zhanglx.sso.core.domain.tree;
 import java.util.List;
 
 /**
- * @param <T>  实体类型（如 权限数据传输对象）
- * @param <ID> 主键类型（如 Long, String）
+ * @param <T>  节点类型
+ * @param <ID> 节点标识类型
  *             作者：Zhang L X
  *             创建时间：2026/3/17 17:04
  *             类名：TreeNode
- *             说明：通用树节点接口（泛型化）
+ *             说明：通用树节点能力接口
+ *
+ * 这里不再使用 getId/setId/getParentId 这类 Bean 风格命名，
+ * 避免和 DTO/PO 基类中的属性访问器发生桥接方法冲突。
  */
 public interface TreeNode<T, ID> {
 
-    ID getId();
+    /**
+     * 获取当前节点标识
+     */
+    ID treeNodeId();
 
-    void setId(ID id);
+    /**
+     * 获取父节点标识
+     */
+    ID treeParentId();
 
-    ID getParentId();
+    /**
+     * 在树导入、拍平等场景下重设父节点标识
+     */
+    void assignTreeParentId(ID parentId);
 
-    // 通用拍平算法需要动态修改父ID
-    void setParentId(ID parentId);
+    /**
+     * 获取子节点集合
+     */
+    List<T> treeChildren();
 
-    List<T> getChildren();
+    /**
+     * 替换子节点集合
+     */
+    void replaceTreeChildren(List<T> children);
 
-    // 通用拍平算法需要清空子节点引用
-    void setChildren(List<T> children);
-
-    // 权限标识（若非权限树，可由实现类返回 null 或默认值）
-    String getIdentification();
+    /**
+     * 获取权限标识，非权限树可返回 null
+     */
+    default String treeIdentification() {
+        return null;
+    }
 }
