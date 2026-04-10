@@ -11,7 +11,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
-
+/**
+ * 后台用户第三方账号持久化对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

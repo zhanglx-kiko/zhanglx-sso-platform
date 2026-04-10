@@ -95,6 +95,9 @@ public class RoleAuthCacheSyncListener {
         }
     }
 
+    /**
+     * 清理指定用户的权限缓存。
+     */
     private void clearUserAuthCache(Long userId) {
         try {
             StpUtil.getSessionByLoginId(userId).delete("Role_List");

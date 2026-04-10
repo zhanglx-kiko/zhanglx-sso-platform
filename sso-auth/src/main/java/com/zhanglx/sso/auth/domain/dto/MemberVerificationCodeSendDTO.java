@@ -6,6 +6,10 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+/**
+ * 会员验证码发送请求对象。
+ */
+
 
 @Data
 @NoArgsConstructor
@@ -20,7 +24,7 @@ public class MemberVerificationCodeSendDTO {
 
     @NotBlank(message = "{member.verification.scene.cannot.be.blank}")
     @Schema(
-            description = "验证码场景，可选值为 REGISTER、FORGOT_PASSWORD、BIND_PHONE",
+            description = "验证码场景，可选值为 REGISTER、CHANGE_BOUND_PHONE、FORGOT_PASSWORD、BIND_PHONE、VERIFY_BIND_PHONE",
             requiredMode = Schema.RequiredMode.REQUIRED,
             example = "REGISTER"
     )

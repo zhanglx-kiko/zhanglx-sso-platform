@@ -46,6 +46,9 @@ public class AuthOperationGuard {
         }
     }
 
+/**
+ * 校验目标用户不是当前登录人。
+ */
     private void checkUserNotSelf(Long userId, AuthOperationErrorCode errorCode) {
         Long currentUserId = getCurrentLoginUserId();
         if (currentUserId != null && Objects.equals(currentUserId, userId)) {
@@ -53,6 +56,9 @@ public class AuthOperationGuard {
         }
     }
 
+/**
+ * 校验目标用户集合不包含当前登录人。
+ */
     private void checkUsersNotContainsSelf(Collection<Long> userIds, AuthOperationErrorCode errorCode) {
         Long currentUserId = getCurrentLoginUserId();
         if (currentUserId != null && userIds != null && userIds.contains(currentUserId)) {

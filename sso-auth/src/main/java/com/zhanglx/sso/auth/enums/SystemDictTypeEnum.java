@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.zhanglx.sso.core.enums.IBaseEnum;
 import com.zhanglx.sso.core.enums.IStringBaseEnum;
@@ -21,6 +22,7 @@ public enum SystemDictTypeEnum implements IStringBaseEnum<String> {
     CUSTOMER_LEVEL("sys_customer_level", "客户等级"),
     PRODUCT_STATUS("sys_product_status", "产品状态");
 
+    @EnumValue
     @JsonValue
     private final String code;
 

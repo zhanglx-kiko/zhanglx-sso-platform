@@ -1,5 +1,12 @@
 import request from '@/utils/request'
-import type { ForgotPasswordDTO, LoginDTO, LoginVO, UserPasswordDTO } from '@/types/auth'
+import type {
+  ForgotPasswordDTO,
+  ForgotPasswordVerificationCodeSendDTO,
+  LoginDTO,
+  LoginVO,
+  SmsVerificationCodeSendVO,
+  UserPasswordDTO,
+} from '@/types/auth'
 
 export const loginApi = (data: LoginDTO) => {
   return request.post<unknown, LoginVO>('/apis/v1/auth/s/login', data)
@@ -15,6 +22,13 @@ export const updatePasswordApi = (data: UserPasswordDTO) => {
 
 export const forgotPasswordApi = (data: ForgotPasswordDTO) => {
   return request.post<unknown, void>('/apis/v1/auth/s/forgot-password', data)
+}
+
+export const sendForgotPasswordVerificationCodeApi = (data: ForgotPasswordVerificationCodeSendDTO) => {
+  return request.post<unknown, SmsVerificationCodeSendVO>(
+    '/apis/v1/auth/s/forgot-password/verification-code/send',
+    data,
+  )
 }
 
 export const resetPasswordApi = (userId: string) => {

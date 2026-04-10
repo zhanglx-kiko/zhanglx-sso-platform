@@ -13,7 +13,7 @@ spring:
       enabled: true
   messages:
     # 逗号分隔所有的 basename
-    basename: i18n/common,i18n/auth-messages,i18n/sso-messages
+    basename: i18n/common,i18n/auth-messages,i18n/sso-messages,i18n/sms-messages
     encoding: UTF-8
   cache:
     # 明确告诉 Spring 缓存用 Redis
@@ -169,15 +169,7 @@ knife4j:
     swagger-model-name: 实体类列表
     enable-footer: true
     enable-footer-custom: true
-    footer-custom-content: Apache 2.0 | Copyright © 2026 ZhangLX
-#  documents: #文档补充说明
-#    - name: MarkDown语法说明
-#      locations: classpath:static/markdown/grammar/*
-#      group: 01-系统接口 # 此处分组必须使用在Knife4jConfig已存在的分组名group，当存在displayName时，使用displayName名称
-#    - name: 补充文档
-#      locations: classpath:static/markdown/others/*
-#      group: 01-系统接口 # 此处分组必须使用在Knife4jConfig已存在的分组名group，当存在displayName时，使用displayName名称
-
+    footer-custom-content: Apache 2.0 | Copyright (c) 2026 ZhangLX
 
 sso:
   log:
@@ -262,7 +254,7 @@ sso:
     global-enabled: true
     log-hit: false
     mode: RELAXED
-    whitelist-paths: [ ]
+    whitelist-paths: []
     whitelist-fields:
       - password
       - oldPassword
@@ -280,7 +272,7 @@ sso:
       - keyword
       - query
       - q
-    rich-text-fields: [ ]
+    rich-text-fields: []
     sanitize-header-names:
       - User-Agent
       - Referer
@@ -292,22 +284,58 @@ sso:
       - audio/*
       - video/*
   sms:
+    # SSO_SMS_PROVIDER: 当前启用的短信渠道，支持 sms-chinese 或 aliyun
+    provider: ${SSO_SMS_PROVIDER:sms-chinese}
+    log-response-enabled: true
     verification-code:
-      expire-seconds: 300
       resend-interval-seconds: 60
-      code-length: 6
       mock-send-enabled: false
       phone-window-seconds: 1800
       phone-window-max-sends: 10
       ip-daily-max-sends: 20
-      scene-templates:
-        REGISTER: "\u3010\u5f20LX\u3011\u6ce8\u518c\u9a8c\u8bc1\u7801\uff1a%s\uff0c%d\u5206\u949f\u5185\u6709\u6548\u3002"
-        FORGOT_PASSWORD: "\u3010\u5f20LX\u3011\u627e\u56de\u5bc6\u7801\u9a8c\u8bc1\u7801\uff1a%s\uff0c%d\u5206\u949f\u5185\u6709\u6548\u3002"
-        BIND_PHONE: "\u3010\u5f20LX\u3011\u7ed1\u5b9a\u624b\u673a\u53f7\u9a8c\u8bc1\u7801\uff1a%s\uff0c%d\u5206\u949f\u5185\u6709\u6548\u3002"
+    templates:
+      REGISTER:
+        description: 登录/注册模板
+        template-code: 100001
+        sms-chinese-content: "您的验证码为${code}。尊敬的客户，以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+      CHANGE_BOUND_PHONE:
+        description: 修改绑定手机号模板
+        template-code: 100002
+        sms-chinese-content: "尊敬的客户，您正在进行修改手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+      FORGOT_PASSWORD:
+        description: 重置密码模板
+        template-code: 100003
+        sms-chinese-content: "尊敬的客户，您正在进行重置密码操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+      BIND_PHONE:
+        description: 绑定新手机号模板
+        template-code: 100004
+        sms-chinese-content: "尊敬的客户，您正在进行绑定手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
+      VERIFY_BIND_PHONE:
+        description: 验证绑定手机号模板
+        template-code: 100005
+        sms-chinese-content: "尊敬的客户，您正在验证绑定手机号操作，您的验证码为${code}。以上验证码${min}分钟内有效，请注意保密，切勿告知他人。"
     sms-chinese:
       enabled: true
+      # SMSCHINESE_UID: 短信通平台分配的用户标识
       uid: ${SMSCHINESE_UID:}
+      # SMSCHINESE_KEY: 短信通平台分配的接口密钥
       key: ${SMSCHINESE_KEY:d41d8cd98f00b204e980}
       send-url: https://utf8api.smschinese.cn/
       connect-timeout-millis: 5000
       read-timeout-millis: 5000
+    aliyun:
+      # ALIYUN_SMS_ENABLED: 是否启用阿里云短信渠道
+      enabled: ${ALIYUN_SMS_ENABLED:false}
+      # ALIYUN_SMS_ACCESS_KEY_ID: 阿里云 AccessKey ID
+      access-key-id: ${ALIYUN_SMS_ACCESS_KEY_ID:}
+      # ALIYUN_SMS_ACCESS_KEY_SECRET: 阿里云 AccessKey Secret
+      access-key-secret: ${ALIYUN_SMS_ACCESS_KEY_SECRET:}
+      # ALIYUN_SMS_REGION: 阿里云区域编码
+      region: ${ALIYUN_SMS_REGION:cn-qingdao}
+      # ALIYUN_SMS_ENDPOINT: 阿里云短信接口域名
+      endpoint: ${ALIYUN_SMS_ENDPOINT:dypnsapi.aliyuncs.com}
+      sign-name: 速通互联验证平台
+      return-verify-code: false
+      valid-time: 180
+      connect-timeout-seconds: 10
+      response-timeout-seconds: 10

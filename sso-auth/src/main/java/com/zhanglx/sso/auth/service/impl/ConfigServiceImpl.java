@@ -50,7 +50,14 @@ public class ConfigServiceImpl implements ConfigService {
         exist.setConfigValue(dto.getConfigValue());
         exist.setConfigType(dto.getConfigType());
         exist.setRemark(dto.getRemark());
-        configMapper.updateById(exist);
+        ConfigPO updatePO = new ConfigPO();
+        updatePO.setId(id);
+        updatePO.setConfigName(dto.getConfigName());
+        updatePO.setConfigKey(dto.getConfigKey());
+        updatePO.setConfigValue(dto.getConfigValue());
+        updatePO.setConfigType(dto.getConfigType());
+        updatePO.setRemark(dto.getRemark());
+        configMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -99,6 +106,9 @@ public class ConfigServiceImpl implements ConfigService {
         return result;
     }
 
+    /**
+     * 根据标识查询目标数据，不存在时抛出异常。
+     */
     private ConfigPO getConfigOrThrow(Long id) {
         AssertUtils.notNull(id, "config id cannot be null");
         ConfigPO exist = configMapper.selectById(id);
@@ -106,6 +116,9 @@ public class ConfigServiceImpl implements ConfigService {
         return exist;
     }
 
+    /**
+     * 校验配置键是否唯一。
+     */
     private void validateKeyUnique(String configKey, Long excludeId) {
         AssertUtils.notBlank(configKey, "config key cannot be blank");
         LambdaQueryWrapperX<ConfigPO> wrapper = new LambdaQueryWrapperX<ConfigPO>()

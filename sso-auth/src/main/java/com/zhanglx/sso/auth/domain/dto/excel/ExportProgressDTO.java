@@ -9,6 +9,10 @@ import lombok.Data;
  * @ClassName: ExportProgressDTO
  * @Description:
  */
+/**
+ * 导出任务进度对象。
+ */
+
 @Data
 @Builder
 public class ExportProgressDTO {

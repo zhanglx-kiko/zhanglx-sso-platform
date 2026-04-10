@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.zhanglx.sso.core.enums.IBaseEnum;
 import com.zhanglx.sso.core.enums.IIntegerBaseEnum;
@@ -15,6 +16,7 @@ public enum UserStatusEnum implements IIntegerBaseEnum<String> {
     DISABLED(0, "禁用"),
     NORMAL(1, "正常");
 
+    @EnumValue
     @JsonValue
     private final Integer code;
 

@@ -9,6 +9,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+/**
+ * 会员资料更新请求对象。
+ */
+
 
 @Data
 @NoArgsConstructor

@@ -16,6 +16,10 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.time.LocalDate;
+/**
+ * 系统用户基础数据传输对象。
+ */
+
 
 @Data
 @SuperBuilder

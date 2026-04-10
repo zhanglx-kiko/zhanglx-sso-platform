@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * @Author: Zhang L X
  * @Create: 2026/3/18 10:48
  * @ClassName: RolePermissionRelationshipMappingPO
- * @Description:
+ * @Description: 角色权限关联关系表
  */
 @Data
 @SuperBuilder

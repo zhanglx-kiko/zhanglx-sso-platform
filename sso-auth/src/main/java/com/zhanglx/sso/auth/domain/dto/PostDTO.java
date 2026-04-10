@@ -9,6 +9,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+/**
+ * 岗位数据传输对象。
+ */
+
 
 @Data
 @SuperBuilder

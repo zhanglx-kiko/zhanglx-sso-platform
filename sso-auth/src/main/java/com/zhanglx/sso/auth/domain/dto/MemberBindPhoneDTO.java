@@ -3,10 +3,13 @@ package com.zhanglx.sso.auth.domain.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+/**
+ * 会员绑定手机号请求对象。
+ */
+
 
 @Data
 @NoArgsConstructor
@@ -20,7 +23,7 @@ public class MemberBindPhoneDTO {
     private String phoneNumber;
 
     @NotBlank(message = "{member.verification.code.cannot.be.blank}")
-    @Size(min = 4, max = 6, message = "{member.verification.code.length.invalid}")
-    @Schema(description = "验证码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123456")
+    @Pattern(regexp = "^\\d{6}$", message = "{member.verification.code.length.invalid}")
+    @Schema(description = "6 位短信验证码", requiredMode = Schema.RequiredMode.REQUIRED, example = "123456")
     private String verificationCode;
 }

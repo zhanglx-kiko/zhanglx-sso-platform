@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.zhanglx.sso.core.enums.IBaseEnum;
 import com.zhanglx.sso.core.enums.IIntegerBaseEnum;
@@ -18,6 +19,7 @@ public enum DataScopeEnum implements IIntegerBaseEnum<String> {
     SELF(4, "本人"),
     CUSTOM(5, "自定义");
 
+    @EnumValue
     @JsonValue
     private final Integer code;
 

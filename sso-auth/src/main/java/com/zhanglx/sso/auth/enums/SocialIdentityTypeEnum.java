@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.zhanglx.sso.core.enums.IBaseEnum;
 import com.zhanglx.sso.core.enums.IStringBaseEnum;
@@ -15,6 +16,7 @@ public enum SocialIdentityTypeEnum implements IStringBaseEnum<String> {
     WECHAT_OPEN("WECHAT_OPEN", "微信开放平台"),
     WX_MINI("WX_MINI", "微信小程序");
 
+    @EnumValue
     @JsonValue
     private final String code;
 

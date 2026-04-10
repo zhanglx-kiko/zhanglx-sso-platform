@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
 import com.zhanglx.sso.auth.domain.dto.UserBaseDTO;
@@ -10,18 +11,9 @@ import com.zhanglx.sso.auth.domain.dto.UserPageQueryDTO;
 import com.zhanglx.sso.auth.domain.po.DeptPO;
 import com.zhanglx.sso.auth.domain.po.SysUserSocialPO;
 import com.zhanglx.sso.auth.domain.po.UserPO;
-import com.zhanglx.sso.auth.enums.EnableStatusEnum;
-import com.zhanglx.sso.auth.enums.SocialIdentityTypeEnum;
-import com.zhanglx.sso.auth.enums.UserStatusEnum;
-import com.zhanglx.sso.auth.enums.UserTypeEnum;
-import com.zhanglx.sso.auth.enums.YesNoEnum;
+import com.zhanglx.sso.auth.enums.*;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
-import com.zhanglx.sso.auth.mapper.DeptMapper;
-import com.zhanglx.sso.auth.mapper.SysUserSocialMapper;
-import com.zhanglx.sso.auth.mapper.UserAppMapper;
-import com.zhanglx.sso.auth.mapper.UserMapper;
-import com.zhanglx.sso.auth.mapper.UserPostMapper;
-import com.zhanglx.sso.auth.mapper.UserRoleRelationshipMappingMapper;
+import com.zhanglx.sso.auth.mapper.*;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.IUserDomainMapper;
@@ -34,12 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -94,8 +81,12 @@ public class UserServiceImpl implements UserService {
                     .build();
             sysUserSocialMapper.insert(userSocialPO);
         } else {
-            existSocial.setUserId(userPO.getId());
-            sysUserSocialMapper.updateById(existSocial);
+            sysUserSocialMapper.update(
+                    null,
+                    new LambdaUpdateWrapper<SysUserSocialPO>()
+                            .eq(SysUserSocialPO::getId, existSocial.getId())
+                            .set(SysUserSocialPO::getUserId, userPO.getId())
+            );
         }
 
         UserDTO result = IUserDomainMapper.INSTANCE.toDTO(userPO);
@@ -135,7 +126,17 @@ public class UserServiceImpl implements UserService {
         userPO.setEmail(userInfo.getEmail());
         userPO.setDeptId(userInfo.getDeptId());
         userPO.setAllowConcurrentLogin(userInfo.getAllowConcurrentLogin());
-        userMapper.updateById(userPO);
+        UserPO updatePO = new UserPO();
+        updatePO.setId(userInfo.getId());
+        updatePO.setNickname(userInfo.getNickname());
+        updatePO.setAvatar(userInfo.getAvatar());
+        updatePO.setPhoneNumber(userInfo.getPhoneNumber());
+        updatePO.setSex(userInfo.getSex());
+        updatePO.setBirthday(userInfo.getBirthday());
+        updatePO.setEmail(userInfo.getEmail());
+        updatePO.setDeptId(userInfo.getDeptId());
+        updatePO.setAllowConcurrentLogin(userInfo.getAllowConcurrentLogin());
+        userMapper.updateById(updatePO);
     }
 
     @Override
@@ -229,20 +230,31 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long userId, UserStatusEnum status) {
+        AssertUtils.notNull(userId, UserErrorCode.USER_INFO_NOT_FOUND);
+        AssertUtils.notNull(status, "status cannot be null");
         if (UserStatusEnum.DISABLED.matches(status)) {
             authOperationGuard.checkDisableUserNotSelf(userId);
         }
-        AssertUtils.notNull(userId, UserErrorCode.USER_INFO_NOT_FOUND);
-        AssertUtils.notNull(status, "status cannot be null");
+
         UserPO userPO = userMapper.selectById(userId);
         AssertUtils.notNull(userPO, UserErrorCode.USER_NOT_FOUND, userId);
-        userPO.setStatus(status);
-        userMapper.updateById(userPO);
+        if (!userPO.getStatus().equals(status)) {
+            userMapper.update(
+                    null,
+                    new LambdaUpdateWrapper<UserPO>()
+                            .eq(UserPO::getId, userId)
+                            .set(UserPO::getStatus, status)
+            );
+        }
+
         if (UserStatusEnum.DISABLED.matches(status)) {
             StpUtil.logout(userPO.getId());
         }
     }
 
+    /**
+     * 填充默认字段值。
+     */
     private void fillDefaultUserFields(UserPO userPO, UserTypeEnum userType) {
         String rawPassword = StrUtil.isBlank(userPO.getPassword()) ? defaultPassword : userPO.getPassword();
         userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword));
@@ -258,6 +270,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+/**
+ * 校验参数和业务约束。
+ */
+    /**
+     * 校验部门是否存在且可用。
+     */
     private void validateDept(Long deptId) {
         if (deptId == null) {
             return;
@@ -267,6 +285,12 @@ public class UserServiceImpl implements UserService {
         AssertUtils.isTrue(EnableStatusEnum.isEnabled(deptPO.getStatus()), "department is disabled");
     }
 
+/**
+ * 执行内部校验逻辑。
+ */
+    /**
+     * 校验用户名是否唯一。
+     */
     private void checkUsernameUnique(String username, Long excludeId) {
         AssertUtils.notBlank(username, "user.username.cannot.be.blank");
 
@@ -281,6 +305,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+/**
+ * 执行内部校验逻辑。
+ */
+    /**
+     * 校验手机号是否唯一。
+     */
     private void checkPhoneUnique(String phoneNumber, Long excludeId) {
         if (StrUtil.isBlank(phoneNumber)) {
             return;
@@ -293,11 +323,14 @@ public class UserServiceImpl implements UserService {
         AssertUtils.isTrue(userMapper.selectCount(wrapper) == 0, "phone number already exists");
     }
 
+    /**
+     * 处理内部辅助逻辑。
+     */
     private Map<Long, String> buildDeptNameMap(Collection<Long> deptIds) {
         List<Long> validDeptIds = deptIds == null ? List.of() : deptIds.stream()
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
+                                                                .filter(Objects::nonNull)
+                                                                .distinct()
+                                                                .toList();
         if (validDeptIds.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -308,6 +341,9 @@ public class UserServiceImpl implements UserService {
         return result;
     }
 
+    /**
+     * 将计算结果应用到目标对象。
+     */
     private void applyDeptName(UserDTO userDTO, Map<Long, String> deptNameMap) {
         if (userDTO == null || userDTO.getDeptId() == null || deptNameMap == null) {
             return;

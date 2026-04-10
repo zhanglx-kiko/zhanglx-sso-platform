@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "C端认证接口")
+@Tag(name = "C 端认证接口")
 @RequestMapping("/apis/v1/auth/m")
 public class AuthMemberController {
 

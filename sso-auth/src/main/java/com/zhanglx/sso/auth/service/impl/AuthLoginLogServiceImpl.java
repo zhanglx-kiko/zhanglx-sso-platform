@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -84,6 +83,9 @@ public class AuthLoginLogServiceImpl implements AuthLoginLogService {
         return toVO(loginLogPO);
     }
 
+    /**
+     * 处理内部辅助逻辑。
+     */
     private void save(AuthLoginLogRecordCommand command) {
         try {
             AuthLoginLogPO entity = AuthLoginLogPO.builder()
@@ -115,6 +117,9 @@ public class AuthLoginLogServiceImpl implements AuthLoginLogService {
         }
     }
 
+    /**
+     * 转换为视图对象。
+     */
     private AuthLoginLogVO toVO(AuthLoginLogPO entity) {
         return AuthLoginLogVO.builder()
                 .id(entity.getId())
@@ -138,6 +143,9 @@ public class AuthLoginLogServiceImpl implements AuthLoginLogService {
                 .build();
     }
 
+    /**
+     * 裁剪字符串长度，避免超出存储限制。
+     */
     private String trim(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
     }

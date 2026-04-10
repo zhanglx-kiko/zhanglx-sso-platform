@@ -12,6 +12,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
+/**
+ * 应用持久化对象，对应表 `t_sso_app`。
+ */
+
 
 @Data
 @SuperBuilder

@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 
 public final class SystemDictValueEnums {
 
+/**
+ * 私有构造方法，禁止外部实例化。
+ */
     private SystemDictValueEnums() {
         throw new UnsupportedOperationException("Utility class");
     }

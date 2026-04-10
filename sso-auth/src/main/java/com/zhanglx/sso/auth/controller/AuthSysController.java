@@ -3,10 +3,12 @@ package com.zhanglx.sso.auth.controller;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.stp.StpUtil;
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeSendDTO;
 import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.domain.vo.SmsVerificationCodeSendVO;
 import com.zhanglx.sso.auth.service.AuthService;
 import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
@@ -104,6 +106,14 @@ public class AuthSysController {
         Long parsedUserId = RequestIdUtils.parseId(userId, "userId");
         authOperationGuard.checkResetPasswordNotSelf(parsedUserId);
         authService.resetPassword(parsedUserId);
+    }
+
+    @Operation(summary = "Send forgot password verification code")
+    @PostMapping("/forgot-password/verification-code/send")
+    @RequestRateLimit(limit = 3, windowSeconds = 300, dimensions = {RateLimitDimension.IP, RateLimitDimension.URI}, customKey = "#sendDTO.username")
+    @OperationLog(module = "认证管理", feature = "密码", operationType = "SEND", operationName = "发送忘记密码验证码", operationDesc = "后台用户通过忘记密码流程发送短信验证码", includeRequestBody = false, includeResponseBody = false)
+    public SmsVerificationCodeSendVO sendForgotPasswordVerificationCode(@RequestBody @Validated ForgotPasswordVerificationCodeSendDTO sendDTO) {
+        return authService.sendForgotPasswordVerificationCode(sendDTO);
     }
 
     @Operation(summary = "Forgot password")

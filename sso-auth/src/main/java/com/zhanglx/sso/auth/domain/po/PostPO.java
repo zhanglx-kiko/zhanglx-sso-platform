@@ -11,7 +11,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
-
+/**
+ * 岗位持久化对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

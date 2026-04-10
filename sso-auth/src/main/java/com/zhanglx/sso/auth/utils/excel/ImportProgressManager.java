@@ -79,6 +79,9 @@ public class ImportProgressManager {
         return null;
     }
 
+/**
+ * 保存任务进度。
+ */
     private void saveProgress(ImportProgressDTO progress) {
         stringRedisTemplate.opsForValue().set(
                 PROGRESS_KEY_PREFIX + progress.getTaskId(),

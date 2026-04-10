@@ -10,6 +10,9 @@ import java.util.*;
  */
 public final class RequestIdUtils {
 
+/**
+ * 私有构造方法，禁止外部实例化。
+ */
     private RequestIdUtils() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -65,6 +68,9 @@ public final class RequestIdUtils {
         return parseIds(idList, fieldName);
     }
 
+/**
+ * 处理内部辅助逻辑。
+ */
     private static String normalize(String rawId) {
         if (rawId == null) {
             return null;
@@ -74,6 +80,9 @@ public final class RequestIdUtils {
         return value.isEmpty() ? null : value;
     }
 
+/**
+ * 构建参数非法时的业务异常。
+ */
     private static BusinessException invalidId(String fieldName, String rawId, Exception e) {
         String message = String.format("无效的%s: %s", fieldName, Objects.toString(rawId, "null"));
         return e == null

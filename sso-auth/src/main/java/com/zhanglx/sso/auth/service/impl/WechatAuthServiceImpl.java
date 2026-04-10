@@ -2,6 +2,7 @@ package com.zhanglx.sso.auth.service.impl;
 
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.po.MemberSocialPO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
@@ -90,9 +91,13 @@ public class WechatAuthServiceImpl implements WechatAuthService {
                 memberUserPO = buildDefaultMember();
                 memberUserMapper.insert(memberUserPO);
 
-                socialPO.setMemberId(memberUserPO.getId());
-                socialPO.setUnionId(unionId);
-                memberSocialMapper.updateById(socialPO);
+                memberSocialMapper.update(
+                        null,
+                        new LambdaUpdateWrapper<MemberSocialPO>()
+                                .eq(MemberSocialPO::getId, socialPO.getId())
+                                .set(MemberSocialPO::getMemberId, memberUserPO.getId())
+                                .set(MemberSocialPO::getUnionId, unionId)
+                );
             }
         }
 
@@ -111,6 +116,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return assembleMemberLoginVO(memberUserPO);
     }
 
+    /**
+     * 处理内部辅助逻辑。
+     */
     private JsonNode fetchWechatSession(String code) {
         if (!StringUtils.hasText(code)) {
             throw BusinessException.badRequest("wechat.code.cannot.be.blank");
@@ -142,6 +150,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         }
     }
 
+    /**
+     * 创建微信注册会员。
+     */
     private MemberUserPO createWechatMember(String openId, String unionId) {
         MemberUserPO memberUserPO = buildDefaultMember();
         memberUserMapper.insert(memberUserPO);
@@ -158,6 +169,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return memberUserPO;
     }
 
+    /**
+     * 组装返回对象。
+     */
     private LoginVO assembleLoginVO(UserDTO userDTO, SaTokenInfo tokenInfo) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(userDTO.getId());
@@ -170,6 +184,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return loginVO;
     }
 
+    /**
+     * 组装返回对象。
+     */
     private LoginVO assembleMemberLoginVO(MemberUserPO memberUserPO) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(memberUserPO.getId());
@@ -181,6 +198,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return loginVO;
     }
 
+    /**
+     * 构建默认会员对象。
+     */
     private MemberUserPO buildDefaultMember() {
         MemberUserPO memberUserPO = MemberUserPO.builder()
                 .status(UserStatusEnum.NORMAL)
@@ -193,6 +213,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return memberUserPO;
     }
 
+    /**
+     * 解析用于展示的名称。
+     */
     private String resolveDisplayName(MemberUserPO memberUserPO) {
         if (StringUtils.hasText(memberUserPO.getNickname())) {
             return memberUserPO.getNickname();
@@ -203,6 +226,9 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         return "member_" + memberUserPO.getId();
     }
 
+    /**
+     * 解析当前请求的客户端 IP。
+     */
     private String resolveCurrentClientIp() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes == null ? null : attributes.getRequest();

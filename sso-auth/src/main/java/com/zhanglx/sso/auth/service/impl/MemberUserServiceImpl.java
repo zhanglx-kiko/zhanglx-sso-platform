@@ -1,8 +1,8 @@
 package com.zhanglx.sso.auth.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.domain.dto.MemberBindPhoneDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
-import com.zhanglx.sso.auth.constants.MemberVerificationCodeScenes;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
 import com.zhanglx.sso.auth.exception.MemberErrorCode;
@@ -15,6 +15,7 @@ import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
+import com.zhanglx.sso.sms.enums.SmsSceneType;
 import com.zhanglx.sso.web.support.RequestIdentityAccessor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,15 @@ public class MemberUserServiceImpl implements MemberUserService {
         memberUserPO.setBirthday(updateDTO.getBirthday());
         memberUserPO.setEmail(updateDTO.getEmail());
         memberUserPO.setProfileExtra(updateDTO.getProfileExtra());
-        memberUserMapper.updateById(memberUserPO);
+        MemberUserPO updatePO = new MemberUserPO();
+        updatePO.setId(memberId);
+        updatePO.setNickname(updateDTO.getNickname());
+        updatePO.setAvatar(updateDTO.getAvatar());
+        updatePO.setSex(updateDTO.getSex());
+        updatePO.setBirthday(updateDTO.getBirthday());
+        updatePO.setEmail(updateDTO.getEmail());
+        updatePO.setProfileExtra(updateDTO.getProfileExtra());
+        memberUserMapper.updateById(updatePO);
         return IMemberUserMapper.INSTANCE.toInfoVO(memberUserPO);
     }
 
@@ -73,14 +82,19 @@ public class MemberUserServiceImpl implements MemberUserService {
         }
 
         memberVerificationCodeService.verifyCode(
-                MemberVerificationCodeScenes.BIND_PHONE,
+                SmsSceneType.BIND_PHONE,
                 bindPhoneDTO.getPhoneNumber(),
                 bindPhoneDTO.getVerificationCode(),
                 memberId
         );
 
+        memberUserMapper.update(
+                null,
+                new LambdaUpdateWrapper<MemberUserPO>()
+                        .eq(MemberUserPO::getId, memberId)
+                        .set(MemberUserPO::getPhoneNumber, bindPhoneDTO.getPhoneNumber())
+        );
         memberUserPO.setPhoneNumber(bindPhoneDTO.getPhoneNumber());
-        memberUserMapper.updateById(memberUserPO);
         return IMemberUserMapper.INSTANCE.toInfoVO(memberUserPO);
     }
 
@@ -122,12 +136,18 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void touchLastLoginInfo(Long memberId) {
-        MemberUserPO memberUserPO = getById(memberId);
-        memberUserPO.setLastLoginTime(LocalDateTime.now());
-        memberUserPO.setLastLoginIp(resolveCurrentClientIp());
-        memberUserMapper.updateById(memberUserPO);
+        memberUserMapper.update(
+                null,
+                new LambdaUpdateWrapper<MemberUserPO>()
+                        .eq(MemberUserPO::getId, memberId)
+                        .set(MemberUserPO::getLastLoginTime, LocalDateTime.now())
+                        .set(MemberUserPO::getLastLoginIp, resolveCurrentClientIp())
+        );
     }
 
+    /**
+     * 解析当前请求的客户端 IP。
+     */
     private String resolveCurrentClientIp() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes == null ? null : attributes.getRequest();

@@ -93,6 +93,9 @@ public class BestEffortImportListener implements ReadListener<PermissionExcelVO>
         flushProgressToRedis();
     }
 
+    /**
+     * 处理当前批次的内部逻辑。
+     */
     private void processValidBatch() {
         try {
             int attemptedSize = validDataBatch.size();
@@ -127,6 +130,9 @@ public class BestEffortImportListener implements ReadListener<PermissionExcelVO>
 
     /**
      * 将尚未同步的增量数据刷入 Redis，并重置游标
+     */
+    /**
+     * 刷新当前处理状态。
      */
     private void flushProgressToRedis() {
         if (unsyncedProcessed > 0 || unsyncedSuccess > 0 || unsyncedFail > 0) {

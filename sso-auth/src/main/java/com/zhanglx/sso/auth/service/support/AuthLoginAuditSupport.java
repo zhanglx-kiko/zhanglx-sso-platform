@@ -118,6 +118,9 @@ public class AuthLoginAuditSupport {
                 .extJson(buildExtJson(request, clientType));
     }
 
+/**
+ * 构建登录审计快照。
+ */
     private SessionSnapshot buildSnapshot(boolean admin) {
         try {
             if (admin && StpUtil.isLogin()) {
@@ -143,6 +146,9 @@ public class AuthLoginAuditSupport {
         return new SessionSnapshot(null, null, null, null);
     }
 
+/**
+ * 构建扩展信息 JSON。
+ */
     private String buildExtJson(HttpServletRequest request, String clientType) {
         Map<String, Object> ext = new LinkedHashMap<>();
         ext.put("requestUri", request == null ? null : request.getRequestURI());
@@ -154,6 +160,9 @@ public class AuthLoginAuditSupport {
         }
     }
 
+/**
+ * 提炼失败原因，便于日志和异常输出。
+ */
     private String resolveFailureReason(Throwable throwable) {
         if (throwable instanceof BusinessException businessException) {
             return StringUtils.hasText(businessException.getMessage())
@@ -163,6 +172,9 @@ public class AuthLoginAuditSupport {
         return throwable == null ? null : throwable.getMessage();
     }
 
+/**
+ * 解析应用编码。
+ */
     private String resolveAppCode(HttpServletRequest request) {
         if (request == null) {
             return "sso";
@@ -171,6 +183,9 @@ public class AuthLoginAuditSupport {
         return StringUtils.hasText(appCode) ? appCode.trim() : "sso";
     }
 
+/**
+ * 解析请求链路追踪标识。
+ */
     private String resolveTraceId(HttpServletRequest request) {
         String traceId = TraceContextHolder.getTraceId();
         if (StringUtils.hasText(traceId)) {
@@ -180,6 +195,9 @@ public class AuthLoginAuditSupport {
         return currentTraceId == null ? null : String.valueOf(currentTraceId);
     }
 
+/**
+ * 解析请求编号。
+ */
     private String resolveRequestId(HttpServletRequest request) {
         String requestId = TraceContextHolder.getRequestId();
         if (StringUtils.hasText(requestId)) {
@@ -189,11 +207,17 @@ public class AuthLoginAuditSupport {
         return currentRequestId == null ? null : String.valueOf(currentRequestId);
     }
 
+/**
+ * 获取当前线程中的请求对象。
+ */
     private HttpServletRequest currentRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attributes == null ? null : attributes.getRequest();
     }
 
+/**
+ * 将对象安全转换为字符串。
+ */
     private String stringValue(Object value) {
         return value == null ? null : String.valueOf(value);
     }

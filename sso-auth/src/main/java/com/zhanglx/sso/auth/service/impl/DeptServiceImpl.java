@@ -21,15 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -80,7 +72,14 @@ public class DeptServiceImpl implements DeptService {
         exist.setDeptName(deptDTO.getDeptName());
         exist.setSortNum(deptDTO.getSortNum());
         exist.setStatus(deptDTO.getStatus());
-        deptMapper.updateById(exist);
+        DeptPO updatePO = new DeptPO();
+        updatePO.setId(id);
+        updatePO.setParentId(parentId);
+        updatePO.setAncestors(newAncestors);
+        updatePO.setDeptName(deptDTO.getDeptName());
+        updatePO.setSortNum(deptDTO.getSortNum());
+        updatePO.setStatus(deptDTO.getStatus());
+        deptMapper.updateById(updatePO);
 
         String newPath = buildSelfPath(exist);
         if (!Objects.equals(oldPath, newPath)) {
@@ -160,7 +159,10 @@ public class DeptServiceImpl implements DeptService {
         }
 
         exist.setStatus(status);
-        deptMapper.updateById(exist);
+        DeptPO updatePO = new DeptPO();
+        updatePO.setId(id);
+        updatePO.setStatus(status);
+        deptMapper.updateById(updatePO);
 
         if (EnableStatusEnum.isDisabled(status)) {
             String currentPath = buildSelfPath(exist);
@@ -170,7 +172,10 @@ public class DeptServiceImpl implements DeptService {
                     .toList();
             for (DeptPO child : children) {
                 child.setStatus(EnableStatusEnum.DISABLED);
-                deptMapper.updateById(child);
+                DeptPO childUpdatePO = new DeptPO();
+                childUpdatePO.setId(child.getId());
+                childUpdatePO.setStatus(EnableStatusEnum.DISABLED);
+                deptMapper.updateById(childUpdatePO);
             }
         }
         return ISystemManageMapper.INSTANCE.toDTO(exist);
@@ -222,6 +227,9 @@ public class DeptServiceImpl implements DeptService {
                 .toList();
     }
 
+    /**
+     * 根据标识查询目标数据，不存在时抛出异常。
+     */
     private DeptPO getDeptOrThrow(Long id) {
         AssertUtils.notNull(id, "department id cannot be null");
         DeptPO dept = deptMapper.selectById(id);
@@ -229,6 +237,9 @@ public class DeptServiceImpl implements DeptService {
         return dept;
     }
 
+    /**
+     * 处理内部辅助逻辑。
+     */
     private DeptPO getParentOrNull(Long parentId) {
         if (parentId == null || parentId <= 0) {
             return null;
@@ -236,10 +247,16 @@ public class DeptServiceImpl implements DeptService {
         return getDeptOrThrow(parentId);
     }
 
+    /**
+     * 规范化父级部门标识。
+     */
     private Long normalizeParentId(Long parentId) {
         return parentId == null ? 0L : parentId;
     }
 
+    /**
+     * 构建部门祖级路径。
+     */
     private String buildAncestors(DeptPO parent) {
         if (parent == null) {
             return "0";
@@ -247,10 +264,16 @@ public class DeptServiceImpl implements DeptService {
         return "0".equals(parent.getAncestors()) ? "0," + parent.getId() : parent.getAncestors() + "," + parent.getId();
     }
 
+    /**
+     * 构建部门自身路径。
+     */
     private String buildSelfPath(DeptPO dept) {
         return "0".equals(dept.getAncestors()) ? "0," + dept.getId() : dept.getAncestors() + "," + dept.getId();
     }
 
+    /**
+     * 判断当前条件是否成立。
+     */
     private boolean isDescendantParent(Long currentId, DeptPO parent) {
         if (parent == null) {
             return false;
@@ -264,6 +287,9 @@ public class DeptServiceImpl implements DeptService {
                 || ancestors.endsWith("," + currentIdStr);
     }
 
+    /**
+     * 校验名称是否唯一。
+     */
     private void validateNameUnique(Long parentId, String deptName, Long excludeId) {
         AssertUtils.notBlank(deptName, "department name cannot be blank");
         LambdaQueryWrapperX<DeptPO> wrapper = new LambdaQueryWrapperX<DeptPO>()
@@ -275,6 +301,9 @@ public class DeptServiceImpl implements DeptService {
         AssertUtils.isTrue(deptMapper.selectCount(wrapper) == 0, "duplicate department name exists under same parent");
     }
 
+    /**
+     * 同步更新子节点的祖级路径。
+     */
     private void updateChildrenAncestors(String oldPath, String newPath) {
         List<DeptPO> all = deptMapper.selectList();
         for (DeptPO item : all) {
@@ -284,11 +313,17 @@ public class DeptServiceImpl implements DeptService {
             }
             if (ancestors.equals(oldPath) || ancestors.startsWith(oldPath + ",")) {
                 item.setAncestors(Pattern.compile("^" + Pattern.quote(oldPath)).matcher(ancestors).replaceFirst(newPath));
-                deptMapper.updateById(item);
+                DeptPO updatePO = new DeptPO();
+                updatePO.setId(item.getId());
+                updatePO.setAncestors(item.getAncestors());
+                deptMapper.updateById(updatePO);
             }
         }
     }
 
+    /**
+     * 补齐层级结构中的上级节点。
+     */
     private void appendAncestors(DeptDTO dept, Map<Long, DeptDTO> dtoMap, Map<Long, DeptDTO> collector) {
         if (dept.getParentId() == null || dept.getParentId() <= 0) {
             return;
@@ -301,6 +336,9 @@ public class DeptServiceImpl implements DeptService {
         appendAncestors(parent, dtoMap, collector);
     }
 
+    /**
+     * 构建树形结构结果。
+     */
     private List<DeptDTO> buildTree(List<DeptDTO> depts) {
         Map<Long, DeptDTO> map = new LinkedHashMap<>();
         depts.stream()
@@ -323,6 +361,9 @@ public class DeptServiceImpl implements DeptService {
         return roots;
     }
 
+    /**
+     * 规范化标识集合并去重。
+     */
     private List<Long> normalizeIds(List<Long> ids) {
         if (ids == null) {
             return List.of();

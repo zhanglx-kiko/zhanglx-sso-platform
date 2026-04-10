@@ -18,7 +18,7 @@ import org.apache.ibatis.type.JdbcType;
  * @Author: Zhang L X
  * @Create: 2026/3/17 15:12
  * @ClassName: PermissionPO
- * @Description:
+ * @Description: 权限对象
  */
 @Data
 @SuperBuilder

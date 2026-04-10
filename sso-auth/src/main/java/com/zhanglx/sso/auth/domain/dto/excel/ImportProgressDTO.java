@@ -9,6 +9,10 @@ import lombok.Data;
  * @ClassName: ImportProgressDTO
  * @Description: 进度缓存对象 (保存到 Redis)
  */
+/**
+ * 导入任务进度对象。
+ */
+
 @Data
 @Builder
 public class ImportProgressDTO {

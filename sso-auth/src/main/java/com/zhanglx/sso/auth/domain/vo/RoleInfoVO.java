@@ -13,7 +13,9 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.List;
-
+/**
+ * 角色详情视图对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

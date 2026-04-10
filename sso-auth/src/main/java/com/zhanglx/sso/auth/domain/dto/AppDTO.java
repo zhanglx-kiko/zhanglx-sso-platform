@@ -11,6 +11,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * 应用数据传输对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

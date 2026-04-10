@@ -192,6 +192,9 @@ public class Argon2PasswordEncoder {
 
     // ========== 私有核心方法 ==========
 
+/**
+ * 解析 Argon2 编码结果中的参数。
+ */
     private Argon2Parameters parseArgon2Parameters(String encodedPassword) {
         try {
             String[] parts = encodedPassword.split("\\$");
@@ -213,6 +216,9 @@ public class Argon2PasswordEncoder {
         }
     }
 
+/**
+ * 根据参数创建临时 Argon2 计算器。
+ */
     private Argon2Function createTempArgon2Function(Argon2Parameters params) {
         try {
             return Argon2Function.getInstance(params.memory(), params.iterations(), params.parallelism(), outputLength, ARGON2_TYPE);

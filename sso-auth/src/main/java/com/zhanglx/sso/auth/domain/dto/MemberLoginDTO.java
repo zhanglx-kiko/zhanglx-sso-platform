@@ -10,6 +10,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+/**
+ * 会员登录请求对象。
+ */
+
 
 @Data
 @SuperBuilder

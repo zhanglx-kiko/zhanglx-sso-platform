@@ -109,6 +109,9 @@ public class PermissionServiceImpl implements PermissionService {
      * @param parentLineage 父级权限的血缘路径，例如 {@code mall.goods.list}
      * @return 当前节点规范化后的完整血缘路径，例如 {@code mall.goods.list.add}
      */
+    /**
+     * 处理内部辅助逻辑。
+     */
     private String buildIdentityLineage(String identity, String parentLineage) {
         if (StringUtils.isBlank(identity)) {
             return parentLineage;
@@ -159,6 +162,9 @@ public class PermissionServiceImpl implements PermissionService {
      *
      * @param permissionDTOS 需要删除的权限节点列表
      * @return 按递归顺序汇总后的已删除权限列表
+     */
+    /**
+     * 递归删除权限节点及其子节点。
      */
     private List<PermissionDTO> recursiveDelFuncPerm(List<PermissionDTO> permissionDTOS) {
         if (CollectionUtils.isEmpty(permissionDTOS)) {
@@ -264,6 +270,9 @@ public class PermissionServiceImpl implements PermissionService {
      * @param childrenPermission    待更新的子节点树
      * @return 所有被更新的子节点平铺列表
      */
+    /**
+     * 递归刷新子节点的血缘路径。
+     */
     private List<PermissionDTO> recursiveUpdateIdentityLineage(String identity, String parentIdentityLineage, List<PermissionDTO> childrenPermission) {
         if (CollectionUtils.isEmpty(childrenPermission)) {
             return Lists.newArrayList();
@@ -341,6 +350,9 @@ public class PermissionServiceImpl implements PermissionService {
      * @param searchFuncPermLabels 命中的权限节点列表
      * @param allFuncPermLabels    全量权限节点列表
      * @return 包含祖先节点的结果集
+     */
+    /**
+     * 为搜索结果补齐祖先节点。
      */
     private List<PermissionDTO> findAncestor(List<PermissionDTO> searchFuncPermLabels, List<PermissionDTO> allFuncPermLabels) {
         List<PermissionDTO> results = Lists.newArrayList();
@@ -428,7 +440,10 @@ public class PermissionServiceImpl implements PermissionService {
         AssertUtils.notNull(permissionPO, CommonErrorCode.NOT_FOUND);
 
         permissionPO.setStatus(status);
-        permissionMapper.updateById(permissionPO);
+        PermissionPO updatePO = new PermissionPO();
+        updatePO.setId(id);
+        updatePO.setStatus(status);
+        permissionMapper.updateById(updatePO);
         return IPermissionMapper.INSTANCE.toDTO(permissionPO);
     }
 
@@ -481,6 +496,9 @@ public class PermissionServiceImpl implements PermissionService {
      *
      * @param validBatch 当前批次校验通过的数据
      * @param failedList 当前任务累计失败的数据列表
+     */
+    /**
+     * 将校验通过的数据批量保存到数据库。
      */
     private void saveToDatabase(List<PermissionExcelVO> validBatch, List<PermissionExcelVO> failedList) {
         if (CollectionUtils.isEmpty(validBatch)) {
@@ -550,6 +568,9 @@ public class PermissionServiceImpl implements PermissionService {
      * @param failedData 导入失败的数据列表
      * @param taskId     导入任务 ID
      * @return 错误文件下载地址；生成失败时返回空字符串
+     */
+    /**
+     * 生成并上传错误明细文件。
      */
     private String generateAndUploadErrorExcel(List<PermissionExcelVO> failedData, String taskId) {
         File tempErrorFile = null;
@@ -714,6 +735,9 @@ public class PermissionServiceImpl implements PermissionService {
      *
      * @param poList 待导出的权限实体列表
      * @return 转换后的 Excel 视图对象列表
+     */
+    /**
+     * 将权限数据转换为导出对象。
      */
     private List<PermissionExcelVO> convertToExcelVO(List<PermissionPO> poList) {
         List<Long> parentIds = poList.stream()

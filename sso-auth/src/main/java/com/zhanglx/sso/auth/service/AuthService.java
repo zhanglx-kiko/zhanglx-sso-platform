@@ -1,9 +1,11 @@
 package com.zhanglx.sso.auth.service;
 
+import com.zhanglx.sso.auth.domain.dto.ForgotPasswordVerificationCodeSendDTO;
 import com.zhanglx.sso.auth.domain.dto.ForgotPasswordDTO;
 import com.zhanglx.sso.auth.domain.dto.UserLoginDTO;
 import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.domain.vo.SmsVerificationCodeSendVO;
 
 public interface AuthService {
 
@@ -12,6 +14,8 @@ public interface AuthService {
     void updatePassword(UserPasswordDTO userPasswordDTO);
 
     void resetPassword(Long userId);
+
+    SmsVerificationCodeSendVO sendForgotPasswordVerificationCode(ForgotPasswordVerificationCodeSendDTO sendDTO);
 
     void forgotPassword(ForgotPasswordDTO forgotPasswordDTO);
 }

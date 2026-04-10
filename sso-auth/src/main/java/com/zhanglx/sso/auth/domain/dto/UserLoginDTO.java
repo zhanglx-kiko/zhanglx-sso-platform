@@ -18,6 +18,10 @@ import lombok.experimental.SuperBuilder;
  * @ClassName: UserLoginDTO
  * @Description:
  */
+/**
+ * 系统用户登录请求对象。
+ */
+
 @Data
 @SuperBuilder
 @NoArgsConstructor

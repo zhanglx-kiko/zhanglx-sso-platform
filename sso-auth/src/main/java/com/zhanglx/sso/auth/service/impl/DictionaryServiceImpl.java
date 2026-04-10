@@ -53,14 +53,23 @@ public class DictionaryServiceImpl implements DictionaryService {
         exist.setDictType(dto.getDictType());
         exist.setStatus(dto.getStatus());
         exist.setRemark(dto.getRemark());
-        dictTypeMapper.updateById(exist);
+        DictTypePO updatePO = new DictTypePO();
+        updatePO.setId(id);
+        updatePO.setDictName(dto.getDictName());
+        updatePO.setDictType(dto.getDictType());
+        updatePO.setStatus(dto.getStatus());
+        updatePO.setRemark(dto.getRemark());
+        dictTypeMapper.updateById(updatePO);
 
         if (!Objects.equals(oldType, dto.getDictType())) {
             List<DictDataPO> dataList = dictDataMapper.selectList(new LambdaQueryWrapperX<DictDataPO>()
                     .eq(DictDataPO::getDictType, oldType));
             for (DictDataPO data : dataList) {
                 data.setDictType(dto.getDictType());
-                dictDataMapper.updateById(data);
+                DictDataPO updateDataPO = new DictDataPO();
+                updateDataPO.setId(data.getId());
+                updateDataPO.setDictType(dto.getDictType());
+                dictDataMapper.updateById(updateDataPO);
             }
         }
         return ISystemManageMapper.INSTANCE.toDTO(exist);
@@ -109,13 +118,19 @@ public class DictionaryServiceImpl implements DictionaryService {
     public DictTypeDTO updateTypeStatus(Long id, EnableStatusEnum status) {
         DictTypePO exist = getTypeOrThrow(id);
         exist.setStatus(status);
-        dictTypeMapper.updateById(exist);
+        DictTypePO updatePO = new DictTypePO();
+        updatePO.setId(id);
+        updatePO.setStatus(status);
+        dictTypeMapper.updateById(updatePO);
 
         List<DictDataPO> dataList = dictDataMapper.selectList(new LambdaQueryWrapperX<DictDataPO>()
                 .eq(DictDataPO::getDictType, exist.getDictType()));
         for (DictDataPO data : dataList) {
             data.setStatus(status);
-            dictDataMapper.updateById(data);
+            DictDataPO updateDataPO = new DictDataPO();
+            updateDataPO.setId(data.getId());
+            updateDataPO.setStatus(status);
+            dictDataMapper.updateById(updateDataPO);
         }
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
@@ -151,7 +166,15 @@ public class DictionaryServiceImpl implements DictionaryService {
         exist.setDictType(dto.getDictType());
         exist.setStatus(dto.getStatus());
         exist.setRemark(dto.getRemark());
-        dictDataMapper.updateById(exist);
+        DictDataPO updatePO = new DictDataPO();
+        updatePO.setId(id);
+        updatePO.setDictSort(dto.getDictSort());
+        updatePO.setDictLabel(dto.getDictLabel());
+        updatePO.setDictValue(dto.getDictValue());
+        updatePO.setDictType(dto.getDictType());
+        updatePO.setStatus(dto.getStatus());
+        updatePO.setRemark(dto.getRemark());
+        dictDataMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -200,7 +223,10 @@ public class DictionaryServiceImpl implements DictionaryService {
     public DictDataDTO updateDataStatus(Long id, EnableStatusEnum status) {
         DictDataPO exist = getDataOrThrow(id);
         exist.setStatus(status);
-        dictDataMapper.updateById(exist);
+        DictDataPO updatePO = new DictDataPO();
+        updatePO.setId(id);
+        updatePO.setStatus(status);
+        dictDataMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -214,6 +240,9 @@ public class DictionaryServiceImpl implements DictionaryService {
         return ISystemManageMapper.INSTANCE.toDictDataDTOList(list);
     }
 
+    /**
+     * 根据标识查询目标数据，不存在时抛出异常。
+     */
     private DictTypePO getTypeOrThrow(Long id) {
         AssertUtils.notNull(id, "dict type id cannot be null");
         DictTypePO type = dictTypeMapper.selectById(id);
@@ -221,6 +250,9 @@ public class DictionaryServiceImpl implements DictionaryService {
         return type;
     }
 
+    /**
+     * 根据编码查询字典类型。
+     */
     private DictTypePO getTypeByCode(String dictType) {
         AssertUtils.notBlank(dictType, "dict type cannot be blank");
         DictTypePO type = dictTypeMapper.selectOne(DictTypePO::getDictType, dictType);
@@ -228,6 +260,9 @@ public class DictionaryServiceImpl implements DictionaryService {
         return type;
     }
 
+    /**
+     * 根据标识查询目标数据，不存在时抛出异常。
+     */
     private DictDataPO getDataOrThrow(Long id) {
         AssertUtils.notNull(id, "dict data id cannot be null");
         DictDataPO data = dictDataMapper.selectById(id);
@@ -235,6 +270,9 @@ public class DictionaryServiceImpl implements DictionaryService {
         return data;
     }
 
+    /**
+     * 校验字典类型是否唯一。
+     */
     private void validateTypeUnique(String dictType, Long excludeId) {
         AssertUtils.notBlank(dictType, "dict type cannot be blank");
         LambdaQueryWrapperX<DictTypePO> wrapper = new LambdaQueryWrapperX<DictTypePO>()
@@ -245,6 +283,9 @@ public class DictionaryServiceImpl implements DictionaryService {
         AssertUtils.isTrue(dictTypeMapper.selectCount(wrapper) == 0, "dict type already exists");
     }
 
+    /**
+     * 校验字典数据标签和值是否唯一。
+     */
     private void validateDataUnique(String dictType, String dictLabel, String dictValue, Long excludeId) {
         AssertUtils.notBlank(dictLabel, "dict label cannot be blank");
         AssertUtils.notBlank(dictValue, "dict value cannot be blank");

@@ -18,6 +18,10 @@ import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * 部门数据传输对象。
+ */
+
 
 @Data
 @SuperBuilder

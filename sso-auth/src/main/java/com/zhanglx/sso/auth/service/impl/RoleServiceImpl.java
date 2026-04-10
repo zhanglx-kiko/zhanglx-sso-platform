@@ -4,25 +4,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.zhanglx.sso.auth.domain.dto.RoleDTO;
 import com.zhanglx.sso.auth.domain.dto.RolePermissionRelationshipMappingDTO;
-import com.zhanglx.sso.auth.domain.po.AppPO;
-import com.zhanglx.sso.auth.domain.po.PermissionPO;
-import com.zhanglx.sso.auth.domain.po.RolePO;
-import com.zhanglx.sso.auth.domain.po.RolePermissionRelationshipMappingPO;
-import com.zhanglx.sso.auth.domain.po.UserPO;
-import com.zhanglx.sso.auth.domain.po.UserRoleRelationshipMappingPO;
+import com.zhanglx.sso.auth.domain.po.*;
 import com.zhanglx.sso.auth.domain.vo.RoleInfoVO;
 import com.zhanglx.sso.auth.enums.DataScopeEnum;
 import com.zhanglx.sso.auth.enums.EnableStatusEnum;
-import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
 import com.zhanglx.sso.auth.event.RolePermissionChangedEvent;
 import com.zhanglx.sso.auth.event.RoleUsersChangedEvent;
-import com.zhanglx.sso.auth.mapper.AppMapper;
-import com.zhanglx.sso.auth.mapper.PermissionMapper;
-import com.zhanglx.sso.auth.mapper.RoleDeptMapper;
-import com.zhanglx.sso.auth.mapper.RoleMapper;
-import com.zhanglx.sso.auth.mapper.RolePermissionRelationshipMappingMapper;
-import com.zhanglx.sso.auth.mapper.UserMapper;
-import com.zhanglx.sso.auth.mapper.UserRoleRelationshipMappingMapper;
+import com.zhanglx.sso.auth.exception.AuthOperationErrorCode;
+import com.zhanglx.sso.auth.mapper.*;
 import com.zhanglx.sso.auth.service.PermissionService;
 import com.zhanglx.sso.auth.service.RoleService;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
@@ -40,11 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -163,7 +148,15 @@ public class RoleServiceImpl implements RoleService {
         exist.setDataScope(roleDTO.getDataScope());
         exist.setStatus(roleDTO.getStatus());
         exist.setRemark(roleDTO.getRemark());
-        roleMapper.updateById(exist);
+        RolePO updatePO = new RolePO();
+        updatePO.setId(id);
+        updatePO.setAppCode(appCode);
+        updatePO.setRoleCode(roleDTO.getRoleCode());
+        updatePO.setRoleName(roleDTO.getRoleName());
+        updatePO.setDataScope(roleDTO.getDataScope());
+        updatePO.setStatus(roleDTO.getStatus());
+        updatePO.setRemark(roleDTO.getRemark());
+        roleMapper.updateById(updatePO);
 
         if (!DataScopeEnum.CUSTOM.matches(exist.getDataScope())) {
             roleDeptMapper.deleteByRoleId(id);
@@ -324,20 +317,32 @@ public class RoleServiceImpl implements RoleService {
             ensureCurrentUserRoleUnaffected(Collections.singleton(roleId), AuthOperationErrorCode.DISABLE_CURRENT_USER_ROLE_FORBIDDEN);
         }
         role.setStatus(status);
-        roleMapper.updateById(role);
+        RolePO updatePO = new RolePO();
+        updatePO.setId(roleId);
+        updatePO.setStatus(status);
+        roleMapper.updateById(updatePO);
         return IRoleMapper.INSTANCE.toDTO(role);
     }
 
+    /**
+     * 校验应用配置是否可用。
+     */
     private void validateApp(String appCode) {
         AppPO app = appMapper.selectOne(AppPO::getAppCode, appCode);
         AssertUtils.notNull(app, "鎵€灞炲簲鐢ㄤ笉瀛樺湪");
         AssertUtils.isTrue(EnableStatusEnum.isEnabled(app.getStatus()), "鎵€灞炲簲鐢ㄥ凡鍋滅敤");
     }
 
+    /**
+     * 规范化应用编码。
+     */
     private String normalizeAppCode(String appCode) {
         return appCode == null || appCode.isBlank() ? "sso" : appCode.trim();
     }
 
+    /**
+     * 校验角色编码和名称是否唯一。
+     */
     private void validateRoleUnique(String appCode, String roleCode, String roleName, Long excludeId) {
         AssertUtils.notBlank(roleCode, "role.code.cannot.be.blank");
         AssertUtils.notBlank(roleName, "role.name.cannot.be.blank");
@@ -356,6 +361,9 @@ public class RoleServiceImpl implements RoleService {
         AssertUtils.isTrue(roleMapper.selectCount(nameWrapper) == 0, "瑙掕壊鍚嶇О宸插瓨鍦?");
     }
 
+    /**
+     * 确保关键约束条件成立。
+     */
     private void ensureCurrentUserRoleUnaffected(java.util.Collection<Long> roleIds, AuthOperationErrorCode errorCode) {
         Long currentUserId = authOperationGuard.getCurrentLoginUserId();
         if (currentUserId == null || CollectionUtils.isEmpty(roleIds)) {
@@ -397,7 +405,10 @@ public class RoleServiceImpl implements RoleService {
                 ))
                 .forEach(item -> {
                     item.setExpireTime(permissionRequestMap.get(item.getPermissionId()).getExpireTime());
-                    rolePermissionRelationshipMappingMapper.updateById(item);
+                    RolePermissionRelationshipMappingPO updatePO = new RolePermissionRelationshipMappingPO();
+                    updatePO.setId(item.getId());
+                    updatePO.setExpireTime(item.getExpireTime());
+                    rolePermissionRelationshipMappingMapper.updateById(updatePO);
                 });
     }
 }

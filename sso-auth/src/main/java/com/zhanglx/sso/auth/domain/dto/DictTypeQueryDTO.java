@@ -8,6 +8,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+/**
+ * 字典类型分页查询参数对象。
+ */
+
 
 @Data
 @SuperBuilder

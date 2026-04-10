@@ -18,7 +18,7 @@ import java.io.Serializable;
  * @Author: Zhang L X
  * @Create: 2026/2/10 21:12
  * @ClassName: LoginVO
- * @Description:
+ * @Description: 登录结果视图对象。
  */
 @Data
 @SuperBuilder

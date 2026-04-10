@@ -1,5 +1,6 @@
 package com.zhanglx.sso.auth.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.zhanglx.sso.core.enums.IBaseEnum;
 import com.zhanglx.sso.core.enums.IIntegerBaseEnum;
@@ -15,6 +16,7 @@ public enum ConfigTypeEnum implements IIntegerBaseEnum<String> {
     CUSTOM(0, "普通参数"),
     BUILT_IN(1, "系统内置");
 
+    @EnumValue
     @JsonValue
     private final Integer code;
 

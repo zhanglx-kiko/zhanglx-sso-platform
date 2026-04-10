@@ -23,12 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -70,7 +65,14 @@ public class AppServiceImpl implements AppService {
         exist.setUserType(appDTO.getUserType());
         exist.setStatus(appDTO.getStatus());
         exist.setRemark(appDTO.getRemark());
-        appMapper.updateById(exist);
+        AppPO updatePO = new AppPO();
+        updatePO.setId(id);
+        updatePO.setAppCode(appDTO.getAppCode());
+        updatePO.setAppName(appDTO.getAppName());
+        updatePO.setUserType(appDTO.getUserType());
+        updatePO.setStatus(appDTO.getStatus());
+        updatePO.setRemark(appDTO.getRemark());
+        appMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -121,7 +123,10 @@ public class AppServiceImpl implements AppService {
     public AppDTO updateStatus(Long id, EnableStatusEnum status) {
         AppPO exist = getAppOrThrow(id);
         exist.setStatus(status);
-        appMapper.updateById(exist);
+        AppPO updatePO = new AppPO();
+        updatePO.setId(id);
+        updatePO.setStatus(status);
+        appMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -181,6 +186,9 @@ public class AppServiceImpl implements AppService {
                 .toList();
     }
 
+    /**
+     * 根据标识查询目标数据，不存在时抛出异常。
+     */
     private AppPO getAppOrThrow(Long id) {
         AssertUtils.notNull(id, "app id cannot be null");
         AppPO exist = appMapper.selectById(id);
@@ -188,6 +196,9 @@ public class AppServiceImpl implements AppService {
         return exist;
     }
 
+    /**
+     * 校验编码是否唯一。
+     */
     private void validateCodeUnique(String appCode, Long excludeId) {
         AssertUtils.notBlank(appCode, "app code cannot be blank");
         LambdaQueryWrapperX<AppPO> wrapper = new LambdaQueryWrapperX<AppPO>().eq(AppPO::getAppCode, appCode);
@@ -197,6 +208,9 @@ public class AppServiceImpl implements AppService {
         AssertUtils.isTrue(appMapper.selectCount(wrapper) == 0, "app code already exists");
     }
 
+    /**
+     * 校验名称是否唯一。
+     */
     private void validateNameUnique(String appName, Long excludeId) {
         AssertUtils.notBlank(appName, "app name cannot be blank");
         LambdaQueryWrapperX<AppPO> wrapper = new LambdaQueryWrapperX<AppPO>().eq(AppPO::getAppName, appName);
@@ -206,6 +220,9 @@ public class AppServiceImpl implements AppService {
         AssertUtils.isTrue(appMapper.selectCount(wrapper) == 0, "app name already exists");
     }
 
+    /**
+     * 规范化输入参数。
+     */
     private List<String> normalizeAppCodes(List<String> appCodes) {
         if (appCodes == null) {
             return List.of();
@@ -217,6 +234,9 @@ public class AppServiceImpl implements AppService {
                 .toList();
     }
 
+    /**
+     * 构建分页返回结果。
+     */
     private Page<AppDTO> buildPage(Page<AppPO> source, List<AppDTO> records) {
         Page<AppDTO> page = new Page<>();
         page.setCurrent(source.getCurrent());

@@ -1,12 +1,8 @@
 package com.zhanglx.sso.auth.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
-import com.zhanglx.sso.auth.constants.MemberVerificationCodeScenes;
-import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
-import com.zhanglx.sso.auth.domain.dto.MemberVerificationCodeSendDTO;
-import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.*;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
@@ -19,6 +15,7 @@ import com.zhanglx.sso.auth.service.MemberVerificationCodeService;
 import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
+import com.zhanglx.sso.sms.enums.SmsSceneType;
 import com.zhanglx.sso.web.support.RequestIdentityAccessor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.Locale;
 
 @Slf4j
 @Service
@@ -91,7 +86,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         memberVerificationCodeService.verifyCode(
-                MemberVerificationCodeScenes.REGISTER,
+                SmsSceneType.REGISTER,
                 memberRegisterDTO.getPhoneNumber(),
                 memberRegisterDTO.getCode(),
                 null
@@ -116,43 +111,17 @@ public class MemberAuthServiceImpl implements MemberAuthService {
 
     @Override
     public void sendVerificationCode(MemberVerificationCodeSendDTO sendDTO, Long memberId) {
-        String scene = sendDTO.getScene() == null ? null : sendDTO.getScene().trim().toUpperCase(Locale.ROOT);
-        if (MemberVerificationCodeScenes.REGISTER.equals(scene)) {
-            if (memberUserService.findByPhoneNumber(sendDTO.getPhoneNumber()) != null) {
-                throw BusinessException.conflict("member.phone.already.bound");
-            }
-            memberVerificationCodeService.sendCode(scene, sendDTO.getPhoneNumber(), null);
-            return;
+        SmsSceneType sceneType = SmsSceneType.resolve(sendDTO.getScene())
+                .orElseThrow(() -> new BusinessException("member.verification.scene.invalid"));
+
+        switch (sceneType) {
+            case REGISTER -> sendRegisterVerificationCode(sendDTO.getPhoneNumber());
+            case FORGOT_PASSWORD -> sendForgotPasswordVerificationCode(sendDTO.getPhoneNumber());
+            case BIND_PHONE -> sendBindPhoneVerificationCode(sendDTO.getPhoneNumber(), memberId);
+            case CHANGE_BOUND_PHONE, VERIFY_BIND_PHONE ->
+                    sendCurrentBoundPhoneVerificationCode(sceneType, sendDTO.getPhoneNumber(), memberId);
+            default -> throw new BusinessException("member.verification.scene.invalid");
         }
-
-        if (MemberVerificationCodeScenes.FORGOT_PASSWORD.equals(scene)) {
-            if (memberUserService.findByPhoneNumber(sendDTO.getPhoneNumber()) == null) {
-                throw new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND);
-            }
-            memberVerificationCodeService.sendCode(scene, sendDTO.getPhoneNumber(), null);
-            return;
-        }
-
-        if (MemberVerificationCodeScenes.BIND_PHONE.equals(scene)) {
-            if (memberId == null) {
-                throw BusinessException.unauthorized("login.required");
-            }
-
-            MemberUserPO currentMember = memberUserService.getById(memberId);
-            if (sendDTO.getPhoneNumber().equals(currentMember.getPhoneNumber())) {
-                throw BusinessException.badRequest("member.phone.bind.same.as.current");
-            }
-
-            MemberUserPO existMember = memberUserService.findByPhoneNumber(sendDTO.getPhoneNumber());
-            if (existMember != null && !existMember.getId().equals(memberId)) {
-                throw BusinessException.conflict("member.phone.already.bound");
-            }
-
-            memberVerificationCodeService.sendCode(scene, sendDTO.getPhoneNumber(), memberId);
-            return;
-        }
-
-        throw new BusinessException("member.verification.scene.invalid");
     }
 
     @Override
@@ -164,8 +133,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             throw new BusinessException(UserErrorCode.USER_OLD_PASSWORD_ERROR);
         }
 
-        memberUserPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(passwordDTO.getNewPassword()));
-        memberUserMapper.updateById(memberUserPO);
+        updateMemberPassword(memberUserPO.getId(), argon2PasswordEncoder.encodeAsyncWithTimeout(passwordDTO.getNewPassword()));
         StpMemberUtil.logout(memberUserPO.getId());
     }
 
@@ -178,17 +146,78 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         }
 
         memberVerificationCodeService.verifyCode(
-                MemberVerificationCodeScenes.FORGOT_PASSWORD,
+                SmsSceneType.FORGOT_PASSWORD,
                 forgotPasswordDTO.getPhoneNumber(),
                 forgotPasswordDTO.getVerificationCode(),
                 null
         );
 
-        memberUserPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(forgotPasswordDTO.getNewPassword()));
-        memberUserMapper.updateById(memberUserPO);
+        updateMemberPassword(memberUserPO.getId(), argon2PasswordEncoder.encodeAsyncWithTimeout(forgotPasswordDTO.getNewPassword()));
         StpMemberUtil.logout(memberUserPO.getId());
     }
 
+    /**
+     * 处理内部辅助逻辑。
+     */
+    private void sendRegisterVerificationCode(String phoneNumber) {
+        if (memberUserService.findByPhoneNumber(phoneNumber) != null) {
+            throw BusinessException.conflict("member.phone.already.bound");
+        }
+
+        memberVerificationCodeService.sendCode(SmsSceneType.REGISTER, phoneNumber, null);
+    }
+
+    /**
+     * 处理内部辅助逻辑。
+     */
+    private void sendForgotPasswordVerificationCode(String phoneNumber) {
+        if (memberUserService.findByPhoneNumber(phoneNumber) == null) {
+            throw new BusinessException(MemberErrorCode.MEMBER_NOT_FOUND);
+        }
+        memberVerificationCodeService.sendCode(SmsSceneType.FORGOT_PASSWORD, phoneNumber, null);
+    }
+
+    /**
+     * 处理内部辅助逻辑。
+     */
+    private void sendBindPhoneVerificationCode(String phoneNumber, Long memberId) {
+        MemberUserPO currentMember = requireLoginMember(memberId);
+        if (phoneNumber.equals(currentMember.getPhoneNumber())) {
+            throw BusinessException.badRequest("member.phone.bind.same.as.current");
+        }
+
+        MemberUserPO existMember = memberUserService.findByPhoneNumber(phoneNumber);
+        if (existMember != null && !existMember.getId().equals(memberId)) {
+            throw BusinessException.conflict("member.phone.already.bound");
+        }
+
+        memberVerificationCodeService.sendCode(SmsSceneType.BIND_PHONE, phoneNumber, memberId);
+    }
+
+    /**
+     * 处理内部辅助逻辑。
+     */
+    private void sendCurrentBoundPhoneVerificationCode(SmsSceneType sceneType, String phoneNumber, Long memberId) {
+        MemberUserPO currentMember = requireLoginMember(memberId);
+        if (!StringUtils.hasText(currentMember.getPhoneNumber()) || !currentMember.getPhoneNumber().equals(phoneNumber)) {
+            throw BusinessException.badRequest("member.phone.not.current.bound");
+        }
+        memberVerificationCodeService.sendCode(sceneType, phoneNumber, memberId);
+    }
+
+    /**
+     * 校验必要条件并返回处理结果。
+     */
+    private MemberUserPO requireLoginMember(Long memberId) {
+        if (memberId == null) {
+            throw BusinessException.unauthorized("login.required");
+        }
+        return memberUserService.getById(memberId);
+    }
+
+    /**
+     * 组装返回对象。
+     */
     private LoginVO assembleLoginVO(MemberUserPO memberUserPO) {
         LoginVO loginVO = new LoginVO();
         loginVO.setId(memberUserPO.getId());
@@ -200,17 +229,34 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return loginVO;
     }
 
+    /**
+     * 按新算法升级已有数据。
+     */
     private void upgradeUserPassword(MemberUserPO memberUserPO, String rawPassword) {
         try {
             String newEncodedPassword = argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword);
-            memberUserPO.setPassword(newEncodedPassword);
-            memberUserMapper.updateById(memberUserPO);
+            updateMemberPassword(memberUserPO.getId(), newEncodedPassword);
             log.info("Password upgraded for member [{}]", memberUserPO.getId());
         } catch (Exception e) {
             log.error("Failed to upgrade password for member [{}]", memberUserPO.getId(), e);
         }
     }
 
+    /**
+     * 更新会员密码。
+     */
+    private void updateMemberPassword(Long memberId, String encodedPassword) {
+        memberUserMapper.update(
+                null,
+                new LambdaUpdateWrapper<MemberUserPO>()
+                        .eq(MemberUserPO::getId, memberId)
+                        .set(MemberUserPO::getPassword, encodedPassword)
+        );
+    }
+
+    /**
+     * 构建默认会员对象。
+     */
     private MemberUserPO buildDefaultMember() {
         MemberUserPO memberUserPO = MemberUserPO.builder()
                 .status(UserStatusEnum.NORMAL)
@@ -223,6 +269,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return memberUserPO;
     }
 
+    /**
+     * 解析用于展示的名称。
+     */
     private String resolveDisplayName(MemberUserPO memberUserPO) {
         if (StringUtils.hasText(memberUserPO.getNickname())) {
             return memberUserPO.getNickname();
@@ -233,6 +282,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return "member_" + memberUserPO.getId();
     }
 
+    /**
+     * 生成脱敏后的展示内容。
+     */
     private String maskPhoneNickname(String phoneNumber) {
         if (!StringUtils.hasText(phoneNumber) || phoneNumber.length() < 7) {
             return null;
@@ -240,6 +292,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return "会员" + phoneNumber.substring(phoneNumber.length() - 4);
     }
 
+    /**
+     * 解析当前请求的客户端 IP。
+     */
     private String resolveCurrentClientIp() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes == null ? null : attributes.getRequest();

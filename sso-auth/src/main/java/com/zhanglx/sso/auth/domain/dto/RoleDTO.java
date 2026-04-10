@@ -13,6 +13,10 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.util.List;
+/**
+ * 角色数据传输对象。
+ */
+
 
 @Data
 @SuperBuilder

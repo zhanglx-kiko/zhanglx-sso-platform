@@ -12,7 +12,9 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+/**
+ * 会员信息视图对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor

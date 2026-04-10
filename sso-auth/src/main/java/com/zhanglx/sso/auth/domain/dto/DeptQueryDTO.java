@@ -12,6 +12,10 @@ import lombok.experimental.SuperBuilder;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 import tools.jackson.databind.ser.std.ToStringSerializer;
+/**
+ * 部门分页查询参数对象。
+ */
+
 
 @Data
 @SuperBuilder

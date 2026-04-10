@@ -8,6 +8,9 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+/**
+ * 认证请求操作人解析器。
+ */
 @Component
 public class AuthRequestActorResolver implements RequestActorResolver {
 

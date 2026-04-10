@@ -20,12 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -65,7 +60,13 @@ public class PostServiceImpl implements PostService {
         exist.setPostName(postDTO.getPostName());
         exist.setSortNum(postDTO.getSortNum());
         exist.setStatus(postDTO.getStatus());
-        postMapper.updateById(exist);
+        PostPO updatePO = new PostPO();
+        updatePO.setId(id);
+        updatePO.setPostCode(postDTO.getPostCode());
+        updatePO.setPostName(postDTO.getPostName());
+        updatePO.setSortNum(postDTO.getSortNum());
+        updatePO.setStatus(postDTO.getStatus());
+        postMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -113,7 +114,10 @@ public class PostServiceImpl implements PostService {
     public PostDTO updateStatus(Long id, EnableStatusEnum status) {
         PostPO exist = getPostOrThrow(id);
         exist.setStatus(status);
-        postMapper.updateById(exist);
+        PostPO updatePO = new PostPO();
+        updatePO.setId(id);
+        updatePO.setStatus(status);
+        postMapper.updateById(updatePO);
         return ISystemManageMapper.INSTANCE.toDTO(exist);
     }
 
@@ -166,6 +170,9 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+    /**
+     * 根据标识查询目标数据，不存在时抛出异常。
+     */
     private PostPO getPostOrThrow(Long id) {
         AssertUtils.notNull(id, "post id cannot be null");
         PostPO exist = postMapper.selectById(id);
@@ -173,6 +180,9 @@ public class PostServiceImpl implements PostService {
         return exist;
     }
 
+    /**
+     * 校验编码是否唯一。
+     */
     private void validateCodeUnique(String postCode, Long excludeId) {
         AssertUtils.notBlank(postCode, "post code cannot be blank");
         LambdaQueryWrapperX<PostPO> wrapper = new LambdaQueryWrapperX<PostPO>().eq(PostPO::getPostCode, postCode);
@@ -182,6 +192,9 @@ public class PostServiceImpl implements PostService {
         AssertUtils.isTrue(postMapper.selectCount(wrapper) == 0, "post code already exists");
     }
 
+    /**
+     * 校验名称是否唯一。
+     */
     private void validateNameUnique(String postName, Long excludeId) {
         AssertUtils.notBlank(postName, "post name cannot be blank");
         LambdaQueryWrapperX<PostPO> wrapper = new LambdaQueryWrapperX<PostPO>().eq(PostPO::getPostName, postName);
@@ -191,6 +204,9 @@ public class PostServiceImpl implements PostService {
         AssertUtils.isTrue(postMapper.selectCount(wrapper) == 0, "post name already exists");
     }
 
+    /**
+     * 规范化标识集合并去重。
+     */
     private List<Long> normalizeIds(List<Long> ids) {
         if (ids == null) {
             return List.of();
@@ -198,6 +214,9 @@ public class PostServiceImpl implements PostService {
         return ids.stream().filter(Objects::nonNull).distinct().toList();
     }
 
+    /**
+     * 构建分页返回结果。
+     */
     private Page<PostDTO> buildPage(Page<PostPO> source, List<PostDTO> records) {
         Page<PostDTO> page = new Page<>();
         page.setCurrent(source.getCurrent());

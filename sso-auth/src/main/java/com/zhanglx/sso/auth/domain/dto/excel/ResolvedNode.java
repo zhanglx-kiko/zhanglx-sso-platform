@@ -9,6 +9,10 @@ import lombok.Data;
  * @ClassName: ResolvedNode
  * @Description:
  */
+/**
+ * ResolvedNode 类型定义。
+ */
+
 @Data
 @AllArgsConstructor
 public class ResolvedNode {

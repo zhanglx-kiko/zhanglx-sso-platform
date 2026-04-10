@@ -76,6 +76,9 @@ public class StpInterfaceImpl implements StpInterface {
         return roleCodes;
     }
 
+    /**
+     * 构建缓存键。
+     */
     private String buildCacheKey(String prefix, String loginType, Object loginId) {
         String resolvedLoginType = (loginType == null || loginType.isBlank()) ? StpUtil.TYPE : loginType;
         return prefix + resolvedLoginType + ":" + loginId;

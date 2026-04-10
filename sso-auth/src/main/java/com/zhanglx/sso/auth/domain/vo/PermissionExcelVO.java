@@ -13,7 +13,7 @@ import org.hibernate.validator.constraints.Length;
 
 /**
  * @Author: Zhang L X
- * @Description: 权限导入 Excel 接收对象 (优化版)
+ * @Description: 权限导入、导出 Excel 接收对象
  */
 @Data
 @Builder
@@ -27,7 +27,6 @@ public class PermissionExcelVO {
     @Max(value = 3, message = "类型暂只支持-1到3")
     private Integer type;
 
-    // 废弃原有的 id 和 parentId，改为使用直观的标识符关联
     @ExcelProperty(value = "上级权限标识", index = 1)
     private String parentIdentification;
 
@@ -68,7 +67,6 @@ public class PermissionExcelVO {
     @Length(max = 256, message = "备注不能超过256个字符")
     private String remark;
 
-    // ========== 关键：用于“尽力而为”策略错误回写 ==========
     @ExcelProperty(value = "导入失败原因", index = 10)
     private String errorMessage;
 }

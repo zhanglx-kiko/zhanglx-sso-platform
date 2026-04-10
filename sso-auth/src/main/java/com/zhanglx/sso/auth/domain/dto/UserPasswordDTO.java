@@ -22,6 +22,10 @@ import java.io.Serializable;
  * @ClassName: UserPasswordDTO
  * @Description:
  */
+/**
+ * 系统用户修改密码请求对象。
+ */
+
 @Data
 @SuperBuilder
 @NoArgsConstructor

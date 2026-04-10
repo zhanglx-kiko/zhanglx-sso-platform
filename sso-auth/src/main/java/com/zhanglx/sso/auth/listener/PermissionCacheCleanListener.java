@@ -50,6 +50,9 @@ public class PermissionCacheCleanListener {
         }
     }
 
+    /**
+     * 安全清理匹配的 Redis 缓存键。
+     */
     private void clearRedisKeysSafely(String pattern) {
         ScanOptions options = ScanOptions.scanOptions().match(pattern).count(1000).build();
         List<String> keysToDelete = new ArrayList<>();

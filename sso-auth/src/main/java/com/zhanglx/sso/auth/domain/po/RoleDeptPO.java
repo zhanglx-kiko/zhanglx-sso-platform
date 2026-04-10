@@ -9,7 +9,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.ibatis.type.JdbcType;
-
+/**
+ * 角色部门关系持久化对象。
+ */
 @Data
 @SuperBuilder
 @NoArgsConstructor
