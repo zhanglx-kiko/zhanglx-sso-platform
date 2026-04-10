@@ -52,55 +52,55 @@ public class LambdaQueryWrapperX<T> extends LambdaQueryWrapper<T> {
     }
 
     public LambdaQueryWrapperX<T> eqIfPresent(SFunction<T, ?> column, Object val) {
-        if (val != null) {
+        if (hasValue(val)) {
             return (LambdaQueryWrapperX<T>) super.eq(column, val);
         }
         return this;
     }
 
     public LambdaQueryWrapperX<T> neIfPresent(SFunction<T, ?> column, Object val) {
-        if (val != null) {
+        if (hasValue(val)) {
             return (LambdaQueryWrapperX<T>) super.ne(column, val);
         }
         return this;
     }
 
     public LambdaQueryWrapperX<T> gtIfPresent(SFunction<T, ?> column, Object val) {
-        if (val != null) {
+        if (hasValue(val)) {
             return (LambdaQueryWrapperX<T>) super.gt(column, val);
         }
         return this;
     }
 
     public LambdaQueryWrapperX<T> geIfPresent(SFunction<T, ?> column, Object val) {
-        if (val != null) {
+        if (hasValue(val)) {
             return (LambdaQueryWrapperX<T>) super.ge(column, val);
         }
         return this;
     }
 
     public LambdaQueryWrapperX<T> ltIfPresent(SFunction<T, ?> column, Object val) {
-        if (val != null) {
+        if (hasValue(val)) {
             return (LambdaQueryWrapperX<T>) super.lt(column, val);
         }
         return this;
     }
 
     public LambdaQueryWrapperX<T> leIfPresent(SFunction<T, ?> column, Object val) {
-        if (val != null) {
+        if (hasValue(val)) {
             return (LambdaQueryWrapperX<T>) super.le(column, val);
         }
         return this;
     }
 
     public LambdaQueryWrapperX<T> betweenIfPresent(SFunction<T, ?> column, Object val1, Object val2) {
-        if (val1 != null && val2 != null) {
+        if (hasValue(val1) && hasValue(val2)) {
             return (LambdaQueryWrapperX<T>) super.between(column, val1, val2);
         }
-        if (val1 != null) {
+        if (hasValue(val1)) {
             return (LambdaQueryWrapperX<T>) ge(column, val1);
         }
-        if (val2 != null) {
+        if (hasValue(val2)) {
             return (LambdaQueryWrapperX<T>) le(column, val2);
         }
         return this;
@@ -142,6 +142,22 @@ public class LambdaQueryWrapperX<T> extends LambdaQueryWrapper<T> {
     public LambdaQueryWrapperX<T> in(SFunction<T, ?> column, Collection<?> coll) {
         super.in(column, coll);
         return this;
+    }
+
+    /**
+     * 统一判断查询值是否真正有效。
+     * 对字符串类型，只有非空白内容才参与拼接，避免把空串误当成查询条件。
+     */
+    private boolean hasValue(Object val) {
+        if (val == null) {
+            return false;
+        }
+
+        if (val instanceof CharSequence charSequence) {
+            return StringUtils.hasText(charSequence);
+        }
+
+        return true;
     }
 
 }
