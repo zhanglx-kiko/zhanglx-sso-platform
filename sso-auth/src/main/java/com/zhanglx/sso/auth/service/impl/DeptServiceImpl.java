@@ -15,8 +15,11 @@ import com.zhanglx.sso.auth.mapper.RoleDeptMapper;
 import com.zhanglx.sso.auth.mapper.RoleMapper;
 import com.zhanglx.sso.auth.service.DeptService;
 import com.zhanglx.sso.auth.service.support.AuthReferenceCheckSupport;
+import com.zhanglx.sso.core.strategy.TreeCycleStrategy;
 import com.zhanglx.sso.auth.utils.ISystemManageMapper;
 import com.zhanglx.sso.core.utils.AssertUtils;
+import com.zhanglx.sso.core.strategy.TreeFilterStrategy;
+import com.zhanglx.sso.core.utils.tree.HighPerfTreeBuilder;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +49,7 @@ public class DeptServiceImpl implements DeptService {
      */
     private final RoleDeptMapper roleDeptMapper;
     private final AuthReferenceCheckSupport authReferenceCheckSupport;
+    private final HighPerfTreeBuilder treeBuilder;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -146,7 +150,7 @@ public class DeptServiceImpl implements DeptService {
                 .orderByDesc(DeptPO::getCreateTime));
         List<DeptDTO> allDtos = ISystemManageMapper.INSTANCE.toDeptDTOList(all);
         if (StrUtil.isBlank(deptName)) {
-            return buildTree(allDtos);
+            return treeBuilder.buildTree(allDtos, TreeFilterStrategy.NO_FILTER, TreeCycleStrategy.BREAK_AND_CONTINUE, deptTreeComparator());
         }
 
         Map<Long, DeptDTO> dtoMap = allDtos.stream().collect(Collectors.toMap(DeptDTO::getId, Function.identity()));
@@ -157,7 +161,7 @@ public class DeptServiceImpl implements DeptService {
                 appendAncestors(dept, dtoMap, matched);
             }
         }
-        return buildTree(new ArrayList<>(matched.values()));
+        return treeBuilder.buildTree(new ArrayList<>(matched.values()), TreeFilterStrategy.NO_FILTER, TreeCycleStrategy.BREAK_AND_CONTINUE, deptTreeComparator());
     }
 
     @Override
@@ -350,26 +354,9 @@ public class DeptServiceImpl implements DeptService {
     /**
      * 构建树形结构结果。
      */
-    private List<DeptDTO> buildTree(List<DeptDTO> depts) {
-        Map<Long, DeptDTO> map = new LinkedHashMap<>();
-        depts.stream()
-                .sorted(Comparator.comparing(DeptDTO::getSortNum, Comparator.nullsLast(Integer::compareTo))
-                        .thenComparing(DeptDTO::getId))
-                .forEach(item -> {
-                    item.setChildren(new ArrayList<>());
-                    map.put(item.getId(), item);
-                });
-
-        List<DeptDTO> roots = new ArrayList<>();
-        for (DeptDTO dept : map.values()) {
-            Long parentId = dept.getParentId();
-            if (parentId == null || parentId <= 0 || !map.containsKey(parentId)) {
-                roots.add(dept);
-                continue;
-            }
-            map.get(parentId).getChildren().add(dept);
-        }
-        return roots;
+    private Comparator<DeptDTO> deptTreeComparator() {
+        return Comparator.comparing(DeptDTO::getSortNum, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(DeptDTO::getId, Comparator.nullsLast(Long::compareTo));
     }
 
     /**

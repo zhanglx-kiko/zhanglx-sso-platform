@@ -2,11 +2,15 @@ package com.zhanglx.sso.core.utils.tree;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.zhanglx.sso.core.domain.tree.TreeNode;
+import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.exception.CoreErrorCode;
+import com.zhanglx.sso.core.strategy.TreeCycleStrategy;
 import com.zhanglx.sso.core.strategy.TreeFilterStrategy;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -15,110 +19,202 @@ import java.util.stream.Collectors;
 /**
  * 作者：Zhang L X
  * 创建时间：2026/3/17 17:07
- * 类名：HighPerf树构建器
- * 说明：高性能树形结构组装器（零时域分配优化版）
+ * 类名：HighPerfTreeBuilder
+ * 说明：高性能树形结构组装器
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class HighPerfTreeBuilder {
+
     /**
-     * 指标注册器。
+     * 指标注册器
      */
     private final MeterRegistry meterRegistry;
 
     @Timed(value = "tree.build.time", description = "Time taken to build the permission tree")
     public <T extends TreeNode<T, Long>> List<T> buildTree(
             List<T> rawData,
-            TreeFilterStrategy strategy,
-            boolean checkCycle) {
+            TreeFilterStrategy filterStrategy,
+            TreeCycleStrategy cycleStrategy) {
+        return buildTree(rawData, filterStrategy, cycleStrategy, null);
+    }
 
-        if (rawData == null || rawData.isEmpty()) return Collections.emptyList();
+    @Timed(value = "tree.build.time", description = "Time taken to build the permission tree")
+    public <T extends TreeNode<T, Long>> List<T> buildTree(
+            List<T> rawData,
+            TreeFilterStrategy filterStrategy,
+            TreeCycleStrategy cycleStrategy,
+            Comparator<? super T> comparator) {
 
-        // 1. 获取 Sa-Token 当前用户权限 (放入 Set 加速 O(1) 查询)
-        Set<String> userPermissions = strategy == TreeFilterStrategy.NO_FILTER
+        if (rawData == null || rawData.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        TreeFilterStrategy effectiveFilterStrategy = Objects.requireNonNullElse(filterStrategy, TreeFilterStrategy.NO_FILTER);
+        TreeCycleStrategy effectiveCycleStrategy = Objects.requireNonNullElse(cycleStrategy, TreeCycleStrategy.SKIP_CHECK);
+
+        List<T> workingData = prepareWorkingData(rawData, comparator);
+
+        // 非权限树场景不需要取当前登录人的权限集，避免无意义的上下文依赖。
+        Set<String> userPermissions = effectiveFilterStrategy == TreeFilterStrategy.NO_FILTER
                 ? Collections.emptySet()
                 : new HashSet<>(StpUtil.getPermissionList());
 
-        // 2. 建立索引 (利用 JDK 增强的 SequencedMap 保持顺序可预见性)
-        Map<Long, T> nodeMap = rawData.stream()
-                .collect(Collectors.toMap(TreeNode::treeNodeId, node -> node, (k1, k2) -> k1, LinkedHashMap::new));
+        Map<Long, T> nodeMap = workingData.stream()
+                .collect(Collectors.toMap(TreeNode::treeNodeId, node -> node, (left, right) -> left, LinkedHashMap::new));
 
-        // 3. 计算有效节点 ID 集合 (构建时过滤核心)
-        Set<Long> validIds = strategy.calculateValidNodeIds(rawData, nodeMap, userPermissions);
+        Set<Long> validIds = effectiveFilterStrategy.calculateValidNodeIds(workingData, nodeMap, userPermissions);
+        Set<Long> detachedToRootIds = resolveDetachedToRootIds(workingData, nodeMap, validIds, effectiveCycleStrategy);
 
-        // 4. O(N) 一次遍历组装树 + 容错处理
         List<T> roots = new ArrayList<>();
-        for (T node : rawData) {
-            if (!validIds.contains(node.treeNodeId())) {
-                continue; // 实时剔除无权限节点
+        for (T node : workingData) {
+            Long nodeId = node.treeNodeId();
+            if (!validIds.contains(nodeId)) {
+                continue;
             }
 
             Long parentId = node.treeParentId();
-            // 优化：利用 Java 自动拆箱特性，前提是有 != null 护航，性能最高且避免 Long 缓存陷阱
-            boolean isRoot = (parentId == null || parentId == 0L);
-
-            if (isRoot) {
+            boolean isRoot = parentId == null || parentId == 0L;
+            if (isRoot || detachedToRootIds.contains(nodeId)) {
                 roots.add(node);
-            } else {
-                T parent = nodeMap.get(parentId);
-                if (parent != null && validIds.contains(parent.treeNodeId())) {
-                    if (parent.treeChildren() == null) {
-                        parent.replaceTreeChildren(new ArrayList<>());
-                    }
-                    parent.treeChildren().add(node);
-                } else {
-                    // 容错降级：父节点缺失或无权限，自动将当前节点提升为临时根节点
-                    log.warn("Node ID [{}] promoted to root due to missing/unauthorized parent ID [{}]", node.treeNodeId(), parentId);
-                    meterRegistry.counter("tree.build.orphan.promoted").increment();
-                    roots.add(node);
-                }
+                continue;
             }
-        }
 
-        // 5. 循环依赖检测与打破
-        if (checkCycle) {
-            detectAndBreakCycles(roots);
+            T parent = nodeMap.get(parentId);
+            if (parent != null && validIds.contains(parent.treeNodeId())) {
+                parent.treeChildren().add(node);
+                continue;
+            }
+
+            // 父节点不存在或已被过滤时，降级为根节点，避免整棵树丢失。
+            log.warn("Node ID [{}] promoted to root due to missing/unauthorized parent ID [{}]", nodeId, parentId);
+            meterRegistry.counter("tree.build.orphan.promoted").increment();
+            roots.add(node);
         }
 
         return roots;
     }
 
     /**
-     * 【优化】循环引用检测：使用回溯 DFS，全程仅分配 1 个 HashSet
+     * 统一预处理待组树节点，避免多次组树时残留旧的子节点引用。
+     * 如果业务需要稳定排序，也统一在这里完成。
      */
-    private <T extends TreeNode<T, Long>> void detectAndBreakCycles(List<T> roots) {
-        // 全局只 new 一次 HashSet，充当递归路径的检测栈
-        Set<Long> onStack = new HashSet<>();
-        for (T root : roots) {
-            dfsCheckCycle(root, onStack);
+    private <T extends TreeNode<T, Long>> List<T> prepareWorkingData(List<T> rawData, Comparator<? super T> comparator) {
+        List<T> workingData = new ArrayList<>(rawData);
+        if (comparator != null) {
+            workingData.sort(comparator);
         }
+        for (T node : workingData) {
+            node.replaceTreeChildren(new ArrayList<>());
+        }
+        return workingData;
     }
 
-    private <T extends TreeNode<T, Long>> void dfsCheckCycle(T node, Set<Long> onStack) {
-        // 当前节点入栈，标记为正在访问
-        onStack.add(node.treeNodeId());
+    /**
+     * 检测有效节点之间是否存在环，并根据策略决定是断环继续还是直接失败。
+     */
+    private <T extends TreeNode<T, Long>> Set<Long> resolveDetachedToRootIds(
+            List<T> workingData,
+            Map<Long, T> nodeMap,
+            Set<Long> validIds,
+            TreeCycleStrategy cycleStrategy) {
 
-        List<T> children = node.treeChildren();
-        if (children != null) {
-            Iterator<T> iterator = children.iterator();
-            while (iterator.hasNext()) {
-                T child = iterator.next();
+        if (!cycleStrategy.shouldCheckCycle()) {
+            return Collections.emptySet();
+        }
 
-                // 如果子节点已经在当前的访问栈中，说明形成了闭环！
-                if (onStack.contains(child.treeNodeId())) {
-                    log.error("Breaking loop: Node {} -> Node {}", node.treeNodeId(), child.treeNodeId());
-                    iterator.remove(); // 斩断循环引用
-                    meterRegistry.counter("tree.build.cycle.detected").increment();
-                } else {
-                    // 继续向下深搜
-                    dfsCheckCycle(child, onStack);
-                }
+        Set<Long> detachedToRootIds = new LinkedHashSet<>();
+        Set<Long> resolvedIds = new HashSet<>();
+
+        for (T node : workingData) {
+            Long nodeId = node.treeNodeId();
+            if (nodeId == null || !validIds.contains(nodeId) || resolvedIds.contains(nodeId)) {
+                continue;
             }
+
+            LinkedHashMap<Long, Integer> pathIndex = new LinkedHashMap<>();
+            List<Long> path = new ArrayList<>();
+            long currentId = nodeId;
+
+            while (currentId != 0L) {
+                if (!validIds.contains(currentId) || detachedToRootIds.contains(currentId)) {
+                    break;
+                }
+
+                Integer existedIndex = pathIndex.putIfAbsent(currentId, path.size());
+                if (existedIndex != null) {
+                    List<Long> cycleNodeIds = new ArrayList<>(path.subList(existedIndex, path.size()));
+                    handleDetectedCycle(cycleNodeIds, nodeMap, cycleStrategy, detachedToRootIds);
+                    break;
+                }
+
+                path.add(currentId);
+                T currentNode = nodeMap.get(currentId);
+                if (currentNode == null) {
+                    break;
+                }
+
+                Long parentId = currentNode.treeParentId();
+                if (parentId == null || parentId == 0L || !validIds.contains(parentId) || !nodeMap.containsKey(parentId)) {
+                    break;
+                }
+                currentId = parentId;
+            }
+
+            resolvedIds.addAll(path);
         }
 
-        // 【灵魂代码】：回溯！当前节点及其子孙全部探测完毕，出栈
-        onStack.remove(node.treeNodeId());
+        return detachedToRootIds;
     }
 
+    /**
+     * 统一处理循环引用。
+     * 对查询类场景优先保住树结果，对写操作类场景直接失败，避免脏数据继续扩散。
+     */
+    private <T extends TreeNode<T, Long>> void handleDetectedCycle(
+            List<Long> cycleNodeIds,
+            Map<Long, T> nodeMap,
+            TreeCycleStrategy cycleStrategy,
+            Set<Long> detachedToRootIds) {
+
+        if (cycleNodeIds.isEmpty()) {
+            return;
+        }
+
+        String cycleDescription = describeCycle(cycleNodeIds, nodeMap);
+        meterRegistry.counter("tree.build.cycle.detected").increment();
+
+        if (cycleStrategy.shouldFailFast()) {
+            log.error("Detected tree cycle and rejected current build: {}", cycleDescription);
+            throw BusinessException.of(CoreErrorCode.TREE_CYCLE_DETECTED, cycleDescription);
+        }
+
+        Long detachedNodeId = cycleNodeIds.get(0);
+        detachedToRootIds.add(detachedNodeId);
+        meterRegistry.counter("tree.build.cycle.broken").increment();
+        log.error("Detected tree cycle, detached node [{}] from parent chain: {}", detachedNodeId, cycleDescription);
+    }
+
+    /**
+     * 生成稳定的循环引用描述，便于日志、告警和国际化错误消息复用。
+     */
+    private <T extends TreeNode<T, Long>> String describeCycle(List<Long> cycleNodeIds, Map<Long, T> nodeMap) {
+        List<Long> loopPath = new ArrayList<>(cycleNodeIds);
+        loopPath.add(cycleNodeIds.get(0));
+        return loopPath.stream()
+                .map(nodeId -> describeNode(nodeMap.get(nodeId), nodeId))
+                .collect(Collectors.joining(" -> "));
+    }
+
+    private <T extends TreeNode<T, Long>> String describeNode(T node, Long nodeId) {
+        if (node == null) {
+            return String.valueOf(nodeId);
+        }
+        String identification = node.treeIdentification();
+        if (StringUtils.isNotBlank(identification)) {
+            return identification + "(" + nodeId + ")";
+        }
+        return String.valueOf(nodeId);
+    }
 }

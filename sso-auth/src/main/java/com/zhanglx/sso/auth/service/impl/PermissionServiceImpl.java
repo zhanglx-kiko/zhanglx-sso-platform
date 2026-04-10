@@ -23,6 +23,7 @@ import com.zhanglx.sso.auth.utils.IPermissionMapper;
 import com.zhanglx.sso.auth.utils.excel.ExportProgressManager;
 import com.zhanglx.sso.auth.utils.excel.ImportProgressManager;
 import com.zhanglx.sso.core.exception.BusinessException;
+import com.zhanglx.sso.core.strategy.TreeCycleStrategy;
 import com.zhanglx.sso.core.strategy.TreeFilterStrategy;
 import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.core.utils.collection.CollectionUtils;
@@ -273,7 +274,7 @@ public class PermissionServiceImpl implements PermissionService {
             );
 
             // 这里是维护权限定义本身，不能再套当前登录人的权限过滤，否则重命名父节点时会漏掉无权查看的子节点。
-            List<PermissionDTO> childrenTree = treeBuilder.buildTree(childrenDTOs, TreeFilterStrategy.NO_FILTER, false);
+            List<PermissionDTO> childrenTree = treeBuilder.buildTree(childrenDTOs, TreeFilterStrategy.NO_FILTER, TreeCycleStrategy.FAIL_FAST);
 
             List<PermissionDTO> updatedPermission = recursiveUpdateIdentityLineage(
                     updateMenu.getIdentification(), updateMenu.getIdentityLineage(), childrenTree);
@@ -365,7 +366,7 @@ public class PermissionServiceImpl implements PermissionService {
 
         // 权限管理页查询的是“权限定义树”，接口本身已通过 @SaCheckPermission 做入口鉴权，
         // 这里仅负责组树，不再按当前登录人的权限集二次裁剪。
-        return treeBuilder.buildTree(results, TreeFilterStrategy.NO_FILTER, true);
+        return treeBuilder.buildTree(results, TreeFilterStrategy.NO_FILTER, TreeCycleStrategy.BREAK_AND_CONTINUE);
     }
 
     /**
@@ -624,7 +625,7 @@ public class PermissionServiceImpl implements PermissionService {
      * <p>该方法会综合当前批次数据、数据库中已存在的数据和已解析缓存，递归构建出节点的
      * {@code id}、{@code parentId} 以及 {@code identityLineage}，同时检测孤儿节点和循环依赖。</p>
      *
-     * @param 权限标识          当前要解析的权限标识
+     * @param identification          当前要解析的权限标识
      * @param batchMap      当前批次的 Excel 数据缓存
      * @param dbMap         数据库中已存在的权限缓存
      * @param resolvedCache 已完成解析的节点缓存，用于记忆化加速
