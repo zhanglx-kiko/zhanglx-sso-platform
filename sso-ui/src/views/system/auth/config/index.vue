@@ -55,7 +55,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">参数列表</h2>
-          <p class="panel-subtitle">系统内置参数不允许删除，并限制关键字段修改。</p>
+          <p class="panel-subtitle">系统内置参数仅支持查看，不能在管理台新增、修改或删除。</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
           <template #default="{ row }">
             <el-space :size="10">
               <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
+              <el-button link type="primary" :disabled="isBuiltInConfig(row)" @click="openEditDialog(row)">编辑</el-button>
               <el-button link type="danger" :disabled="row.configType === 1" @click="handleDelete(row)">删除</el-button>
             </el-space>
           </template>
@@ -117,7 +117,6 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无参数详情" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="参数 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="参数名称">{{ detailData.configName }}</el-descriptions-item>
             <el-descriptions-item label="参数键">{{ detailData.configKey }}</el-descriptions-item>
             <el-descriptions-item label="参数分组">{{ detailData.configGroup }}</el-descriptions-item>
@@ -166,13 +165,6 @@
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="formModel.status" :disabled="formDialog.mode === 'edit' && formModel.configType === 1">
             <el-radio v-for="item in STATUS_OPTIONS" :key="item.value" :value="item.value">
-              {{ item.label }}
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="参数类型" prop="configType">
-          <el-radio-group v-model="formModel.configType">
-            <el-radio v-for="item in CONFIG_TYPE_OPTIONS" :key="item.value" :value="item.value">
               {{ item.label }}
             </el-radio>
           </el-radio-group>
@@ -274,10 +266,11 @@ const formRules: FormRules<ConfigFormModel> = {
 }
 
 const pageTitle = computed(() => String(route.meta.title || '系统参数'))
+const isBuiltInConfig = (config?: Pick<ConfigDTO, 'configType'> | ConfigFormModel | null) => Number(config?.configType ?? 0) === 1
 
 const headerStats = computed(() => [
   { label: '参数总量', value: total.value, hint: '按后端分页总数统计' },
-  { label: '系统内置', value: configList.value.filter((item) => item.configType === 1).length, hint: '内置参数不允许删除' },
+  { label: '系统内置', value: configList.value.filter((item) => item.configType === 1).length, hint: '内置参数仅支持查看' },
   { label: '敏感参数', value: configList.value.filter((item) => item.sensitiveFlag === 1).length, hint: '读取时统一脱敏显示' },
   { label: '普通配置', value: configList.value.filter((item) => item.configType === 0).length, hint: '可由管理台维护的参数' },
 ])
@@ -342,6 +335,11 @@ const openCreateDialog = () => {
 }
 
 const openEditDialog = async (row: ConfigDTO) => {
+  if (isBuiltInConfig(row)) {
+    ElMessage.warning('系统内置参数不允许修改')
+    return
+  }
+
   resetFormDialog()
   formDialog.mode = 'edit'
   formDialog.visible = true
@@ -366,6 +364,11 @@ const openEditDialog = async (row: ConfigDTO) => {
 const submitForm = async () => {
   if (!formRef.value || formDialog.submitting) return
 
+  if (formDialog.mode === 'edit' && isBuiltInConfig(formModel)) {
+    ElMessage.warning('系统内置参数不允许修改')
+    return
+  }
+
   try {
     await formRef.value.validate()
   } catch {
@@ -383,7 +386,7 @@ const submitForm = async () => {
       configGroup: formModel.configGroup,
       sensitiveFlag: formModel.sensitiveFlag,
       status: formModel.status,
-      configType: formModel.configType,
+      configType: formDialog.mode === 'create' ? 0 : formModel.configType,
       remark: formModel.remark || undefined,
     }
 

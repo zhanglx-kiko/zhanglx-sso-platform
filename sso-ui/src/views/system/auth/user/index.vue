@@ -59,7 +59,7 @@
         <div>
           <h2 class="panel-title">用户列表</h2>
           <p class="panel-subtitle">
-            所有雪花 ID 均按字符串处理，状态开关与绑定关系已按文档接入。
+            所有雪花编号均按字符串处理，状态开关与绑定关系已按文档接入。
           </p>
         </div>
       </div>
@@ -148,7 +148,6 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无详情数据" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="用户 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="账号">{{ detailData.username || '--' }}</el-descriptions-item>
             <el-descriptions-item label="昵称">{{ detailData.nickname || '--' }}</el-descriptions-item>
             <el-descriptions-item label="手机号">
@@ -282,7 +281,7 @@
       @close="resetAppDialog"
     >
       <div v-loading="appDialog.loading" class="binding-panel">
-        <p class="soft-note">仅展示系统用户应用，绑定值使用 `appCode`，不是应用 ID。</p>
+        <p class="soft-note">仅展示系统用户应用，绑定值使用 `appCode`，不是应用记录主键。</p>
         <el-transfer
           v-model="appDialog.selectedCodes"
           filterable
@@ -307,7 +306,7 @@
       @close="resetPostDialog"
     >
       <div v-loading="postDialog.loading" class="binding-panel">
-        <p class="soft-note">岗位绑定值为岗位 ID，停用岗位会被置灰。</p>
+        <p class="soft-note">岗位绑定值使用岗位主键，停用岗位会被置灰。</p>
         <el-transfer
           v-model="postDialog.selectedIds"
           filterable

@@ -117,7 +117,6 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无角色详情" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="角色 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="角色名称">
               {{ detailData.roleName || '--' }}
             </el-descriptions-item>

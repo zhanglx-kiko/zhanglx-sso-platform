@@ -94,7 +94,6 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无岗位详情" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="岗位 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="岗位编码">{{ detailData.postCode }}</el-descriptions-item>
             <el-descriptions-item label="岗位名称">{{ detailData.postName }}</el-descriptions-item>
             <el-descriptions-item label="排序">{{ detailData.sortNum ?? 0 }}</el-descriptions-item>

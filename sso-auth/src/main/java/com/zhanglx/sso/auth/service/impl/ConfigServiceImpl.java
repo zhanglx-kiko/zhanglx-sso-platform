@@ -42,6 +42,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ConfigDTO create(ConfigDTO dto) {
+        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(dto.getConfigType()), "built-in config cannot be created from api");
         validateKeyUnique(dto.getConfigKey(), null);
         ConfigPO po = ISystemManageMapper.INSTANCE.toPO(dto);
         if (po.getConfigType() == null) {
@@ -65,16 +66,10 @@ public class ConfigServiceImpl implements ConfigService {
     @Transactional(rollbackFor = Exception.class)
     public ConfigDTO update(Long id, ConfigDTO dto) {
         ConfigPO exist = getConfigOrThrow(id);
+        AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(exist.getConfigType()), "built-in config cannot be modified");
+        AssertUtils.isTrue(exist.getConfigType() == dto.getConfigType(), "config type cannot be changed");
         String oldConfigKey = exist.getConfigKey();
         validateKeyUnique(dto.getConfigKey(), id);
-
-        if (ConfigTypeEnum.isBuiltIn(exist.getConfigType())) {
-            AssertUtils.isTrue(StrUtil.equals(exist.getConfigKey(), dto.getConfigKey()), "built-in config key cannot be changed");
-            AssertUtils.isTrue(ConfigTypeEnum.isBuiltIn(dto.getConfigType()), "built-in flag cannot be changed for built-in config");
-            AssertUtils.isTrue(StrUtil.equals(exist.getConfigGroup(), dto.getConfigGroup()), "built-in config group cannot be changed");
-            AssertUtils.isTrue(exist.getSensitiveFlag() == dto.getSensitiveFlag(), "built-in sensitive flag cannot be changed");
-            AssertUtils.isTrue(EnableStatusEnum.isEnabled(dto.getStatus()), "built-in config cannot be disabled");
-        }
 
         exist.setConfigName(dto.getConfigName());
         exist.setConfigKey(dto.getConfigKey());

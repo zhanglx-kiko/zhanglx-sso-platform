@@ -78,9 +78,7 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无部门详情" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="部门 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="部门名称">{{ detailData.deptName || '--' }}</el-descriptions-item>
-            <el-descriptions-item label="上级部门 ID">{{ detailData.parentId || '0' }}</el-descriptions-item>
             <el-descriptions-item label="祖级链">{{ detailData.ancestors || '--' }}</el-descriptions-item>
             <el-descriptions-item label="排序">{{ detailData.sortNum ?? 0 }}</el-descriptions-item>
             <el-descriptions-item label="状态">

@@ -5,8 +5,8 @@
       description="默认查询最近 7 天，支持按用户、事件、结果、IP 和时间范围筛选。"
       :model="queryForm"
     >
-      <el-form-item label="用户 ID">
-        <el-input v-model="queryForm.userId" placeholder="请输入用户 ID" clearable @keyup.enter="handleSearch" />
+      <el-form-item label="用户标识">
+        <el-input v-model="queryForm.userId" placeholder="请输入用户标识" clearable @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item label="账号">
         <el-input v-model="queryForm.username" placeholder="请输入账号" clearable @keyup.enter="handleSearch" />
@@ -57,7 +57,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">登录日志列表</h2>
-          <p class="panel-subtitle">支持复制 `traceId` 和 `requestId`，失败原因只在详情中完整展示。</p>
+          <p class="panel-subtitle">支持复制链路追踪值和请求追踪值，失败原因只在详情中完整展示。</p>
         </div>
       </div>
 
@@ -93,12 +93,12 @@
         <el-table-column prop="appCode" label="应用编码" min-width="110" show-overflow-tooltip />
         <el-table-column prop="loginTime" label="登录时间" min-width="168" />
         <el-table-column prop="logoutTime" label="登出时间" min-width="168" />
-        <el-table-column label="traceId" min-width="170">
+        <el-table-column label="链路追踪" min-width="170">
           <template #default="{ row }">
             <CopyableText :text="row.traceId" monospace />
           </template>
         </el-table-column>
-        <el-table-column label="requestId" min-width="170">
+        <el-table-column label="请求追踪" min-width="170">
           <template #default="{ row }">
             <CopyableText :text="row.requestId" monospace />
           </template>
@@ -136,8 +136,6 @@
           <section class="log-detail__group">
             <h3 class="log-detail__title">基础信息</h3>
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="日志 ID">{{ detailData.id }}</el-descriptions-item>
-              <el-descriptions-item label="用户 ID">{{ detailData.userId || '--' }}</el-descriptions-item>
               <el-descriptions-item label="账号">{{ detailData.username || '--' }}</el-descriptions-item>
               <el-descriptions-item label="显示名称">{{ detailData.displayName || '--' }}</el-descriptions-item>
               <el-descriptions-item label="事件类型">
@@ -162,12 +160,6 @@
               <el-descriptions-item label="设备类型">{{ detailData.deviceType || '--' }}</el-descriptions-item>
               <el-descriptions-item label="客户端">{{ detailData.clientType || '--' }}</el-descriptions-item>
               <el-descriptions-item label="UserAgent">{{ detailData.userAgent || '--' }}</el-descriptions-item>
-              <el-descriptions-item label="traceId">
-                <CopyableText :text="detailData.traceId" monospace />
-              </el-descriptions-item>
-              <el-descriptions-item label="requestId">
-                <CopyableText :text="detailData.requestId" monospace />
-              </el-descriptions-item>
             </el-descriptions>
           </section>
 

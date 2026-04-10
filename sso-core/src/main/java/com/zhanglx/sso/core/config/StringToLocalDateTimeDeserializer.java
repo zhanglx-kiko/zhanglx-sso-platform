@@ -16,7 +16,13 @@ public class StringToLocalDateTimeDeserializer extends ValueDeserializer<LocalDa
     /**
      * 时间格式化器。
      */
+    public static final DateTimeFormatter DEFAULT_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private final DateTimeFormatter formatter;
+
+    public StringToLocalDateTimeDeserializer() {
+        this(DEFAULT_DATE_TIME_FORMATTER);
+    }
 
     public StringToLocalDateTimeDeserializer(DateTimeFormatter formatter) {
         this.formatter = formatter;

@@ -109,7 +109,6 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无应用详情" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="应用 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="应用编码">{{ detailData.appCode }}</el-descriptions-item>
             <el-descriptions-item label="应用名称">{{ detailData.appName }}</el-descriptions-item>
             <el-descriptions-item label="用户类型">{{ getUserTypeLabel(detailData.userType) }}</el-descriptions-item>

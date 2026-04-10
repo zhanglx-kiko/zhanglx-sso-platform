@@ -24,8 +24,8 @@
       <el-form-item label="功能">
         <el-input v-model="queryForm.feature" placeholder="请输入功能" clearable @keyup.enter="handleSearch" />
       </el-form-item>
-      <el-form-item label="用户 ID">
-        <el-input v-model="queryForm.userId" placeholder="请输入用户 ID" clearable @keyup.enter="handleSearch" />
+      <el-form-item label="用户标识">
+        <el-input v-model="queryForm.userId" placeholder="请输入用户标识" clearable @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item label="账号">
         <el-input v-model="queryForm.username" placeholder="请输入账号" clearable @keyup.enter="handleSearch" />
@@ -48,8 +48,8 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="traceId">
-        <el-input v-model="queryForm.traceId" placeholder="请输入 traceId" clearable @keyup.enter="handleSearch" />
+      <el-form-item label="链路追踪">
+        <el-input v-model="queryForm.traceId" placeholder="请输入链路追踪值" clearable @keyup.enter="handleSearch" />
       </el-form-item>
       <el-form-item label="关键字">
         <el-input
@@ -92,7 +92,7 @@
       <div class="panel-header">
         <div>
           <h2 class="panel-title">操作日志列表</h2>
-          <p class="panel-subtitle">深分页模式下仅支持连续上一页、下一页浏览，`traceId` 支持一键复制。</p>
+          <p class="panel-subtitle">深分页模式下仅支持连续上一页、下一页浏览，链路追踪值支持一键复制。</p>
         </div>
       </div>
 
@@ -140,7 +140,7 @@
           <template #default="{ row }">{{ formatDuration(row.durationMs) }}</template>
         </el-table-column>
         <el-table-column prop="clientIp" label="客户端 IP" min-width="136" />
-        <el-table-column label="traceId" min-width="170">
+        <el-table-column label="链路追踪" min-width="170">
           <template #default="{ row }">
             <CopyableText :text="row.traceId" monospace />
           </template>
@@ -191,7 +191,6 @@
           <section class="log-detail__group">
             <h3 class="log-detail__title">基础信息</h3>
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="日志 ID">{{ detailData.logId }}</el-descriptions-item>
               <el-descriptions-item label="应用">{{ detailData.appName || detailData.appCode || '--' }}</el-descriptions-item>
               <el-descriptions-item label="平台">{{ detailData.platformName || detailData.platformCode || '--' }}</el-descriptions-item>
               <el-descriptions-item label="模块 / 功能">
@@ -206,8 +205,6 @@
           <section class="log-detail__group">
             <h3 class="log-detail__title">操作人信息</h3>
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="用户 ID">{{ detailData.userId || '--' }}</el-descriptions-item>
-              <el-descriptions-item label="租户 ID">{{ detailData.tenantId || '--' }}</el-descriptions-item>
               <el-descriptions-item label="账号">{{ detailData.username || '--' }}</el-descriptions-item>
               <el-descriptions-item label="显示名称">{{ detailData.displayName || '--' }}</el-descriptions-item>
             </el-descriptions>
@@ -233,12 +230,6 @@
           <section class="log-detail__group">
             <h3 class="log-detail__title">链路与时间</h3>
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="traceId">
-                <CopyableText :text="detailData.traceId" monospace />
-              </el-descriptions-item>
-              <el-descriptions-item label="requestId">
-                <CopyableText :text="detailData.requestId" monospace />
-              </el-descriptions-item>
               <el-descriptions-item label="来源系统">{{ detailData.sourceSystem || '--' }}</el-descriptions-item>
               <el-descriptions-item label="客户端 IP">{{ detailData.clientIp || '--' }}</el-descriptions-item>
               <el-descriptions-item label="开始时间">{{ formatDateTime(detailData.startTime) }}</el-descriptions-item>

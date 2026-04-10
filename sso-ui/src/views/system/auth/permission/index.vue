@@ -94,11 +94,9 @@
         <el-empty v-if="!detailLoading && !detailData" description="暂无权限详情" />
         <template v-else-if="detailData">
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="权限 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="名称">{{ detailData.name || '--' }}</el-descriptions-item>
             <el-descriptions-item label="标识">{{ detailData.identification || '--' }}</el-descriptions-item>
             <el-descriptions-item label="类型">{{ getPermissionTypeLabel(detailData.type) }}</el-descriptions-item>
-            <el-descriptions-item label="父节点 ID">{{ detailData.parentId || '0' }}</el-descriptions-item>
             <el-descriptions-item label="路由地址">{{ detailData.path || '--' }}</el-descriptions-item>
             <el-descriptions-item label="组件路径">{{ detailData.comPath || '--' }}</el-descriptions-item>
             <el-descriptions-item label="图标">{{ detailData.iconStr || '--' }}</el-descriptions-item>
