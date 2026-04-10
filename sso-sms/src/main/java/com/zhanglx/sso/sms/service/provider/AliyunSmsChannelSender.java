@@ -12,6 +12,7 @@ import com.zhanglx.sso.sms.model.SmsSendRequest;
 import com.zhanglx.sso.sms.model.SmsSendResult;
 import com.zhanglx.sso.sms.properties.SmsProperties;
 import com.zhanglx.sso.sms.provider.aliyun.AliyunSmsVerifyCodeResponsePayload;
+import com.zhanglx.sso.sms.service.runtime.SmsChannelRuntimeConfigResolver;
 import com.zhanglx.sso.sms.support.SmsMaskingUtils;
 import darabonba.core.client.ClientOverrideConfiguration;
 import jakarta.annotation.PreDestroy;
@@ -31,14 +32,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class AliyunSmsChannelSender implements SmsChannelSender {
-
-    private static final String FIXED_SIGN_NAME = "速通互联验证平台";
-    private static final boolean FIXED_RETURN_VERIFY_CODE = false;
-    private static final long FIXED_VALID_TIME = 180L;
     /**
-     * 短信配置属性。
+     * 短信渠道运行时配置解析器。
      */
-    private final SmsProperties smsProperties;
+    private final SmsChannelRuntimeConfigResolver smsChannelRuntimeConfigResolver;
     /**
      * 对象映射器。
      */
@@ -47,6 +44,10 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
      * 客户端。
      */
     private volatile AsyncClient client;
+    /**
+     * 当前客户端对应的配置指纹。
+     */
+    private volatile String clientFingerprint;
 
     @Override
     public SmsProviderType providerType() {
@@ -55,15 +56,12 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
 
     @Override
     public SmsSendResult send(SmsSendRequest request, SmsProperties.TemplateProperties templateProperties) {
-        SmsProperties.AliyunProperties providerProperties = smsProperties.getAliyun();
-        if (!providerProperties.isEnabled()) {
+        SmsChannelRuntimeConfigResolver.AliyunChannelConfig providerConfig = smsChannelRuntimeConfigResolver.getAliyunConfig();
+        if (!providerConfig.enabled()) {
             return buildFailureResult(request, templateProperties, "CHANNEL_DISABLED", "阿里云短信通道未启用", null, null, null);
         }
 
-        if (!StringUtils.hasText(providerProperties.getAccessKeyId())
-                || !StringUtils.hasText(providerProperties.getAccessKeySecret())
-                || !StringUtils.hasText(providerProperties.getEndpoint())
-                || !StringUtils.hasText(providerProperties.getRegion())) {
+        if (!providerConfig.isComplete()) {
             return buildFailureResult(request, templateProperties, "CONFIG_INVALID", "阿里云短信配置不完整", null, null, null);
         }
 
@@ -86,19 +84,18 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
         }
 
         try {
-            logFixedConfigMismatch(providerProperties);
             // 这里发送的是模板编号和模板参数，用户看到的最终短信正文由阿里云完成模板渲染。
             SendSmsVerifyCodeRequest requestModel = SendSmsVerifyCodeRequest.builder()
-                    .signName(FIXED_SIGN_NAME)
+                    .signName(providerConfig.signName())
                     .templateCode(templateProperties.getTemplateCode())
                     .phoneNumber(request.getPhoneNumber())
                     .templateParam(templateParamJson)
-                    .returnVerifyCode(FIXED_RETURN_VERIFY_CODE)
-                    .validTime(FIXED_VALID_TIME)
+                    .returnVerifyCode(providerConfig.returnVerifyCode())
+                    .validTime(providerConfig.validTime())
                     .outId(request.getOutId())
                     .build();
 
-            SendSmsVerifyCodeResponse response = getClient().sendSmsVerifyCode(requestModel).get();
+            SendSmsVerifyCodeResponse response = getClient(providerConfig).sendSmsVerifyCode(requestModel).get();
             AliyunSmsVerifyCodeResponsePayload payload = AliyunSmsVerifyCodeResponsePayload.from(response);
             boolean success = isSuccess(payload);
             String failureReason = success ? null : resolveFailureReason(payload);
@@ -135,27 +132,31 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
     /**
      * 获取渠道客户端实例。
      */
-    private AsyncClient getClient() {
-        if (client != null) {
+    private AsyncClient getClient(SmsChannelRuntimeConfigResolver.AliyunChannelConfig providerConfig) {
+        String newFingerprint = providerConfig.clientFingerprint();
+        if (client != null && newFingerprint.equals(clientFingerprint)) {
             return client;
         }
 
         synchronized (this) {
-            if (client == null) {
-                SmsProperties.AliyunProperties providerProperties = smsProperties.getAliyun();
+            if (client == null || !newFingerprint.equals(clientFingerprint)) {
+                if (client != null) {
+                    client.close();
+                }
                 Credential credential = Credential.builder()
-                        .accessKeyId(providerProperties.getAccessKeyId())
-                        .accessKeySecret(providerProperties.getAccessKeySecret())
+                        .accessKeyId(providerConfig.accessKeyId())
+                        .accessKeySecret(providerConfig.accessKeySecret())
                         .build();
                 ClientOverrideConfiguration configuration = ClientOverrideConfiguration.create()
-                        .setEndpointOverride(providerProperties.getEndpoint())
-                        .setConnectTimeout(Duration.ofSeconds(Math.max(1L, providerProperties.getConnectTimeoutSeconds())))
-                        .setResponseTimeout(Duration.ofSeconds(Math.max(1L, providerProperties.getResponseTimeoutSeconds())));
+                        .setEndpointOverride(providerConfig.endpoint())
+                        .setConnectTimeout(Duration.ofSeconds(Math.max(1L, providerConfig.connectTimeoutSeconds())))
+                        .setResponseTimeout(Duration.ofSeconds(Math.max(1L, providerConfig.responseTimeoutSeconds())));
                 client = AsyncClient.builder()
-                        .region(providerProperties.getRegion())
+                        .region(providerConfig.region())
                         .credentialsProvider(StaticCredentialProvider.create(credential))
                         .overrideConfiguration(configuration)
                         .build();
+                clientFingerprint = newFingerprint;
             }
         }
 
@@ -233,21 +234,6 @@ public class AliyunSmsChannelSender implements SmsChannelSender {
             return payload.getMessage() + "，原因：" + payload.getAccessDeniedDetail();
         }
         return payload.getMessage();
-    }
-
-    /**
-     * 记录内部校验或异常信息。
-     */
-    private void logFixedConfigMismatch(SmsProperties.AliyunProperties providerProperties) {
-        if (!FIXED_SIGN_NAME.equals(providerProperties.getSignName())) {
-            log.warn("阿里云短信 signName 已固定为 {}，当前配置值 {} 不生效", FIXED_SIGN_NAME, providerProperties.getSignName());
-        }
-        if (providerProperties.isReturnVerifyCode() != FIXED_RETURN_VERIFY_CODE) {
-            log.warn("阿里云短信 returnVerifyCode 已固定为 {}，当前配置值 {} 不生效", FIXED_RETURN_VERIFY_CODE, providerProperties.isReturnVerifyCode());
-        }
-        if (providerProperties.getValidTime() != FIXED_VALID_TIME) {
-            log.warn("阿里云短信 validTime 已固定为 {}，当前配置值 {} 不生效", FIXED_VALID_TIME, providerProperties.getValidTime());
-        }
     }
 
     /**

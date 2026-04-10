@@ -20,4 +20,9 @@ public interface ConfigService {
     ConfigDTO getByKey(String configKey);
 
     Page<ConfigDTO> pageQuery(ConfigQueryDTO queryDTO);
+
+    /**
+     * 手动刷新运行时配置缓存。
+     */
+    void refreshRuntimeCache();
 }

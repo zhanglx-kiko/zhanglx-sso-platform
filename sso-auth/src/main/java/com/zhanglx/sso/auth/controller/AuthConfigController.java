@@ -36,7 +36,7 @@ public class AuthConfigController {
     @RepeatSubmit
     @RequestRateLimit(limit = 10, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:add")
-    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "CREATE", operationName = "新增参数", operationDesc = "新增系统参数", includeResponseBody = true)
+    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "CREATE", operationName = "新增参数", operationDesc = "新增系统参数", includeRequestBody = false, includeResponseBody = false)
     public ConfigDTO create(@RequestBody @Valid ConfigDTO dto) {
         dto.setId(null);
         return configService.create(dto);
@@ -47,7 +47,7 @@ public class AuthConfigController {
     @RepeatSubmit
     @RequestRateLimit(limit = 20, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
     @SaCheckPermission("config:edit")
-    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "UPDATE", operationName = "修改参数", operationDesc = "修改系统参数", includeResponseBody = true)
+    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "UPDATE", operationName = "修改参数", operationDesc = "修改系统参数", includeRequestBody = false, includeResponseBody = false)
     public ConfigDTO update(@PathVariable String id, @RequestBody @Valid ConfigDTO dto) {
         return configService.update(RequestIdUtils.parseId(id, "参数ID"), dto);
     }
@@ -82,5 +82,15 @@ public class AuthConfigController {
     @SaCheckPermission("config:list")
     public Page<ConfigDTO> pageQuery(@RequestBody ConfigQueryDTO queryDTO) {
         return configService.pageQuery(queryDTO);
+    }
+
+    @Operation(summary = "刷新运行时配置缓存")
+    @PostMapping("/runtime/refresh")
+    @RepeatSubmit
+    @RequestRateLimit(limit = 5, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @SaCheckPermission("config:edit")
+    @OperationLog(module = "参数管理", feature = "系统参数", operationType = "REFRESH", operationName = "刷新运行时配置缓存", operationDesc = "手动刷新系统运行时配置缓存", includeRequestBody = false, includeResponseBody = false)
+    public void refreshRuntimeCache() {
+        configService.refreshRuntimeCache();
     }
 }

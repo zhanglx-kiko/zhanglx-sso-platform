@@ -25,3 +25,7 @@ export const updateConfigApi = (configId: string, data: ConfigDTO) => {
 export const deleteConfigApi = (configId: string) => {
   return request.delete<unknown, void>(`/apis/v1/auth/s/configs/${configId}`)
 }
+
+export const refreshConfigRuntimeCacheApi = () => {
+  return request.post<unknown, void>('/apis/v1/auth/s/configs/runtime/refresh')
+}

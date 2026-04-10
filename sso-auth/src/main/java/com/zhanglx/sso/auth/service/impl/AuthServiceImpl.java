@@ -17,6 +17,7 @@ import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.UserMapper;
 import com.zhanglx.sso.auth.service.AuthService;
+import com.zhanglx.sso.auth.service.runtime.AuthSecurityConfigService;
 import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.core.exception.BusinessException;
@@ -31,7 +32,6 @@ import com.zhanglx.sso.web.support.RequestIdentityAccessor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -66,15 +66,13 @@ public class AuthServiceImpl implements AuthService {
      */
     private final SmsVerificationCodeManager smsVerificationCodeManager;
     /**
+     * 认证安全配置服务。
+     */
+    private final AuthSecurityConfigService authSecurityConfigService;
+    /**
      * 请求标识访问器。
      */
     private final RequestIdentityAccessor requestIdentityAccessor;
-
-    /**
-     * 默认密码。
-     */
-    @Value("${default.password:123456}")
-    private String defaultPassword;
 
     @Override
     public LoginVO login(UserLoginDTO userLoginDTO) {
@@ -147,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND, userId);
         }
 
-        updateUserPassword(userPO.getId(), argon2PasswordEncoder.encodeAsyncWithTimeout(defaultPassword));
+        updateUserPassword(userPO.getId(), argon2PasswordEncoder.encodeAsyncWithTimeout(authSecurityConfigService.getDefaultPassword()));
         StpUtil.logout(userPO.getId());
         log.info("管理员已重置用户 [{}] 的密码，并强制其重新登录", userPO.getUsername());
     }

@@ -7,11 +7,12 @@
     >
       <template #actions>
         <el-button plain @click="loadConfigs">刷新列表</el-button>
+        <el-button plain @click="handleRefreshRuntimeCache">刷新运行时缓存</el-button>
         <el-button type="primary" @click="openCreateDialog">新增参数</el-button>
       </template>
     </AppPageHeader>
 
-    <AuthSearchSection title="筛选条件" description="支持按参数名称、参数键和参数类型筛选。" :model="queryForm">
+    <AuthSearchSection title="筛选条件" description="支持按参数名称、参数键、分组、敏感标识和状态筛选。" :model="queryForm">
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="参数名称 / 参数键" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -20,6 +21,19 @@
         </el-form-item>
         <el-form-item label="参数键">
           <el-input v-model="queryForm.configKey" placeholder="请输入参数键" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="参数分组">
+          <el-input v-model="queryForm.configGroup" placeholder="请输入参数分组" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="敏感参数">
+          <el-select v-model="queryForm.sensitiveFlag" clearable placeholder="全部">
+            <el-option v-for="item in YES_NO_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="queryForm.status" clearable placeholder="全部状态">
+            <el-option v-for="item in STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="参数类型">
           <el-select v-model="queryForm.configType" clearable placeholder="全部类型">
@@ -48,7 +62,22 @@
       <el-table v-loading="loading" :data="configList" row-key="id">
         <el-table-column prop="configName" label="参数名称" min-width="180" />
         <el-table-column prop="configKey" label="参数键" min-width="220" show-overflow-tooltip />
+        <el-table-column prop="configGroup" label="参数分组" min-width="140" show-overflow-tooltip />
         <el-table-column prop="configValue" label="参数值" min-width="220" show-overflow-tooltip />
+        <el-table-column label="敏感参数" width="110">
+          <template #default="{ row }">
+            <el-tag :type="row.sensitiveFlag === 1 ? 'danger' : 'info'">
+              {{ row.sensitiveFlag === 1 ? '敏感' : '普通' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'">
+              {{ row.status === 1 ? '启用' : '停用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="参数类型" width="120">
           <template #default="{ row }">
             <el-tag :type="row.configType === 1 ? 'warning' : 'info'">
@@ -91,7 +120,10 @@
             <el-descriptions-item label="参数 ID">{{ detailData.id }}</el-descriptions-item>
             <el-descriptions-item label="参数名称">{{ detailData.configName }}</el-descriptions-item>
             <el-descriptions-item label="参数键">{{ detailData.configKey }}</el-descriptions-item>
+            <el-descriptions-item label="参数分组">{{ detailData.configGroup }}</el-descriptions-item>
             <el-descriptions-item label="参数值">{{ detailData.configValue }}</el-descriptions-item>
+            <el-descriptions-item label="敏感参数">{{ detailData.sensitiveFlag === 1 ? '是' : '否' }}</el-descriptions-item>
+            <el-descriptions-item label="状态">{{ detailData.status === 1 ? '启用' : '停用' }}</el-descriptions-item>
             <el-descriptions-item label="参数类型">
               {{ detailData.configType === 1 ? '系统内置' : '普通配置' }}
             </el-descriptions-item>
@@ -114,8 +146,29 @@
         <el-form-item label="参数键" prop="configKey">
           <el-input v-model="formModel.configKey" placeholder="请输入参数键" :disabled="formDialog.mode === 'edit' && formModel.configType === 1" />
         </el-form-item>
+        <el-form-item label="参数分组" prop="configGroup">
+          <el-input v-model="formModel.configGroup" placeholder="请输入参数分组" :disabled="formDialog.mode === 'edit' && formModel.configType === 1" />
+        </el-form-item>
         <el-form-item label="参数值" prop="configValue">
-          <el-input v-model="formModel.configValue" type="textarea" placeholder="请输入参数值" />
+          <el-input
+            v-model="formModel.configValue"
+            type="textarea"
+            :placeholder="formModel.sensitiveFlag === 1 ? '请输入敏感参数值；如未修改请保持脱敏占位符原样保存' : '请输入参数值'"
+          />
+        </el-form-item>
+        <el-form-item label="敏感参数" prop="sensitiveFlag">
+          <el-radio-group v-model="formModel.sensitiveFlag" :disabled="formDialog.mode === 'edit' && formModel.configType === 1">
+            <el-radio v-for="item in YES_NO_OPTIONS" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="formModel.status" :disabled="formDialog.mode === 'edit' && formModel.configType === 1">
+            <el-radio v-for="item in STATUS_OPTIONS" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="参数类型" prop="configType">
           <el-radio-group v-model="formModel.configType">
@@ -145,12 +198,13 @@ import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import AppPageHeader from '@/components/AppPageHeader.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
-import { CONFIG_TYPE_OPTIONS, DEFAULT_PAGE_SIZE } from '@/constants/admin'
+import { CONFIG_TYPE_OPTIONS, DEFAULT_PAGE_SIZE, STATUS_OPTIONS, YES_NO_OPTIONS } from '@/constants/admin'
 import {
   createConfigApi,
   deleteConfigApi,
   getConfigDetailApi,
   getConfigPageApi,
+  refreshConfigRuntimeCacheApi,
   updateConfigApi,
 } from '@/api/config'
 import { showGlobalError } from '@/stores/globalError'
@@ -164,6 +218,9 @@ interface ConfigFormModel {
   configName: string
   configKey: string
   configValue: string
+  configGroup: string
+  sensitiveFlag: number
+  status: number
   configType: number
   remark: string
 }
@@ -185,6 +242,9 @@ const queryForm = reactive<ConfigQueryDTO>({
   searchKey: '',
   configName: '',
   configKey: '',
+  configGroup: '',
+  sensitiveFlag: undefined,
+  status: undefined,
   configType: undefined,
 })
 
@@ -199,6 +259,9 @@ const formModel = reactive<ConfigFormModel>({
   configName: '',
   configKey: '',
   configValue: '',
+  configGroup: 'default',
+  sensitiveFlag: 0,
+  status: 1,
   configType: 0,
   remark: '',
 })
@@ -206,6 +269,7 @@ const formModel = reactive<ConfigFormModel>({
 const formRules: FormRules<ConfigFormModel> = {
   configName: [{ required: true, message: '请输入参数名称', trigger: 'blur' }],
   configKey: [{ required: true, message: '请输入参数键', trigger: 'blur' }],
+  configGroup: [{ required: true, message: '请输入参数分组', trigger: 'blur' }],
   configValue: [{ required: true, message: '请输入参数值', trigger: 'blur' }],
 }
 
@@ -214,8 +278,8 @@ const pageTitle = computed(() => String(route.meta.title || '系统参数'))
 const headerStats = computed(() => [
   { label: '参数总量', value: total.value, hint: '按后端分页总数统计' },
   { label: '系统内置', value: configList.value.filter((item) => item.configType === 1).length, hint: '内置参数不允许删除' },
+  { label: '敏感参数', value: configList.value.filter((item) => item.sensitiveFlag === 1).length, hint: '读取时统一脱敏显示' },
   { label: '普通配置', value: configList.value.filter((item) => item.configType === 0).length, hint: '可由管理台维护的参数' },
-  { label: '参数键稳定性', value: '高', hint: '编辑内置参数时会限制改键' },
 ])
 
 const resetFormDialog = () => {
@@ -224,6 +288,9 @@ const resetFormDialog = () => {
   formModel.configName = ''
   formModel.configKey = ''
   formModel.configValue = ''
+  formModel.configGroup = 'default'
+  formModel.sensitiveFlag = 0
+  formModel.status = 1
   formModel.configType = 0
   formModel.remark = ''
   formRef.value?.clearValidate()
@@ -250,6 +317,9 @@ const resetQuery = () => {
   queryForm.searchKey = ''
   queryForm.configName = ''
   queryForm.configKey = ''
+  queryForm.configGroup = ''
+  queryForm.sensitiveFlag = undefined
+  queryForm.status = undefined
   queryForm.configType = undefined
   handleSearch()
 }
@@ -282,6 +352,9 @@ const openEditDialog = async (row: ConfigDTO) => {
     formModel.configName = detail.configName
     formModel.configKey = detail.configKey
     formModel.configValue = detail.configValue
+    formModel.configGroup = detail.configGroup
+    formModel.sensitiveFlag = detail.sensitiveFlag ?? 0
+    formModel.status = detail.status ?? 1
     formModel.configType = detail.configType ?? 0
     formModel.remark = detail.remark || ''
   } catch (error) {
@@ -307,6 +380,9 @@ const submitForm = async () => {
       configName: formModel.configName,
       configKey: formModel.configKey,
       configValue: formModel.configValue,
+      configGroup: formModel.configGroup,
+      sensitiveFlag: formModel.sensitiveFlag,
+      status: formModel.status,
       configType: formModel.configType,
       remark: formModel.remark || undefined,
     }
@@ -347,6 +423,15 @@ const handleDelete = async (row: ConfigDTO) => {
     if (error !== 'cancel') {
       showGlobalError(error, { fallbackMessage: '删除参数失败' })
     }
+  }
+}
+
+const handleRefreshRuntimeCache = async () => {
+  try {
+    await refreshConfigRuntimeCacheApi()
+    ElMessage.success('运行时配置缓存已刷新')
+  } catch (error) {
+    showGlobalError(error, { fallbackMessage: '刷新运行时配置缓存失败' })
   }
 }
 

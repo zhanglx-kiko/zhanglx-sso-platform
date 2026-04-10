@@ -6,8 +6,12 @@ import com.zhanglx.sso.auth.domain.dto.ConfigDTO;
 import com.zhanglx.sso.auth.domain.dto.ConfigQueryDTO;
 import com.zhanglx.sso.auth.domain.po.ConfigPO;
 import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.auth.mapper.ConfigMapper;
 import com.zhanglx.sso.auth.service.ConfigService;
+import com.zhanglx.sso.auth.service.runtime.ConfigValueMaskingSupport;
+import com.zhanglx.sso.auth.service.runtime.DatabaseSystemConfigProvider;
 import com.zhanglx.sso.auth.utils.ISystemManageMapper;
 import com.zhanglx.sso.core.exception.CommonErrorCode;
 import com.zhanglx.sso.core.utils.AssertUtils;
@@ -26,6 +30,14 @@ public class ConfigServiceImpl implements ConfigService {
      * 参数配置映射器。
      */
     private final ConfigMapper configMapper;
+    /**
+     * 运行时配置提供者。
+     */
+    private final DatabaseSystemConfigProvider systemConfigProvider;
+    /**
+     * 参数脱敏支撑组件。
+     */
+    private final ConfigValueMaskingSupport configValueMaskingSupport;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -35,35 +47,57 @@ public class ConfigServiceImpl implements ConfigService {
         if (po.getConfigType() == null) {
             po.setConfigType(ConfigTypeEnum.CUSTOM);
         }
+        if (StrUtil.isBlank(po.getConfigGroup())) {
+            po.setConfigGroup("default");
+        }
+        if (po.getSensitiveFlag() == null) {
+            po.setSensitiveFlag(YesNoEnum.NO);
+        }
+        if (po.getStatus() == null) {
+            po.setStatus(EnableStatusEnum.ENABLED);
+        }
         configMapper.insert(po);
-        return ISystemManageMapper.INSTANCE.toDTO(po);
+        systemConfigProvider.refresh(po.getConfigKey());
+        return toSafeDTO(po);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ConfigDTO update(Long id, ConfigDTO dto) {
         ConfigPO exist = getConfigOrThrow(id);
+        String oldConfigKey = exist.getConfigKey();
         validateKeyUnique(dto.getConfigKey(), id);
 
         if (ConfigTypeEnum.isBuiltIn(exist.getConfigType())) {
             AssertUtils.isTrue(StrUtil.equals(exist.getConfigKey(), dto.getConfigKey()), "built-in config key cannot be changed");
             AssertUtils.isTrue(ConfigTypeEnum.isBuiltIn(dto.getConfigType()), "built-in flag cannot be changed for built-in config");
+            AssertUtils.isTrue(StrUtil.equals(exist.getConfigGroup(), dto.getConfigGroup()), "built-in config group cannot be changed");
+            AssertUtils.isTrue(exist.getSensitiveFlag() == dto.getSensitiveFlag(), "built-in sensitive flag cannot be changed");
+            AssertUtils.isTrue(EnableStatusEnum.isEnabled(dto.getStatus()), "built-in config cannot be disabled");
         }
 
         exist.setConfigName(dto.getConfigName());
         exist.setConfigKey(dto.getConfigKey());
-        exist.setConfigValue(dto.getConfigValue());
+        exist.setConfigValue(resolveConfigValueForUpdate(exist, dto.getConfigValue()));
+        exist.setConfigGroup(dto.getConfigGroup());
+        exist.setSensitiveFlag(dto.getSensitiveFlag());
+        exist.setStatus(dto.getStatus());
         exist.setConfigType(dto.getConfigType());
         exist.setRemark(dto.getRemark());
         ConfigPO updatePO = new ConfigPO();
         updatePO.setId(id);
         updatePO.setConfigName(dto.getConfigName());
         updatePO.setConfigKey(dto.getConfigKey());
-        updatePO.setConfigValue(dto.getConfigValue());
+        updatePO.setConfigValue(exist.getConfigValue());
+        updatePO.setConfigGroup(dto.getConfigGroup());
+        updatePO.setSensitiveFlag(dto.getSensitiveFlag());
+        updatePO.setStatus(dto.getStatus());
         updatePO.setConfigType(dto.getConfigType());
         updatePO.setRemark(dto.getRemark());
         configMapper.updateById(updatePO);
-        return ISystemManageMapper.INSTANCE.toDTO(exist);
+        systemConfigProvider.refresh(oldConfigKey);
+        systemConfigProvider.refresh(dto.getConfigKey());
+        return toSafeDTO(exist);
     }
 
     @Override
@@ -72,11 +106,12 @@ public class ConfigServiceImpl implements ConfigService {
         ConfigPO exist = getConfigOrThrow(id);
         AssertUtils.isTrue(!ConfigTypeEnum.isBuiltIn(exist.getConfigType()), "built-in config cannot be deleted");
         configMapper.deleteByIdWithFill(id);
+        systemConfigProvider.refresh(exist.getConfigKey());
     }
 
     @Override
     public ConfigDTO getById(Long id) {
-        return ISystemManageMapper.INSTANCE.toDTO(getConfigOrThrow(id));
+        return toSafeDTO(getConfigOrThrow(id));
     }
 
     @Override
@@ -84,7 +119,7 @@ public class ConfigServiceImpl implements ConfigService {
         AssertUtils.notBlank(configKey, "config key cannot be blank");
         ConfigPO po = configMapper.selectOne(ConfigPO::getConfigKey, configKey);
         AssertUtils.notNull(po, CommonErrorCode.NOT_FOUND);
-        return ISystemManageMapper.INSTANCE.toDTO(po);
+        return toSafeDTO(po);
     }
 
     @Override
@@ -93,13 +128,18 @@ public class ConfigServiceImpl implements ConfigService {
         LambdaQueryWrapperX<ConfigPO> wrapper = new LambdaQueryWrapperX<ConfigPO>()
                 .likeIfPresent(ConfigPO::getConfigName, queryDTO.getConfigName())
                 .likeIfPresent(ConfigPO::getConfigKey, queryDTO.getConfigKey())
+                .eqIfPresent(ConfigPO::getConfigGroup, queryDTO.getConfigGroup())
+                .eqIfPresent(ConfigPO::getSensitiveFlag, queryDTO.getSensitiveFlag())
+                .eqIfPresent(ConfigPO::getStatus, queryDTO.getStatus())
                 .eqIfPresent(ConfigPO::getConfigType, queryDTO.getConfigType())
                 .orderByDesc(ConfigPO::getCreateTime);
 
         if (StrUtil.isNotBlank(queryDTO.getSearchKey())) {
             wrapper.and(w -> w.like(ConfigPO::getConfigName, queryDTO.getSearchKey())
                     .or()
-                    .like(ConfigPO::getConfigKey, queryDTO.getSearchKey()));
+                    .like(ConfigPO::getConfigKey, queryDTO.getSearchKey())
+                    .or()
+                    .like(ConfigPO::getConfigGroup, queryDTO.getSearchKey()));
         }
 
         configMapper.selectPage(page, wrapper);
@@ -107,8 +147,13 @@ public class ConfigServiceImpl implements ConfigService {
         result.setCurrent(page.getCurrent());
         result.setSize(page.getSize());
         result.setTotal(page.getTotal());
-        result.setRecords(ISystemManageMapper.INSTANCE.toConfigDTOList(page.getRecords()));
+        result.setRecords(page.getRecords().stream().map(this::toSafeDTO).toList());
         return result;
+    }
+
+    @Override
+    public void refreshRuntimeCache() {
+        systemConfigProvider.refreshAll();
     }
 
     /**
@@ -132,5 +177,26 @@ public class ConfigServiceImpl implements ConfigService {
             wrapper.ne(ConfigPO::getId, excludeId);
         }
         AssertUtils.isTrue(configMapper.selectCount(wrapper) == 0, "config key already exists");
+    }
+
+    /**
+     * 将参数转换为适合管理台展示的安全结果。
+     * 敏感配置值统一返回脱敏占位符，避免明文下发到前端。
+     */
+    private ConfigDTO toSafeDTO(ConfigPO po) {
+        ConfigDTO dto = ISystemManageMapper.INSTANCE.toDTO(po);
+        dto.setConfigValue(configValueMaskingSupport.maskForDisplay(po));
+        return dto;
+    }
+
+    /**
+     * 处理敏感值编辑场景。
+     * 当前端回传的是脱敏占位符时，表示继续沿用原值，不应把占位符写回数据库。
+     */
+    private String resolveConfigValueForUpdate(ConfigPO exist, String candidateValue) {
+        if (configValueMaskingSupport.shouldKeepOriginalValue(exist, candidateValue)) {
+            return exist.getConfigValue();
+        }
+        return candidateValue;
     }
 }

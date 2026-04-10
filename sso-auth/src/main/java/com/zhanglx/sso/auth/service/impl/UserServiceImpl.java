@@ -15,6 +15,7 @@ import com.zhanglx.sso.auth.enums.*;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.*;
 import com.zhanglx.sso.auth.service.UserService;
+import com.zhanglx.sso.auth.service.runtime.AuthSecurityConfigService;
 import com.zhanglx.sso.auth.service.support.AuthOperationGuard;
 import com.zhanglx.sso.auth.utils.IUserDomainMapper;
 import com.zhanglx.sso.core.exception.BusinessException;
@@ -22,7 +23,6 @@ import com.zhanglx.sso.core.utils.AssertUtils;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,12 +67,10 @@ public class UserServiceImpl implements UserService {
      * 操作保护组件。
      */
     private final AuthOperationGuard authOperationGuard;
-
     /**
-     * 默认密码。
+     * 认证安全配置服务。
      */
-    @Value("${default.password:123456}")
-    private String defaultPassword;
+    private final AuthSecurityConfigService authSecurityConfigService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -285,7 +283,7 @@ public class UserServiceImpl implements UserService {
      * 填充默认字段值。
      */
     private void fillDefaultUserFields(UserPO userPO, UserTypeEnum userType) {
-        String rawPassword = StrUtil.isBlank(userPO.getPassword()) ? defaultPassword : userPO.getPassword();
+        String rawPassword = StrUtil.isBlank(userPO.getPassword()) ? authSecurityConfigService.getDefaultPassword() : userPO.getPassword();
         userPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(rawPassword));
 
         if (userPO.getStatus() == null) {

@@ -96,21 +96,6 @@ public class SmsProperties {
         private boolean enabled = true;
 
         /**
-         * 短信通用户标识。
-         */
-        private String uid;
-
-        /**
-         * 短信通密钥。
-         */
-        private String key;
-
-        /**
-         * 短信通发送地址。
-         */
-        private String sendUrl = "https://utf8api.smschinese.cn/";
-
-        /**
          * 连接超时时间，单位为毫秒。
          */
         private int connectTimeoutMillis = 5000;
@@ -131,31 +116,6 @@ public class SmsProperties {
          * 是否启用阿里云短信渠道。
          */
         private boolean enabled = false;
-
-        /**
-         * 阿里云 AccessKey 标识。
-         */
-        private String accessKeyId;
-
-        /**
-         * 阿里云 AccessKey Secret。
-         */
-        private String accessKeySecret;
-
-        /**
-         * 阿里云区域编码。
-         */
-        private String region = "cn-qingdao";
-
-        /**
-         * 阿里云接口域名。
-         */
-        private String endpoint = "dypnsapi.aliyuncs.com";
-
-        /**
-         * 阿里云短信签名。
-         */
-        private String signName = "速通互联验证平台";
 
         /**
          * 是否要求渠道返回验证码，生产环境固定为 false。

@@ -4,9 +4,11 @@ import com.password4j.Argon2Function;
 import com.password4j.Hash;
 import com.password4j.SaltGenerator;
 import com.password4j.types.Argon2;
+import com.zhanglx.sso.auth.service.runtime.AuthSecurityConfigService;
 import com.zhanglx.sso.core.exception.BusinessException;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ import java.util.regex.Pattern;
  * 4. 舱壁模式（Bulkhead）：使用独立的平台线程池隔离 CPU 密集型计算，防止虚拟线程/主业务线程被拖垮
  */
 @Component
+@RequiredArgsConstructor
 public class Argon2PasswordEncoder {
     private static final Logger log = LoggerFactory.getLogger(Argon2PasswordEncoder.class);
 
@@ -38,6 +41,11 @@ public class Argon2PasswordEncoder {
     private static final int MIN_SALT_LENGTH = 16;
     // Argon2参数解析正则（精准匹配密文中的m/t/p）
     private static final Pattern ARGON2_PARAM_PATTERN = Pattern.compile("m=(\\d+),t=(\\d+),p=(\\d+)");
+
+    /**
+     * 认证安全配置服务。
+     */
+    private final AuthSecurityConfigService authSecurityConfigService;
 
     // 全局静态参数实例
     /**
@@ -90,7 +98,6 @@ public class Argon2PasswordEncoder {
     /**
      * 额外的 Pepper 配置。
      */
-    @Value("${security.argon2.pepper:}")
     private String pepper;
 
     /**
@@ -104,12 +111,15 @@ public class Argon2PasswordEncoder {
             saltLength = MIN_SALT_LENGTH;
         }
 
-        // 2. 初始化全局 Argon2 实例（多节点参数完全一致）
+        // 2. Pepper 属于高敏系统密钥，统一从数据库运行时配置中读取。
+        pepper = authSecurityConfigService.getArgon2Pepper();
+
+        // 3. 初始化全局 Argon2 实例（多节点参数完全一致）
         argon2Function = Argon2Function.getInstance(memory, iterations, parallelism, outputLength, ARGON2_TYPE);
         globalParams = new Argon2Parameters(memory, iterations, parallelism);
         log.info("Argon2 初始化完成，全局统一参数：内存={}, 迭代={}, 并行={}", memory, iterations, parallelism);
 
-        // 3. 初始化专用的平台线程池（舱壁模式隔离）
+        // 4. 初始化专用的平台线程池（舱壁模式隔离）
         // 核心：最大线程数设为 CPU 核心数的一半（最少2个），防止恶意并发打满所有 CPU
         int cpuCores = Runtime.getRuntime().availableProcessors();
         int poolSize = Math.max(2, cpuCores / 2);

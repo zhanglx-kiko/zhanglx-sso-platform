@@ -142,6 +142,9 @@ export interface ConfigDTO extends BaseEntity {
   configName: string
   configKey: string
   configValue: string
+  configGroup: string
+  sensitiveFlag: number
+  status: number
   configType?: number
   remark?: string
 }
@@ -149,6 +152,9 @@ export interface ConfigDTO extends BaseEntity {
 export interface ConfigQueryDTO extends PageQuery {
   configName?: string
   configKey?: string
+  configGroup?: string
+  sensitiveFlag?: number
+  status?: number
   configType?: number
 }
 

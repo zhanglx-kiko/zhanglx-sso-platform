@@ -1,6 +1,8 @@
 package com.zhanglx.sso.auth.domain.dto;
 
 import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.core.domain.dto.BaseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -42,6 +44,27 @@ public class ConfigDTO extends BaseDTO {
     @NotBlank(message = "参数值不能为空")
     @Schema(description = "参数值", requiredMode = Schema.RequiredMode.REQUIRED)
     private String configValue;
+
+    /**
+     * 参数分组。
+     */
+    @NotBlank(message = "参数分组不能为空")
+    @Schema(description = "参数分组", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String configGroup;
+
+    /**
+     * 是否敏感参数。
+     */
+    @NotNull(message = "敏感标识不能为空")
+    @Schema(description = "是否敏感参数")
+    private YesNoEnum sensitiveFlag;
+
+    /**
+     * 参数状态。
+     */
+    @NotNull(message = "参数状态不能为空")
+    @Schema(description = "参数状态")
+    private EnableStatusEnum status;
 
     /**
      * 参数类型。

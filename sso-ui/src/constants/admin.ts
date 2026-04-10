@@ -45,3 +45,8 @@ export const CONFIG_TYPE_OPTIONS: SelectOption<number>[] = [
   { label: '系统内置', value: 1 },
 ]
 
+export const YES_NO_OPTIONS: SelectOption<number>[] = [
+  { label: '否', value: 0 },
+  { label: '是', value: 1 },
+]
+

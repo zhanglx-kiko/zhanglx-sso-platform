@@ -4,6 +4,7 @@ import com.zhanglx.sso.sms.enums.SmsProviderType;
 import com.zhanglx.sso.sms.model.SmsSendRequest;
 import com.zhanglx.sso.sms.model.SmsSendResult;
 import com.zhanglx.sso.sms.properties.SmsProperties;
+import com.zhanglx.sso.sms.service.runtime.SmsChannelRuntimeConfigResolver;
 import com.zhanglx.sso.sms.support.SmsMaskingUtils;
 import com.zhanglx.sso.sms.support.SmsTemplateSupport;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class SmsChineseChannelSender implements SmsChannelSender {
     /**
-     * 短信配置属性。
+     * 短信渠道运行时配置解析器。
      */
-    private final SmsProperties smsProperties;
+    private final SmsChannelRuntimeConfigResolver smsChannelRuntimeConfigResolver;
     /**
      * 短信模板支持组件。
      */
@@ -40,13 +41,12 @@ public class SmsChineseChannelSender implements SmsChannelSender {
 
     @Override
     public SmsSendResult send(SmsSendRequest request, SmsProperties.TemplateProperties templateProperties) {
-        SmsProperties.SmsChineseProperties providerProperties = smsProperties.getSmsChinese();
-        if (!providerProperties.isEnabled()) {
+        SmsChannelRuntimeConfigResolver.SmsChineseChannelConfig providerConfig = smsChannelRuntimeConfigResolver.getSmsChineseConfig();
+        if (!providerConfig.enabled()) {
             return buildFailureResult(request, templateProperties, "CHANNEL_DISABLED", "短信通道未启用", null, null);
         }
-        if (!StringUtils.hasText(providerProperties.getUid())
-                || !StringUtils.hasText(providerProperties.getKey())
-                || !StringUtils.hasText(providerProperties.getSendUrl())) {
+
+        if (!providerConfig.isComplete()) {
             return buildFailureResult(request, templateProperties, "CONFIG_INVALID", "短信通平台配置不完整", null, null);
         }
 
@@ -65,16 +65,16 @@ public class SmsChineseChannelSender implements SmsChannelSender {
 
         HttpClient httpClient = new HttpClient();
         HttpConnectionManagerParams params = httpClient.getHttpConnectionManager().getParams();
-        params.setConnectionTimeout(Math.max(1000, providerProperties.getConnectTimeoutMillis()));
-        params.setSoTimeout(Math.max(1000, providerProperties.getReadTimeoutMillis()));
+        params.setConnectionTimeout(Math.max(1000, providerConfig.connectTimeoutMillis()));
+        params.setSoTimeout(Math.max(1000, providerConfig.readTimeoutMillis()));
 
-        PostMethod postMethod = new PostMethod(providerProperties.getSendUrl());
+        PostMethod postMethod = new PostMethod(providerConfig.sendUrl());
         try {
             postMethod.addRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
             postMethod.getParams().setContentCharset("UTF-8");
             postMethod.setRequestBody(new NameValuePair[]{
-                    new NameValuePair("Uid", providerProperties.getUid().trim()),
-                    new NameValuePair("Key", providerProperties.getKey().trim()),
+                    new NameValuePair("Uid", providerConfig.uid().trim()),
+                    new NameValuePair("Key", providerConfig.key().trim()),
                     new NameValuePair("smsMob", request.getPhoneNumber()),
                     // 这里提交的 短信正文 就是上面渲染完成后的最终短信正文。
                     new NameValuePair("smsText", content)

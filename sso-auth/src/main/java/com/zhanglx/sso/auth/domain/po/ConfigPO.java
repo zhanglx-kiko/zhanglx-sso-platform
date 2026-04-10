@@ -3,6 +3,8 @@ package com.zhanglx.sso.auth.domain.po;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.zhanglx.sso.auth.enums.ConfigTypeEnum;
+import com.zhanglx.sso.auth.enums.EnableStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.mybatis.domain.po.BasePO;
 import com.zhanglx.sso.mybatis.handler.AutoEnumTypeHandler;
 import lombok.AllArgsConstructor;
@@ -40,6 +42,24 @@ public class ConfigPO extends BasePO {
      */
     @TableField(value = "config_value", jdbcType = JdbcType.VARCHAR)
     private String configValue;
+
+    /**
+     * 配置分组。
+     */
+    @TableField(value = "config_group", jdbcType = JdbcType.VARCHAR)
+    private String configGroup;
+
+    /**
+     * 是否敏感配置。
+     */
+    @TableField(value = "sensitive_flag", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private YesNoEnum sensitiveFlag;
+
+    /**
+     * 配置状态。
+     */
+    @TableField(value = "status", jdbcType = JdbcType.TINYINT, typeHandler = AutoEnumTypeHandler.class)
+    private EnableStatusEnum status;
 
     /**
      * 配置类型。
