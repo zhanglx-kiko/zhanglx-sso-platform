@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(UserErrorCode.USER_PASSWORD_ERROR);
         }
 
-        if (UserStatusEnum.DISABLED.matches(userPO.getStatus())) {
+        if (!UserStatusEnum.NORMAL.matches(userPO.getStatus())) {
             throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 
@@ -200,7 +200,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException(UserErrorCode.BUSINESS_USER_NOT_FOUND);
         }
 
-        if (UserStatusEnum.DISABLED.matches(userPO.getStatus())) {
+        if (!UserStatusEnum.NORMAL.matches(userPO.getStatus())) {
             throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
         }
 

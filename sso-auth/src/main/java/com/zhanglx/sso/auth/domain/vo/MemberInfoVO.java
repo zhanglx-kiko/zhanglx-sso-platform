@@ -1,6 +1,8 @@
 package com.zhanglx.sso.auth.domain.vo;
 
 import com.zhanglx.sso.auth.enums.GenderEnum;
+import com.zhanglx.sso.auth.enums.MemberTypeEnum;
+import com.zhanglx.sso.auth.enums.RealNameStatusEnum;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.core.domain.vo.BaseVO;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -82,13 +84,13 @@ public class MemberInfoVO extends BaseVO {
      * 会员类型。
      */
     @Schema(description = "会员类型", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer memberType;
+    private MemberTypeEnum memberType;
 
     /**
      * 实名状态。
      */
     @Schema(description = "实名状态", accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer realNameStatus;
+    private RealNameStatusEnum realNameStatus;
 
     /**
      * 状态。
@@ -115,7 +117,7 @@ public class MemberInfoVO extends BaseVO {
     private String lastLoginIp;
 
     /**
-     * 扩展资料 序列化文本。
+     * 扩展资料 JSON。
      */
     @Schema(description = "扩展资料 JSON", accessMode = Schema.AccessMode.READ_ONLY)
     private String profileExtra;

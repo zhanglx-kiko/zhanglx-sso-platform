@@ -128,31 +128,43 @@ CREATE TABLE `t_sys_user_social`
 DROP TABLE IF EXISTS `t_member_user`;
 CREATE TABLE `t_member_user`
 (
-    `id`               bigint(20)   NOT NULL COMMENT '主键 ID',
-    `phone_number`     varchar(20)           DEFAULT NULL COMMENT '手机号',
-    `password`         varchar(255)          DEFAULT NULL COMMENT '密码哈希',
-    `nickname`         varchar(64)           DEFAULT NULL COMMENT '昵称',
-    `avatar`           varchar(255)          DEFAULT NULL COMMENT '头像地址',
-    `sex`              tinyint(1)            DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
-    `birthday`         date                  DEFAULT NULL COMMENT '生日',
-    `email`            varchar(128)          DEFAULT NULL COMMENT '邮箱',
-    `user_level`       int(11)      NOT NULL DEFAULT 1 COMMENT '用户等级，默认 1 级',
-    `points`           bigint(20)   NOT NULL DEFAULT 0 COMMENT '会员积分',
-    `member_type`      tinyint(1)   NOT NULL DEFAULT 0 COMMENT '会员类型：0-普通会员，1-VIP会员',
-    `real_name_status` tinyint(1)   NOT NULL DEFAULT 0 COMMENT '实名状态：0-未认证，1-认证中，2-已认证，3-认证失败',
-    `profile_extra`    text                  DEFAULT NULL COMMENT '扩展资料，建议存储 JSON 字符串',
-    `status`           tinyint(1)   NOT NULL DEFAULT 1 COMMENT '状态：1-正常，0-禁用',
-    `register_ip`      varchar(128)          DEFAULT NULL COMMENT '注册 IP',
-    `last_login_time`  datetime              DEFAULT NULL COMMENT '最后登录时间',
-    `last_login_ip`    varchar(128)          DEFAULT NULL COMMENT '最后登录 IP',
-    `del_flag`         bigint(20)   NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
-    `create_by`        bigint(20)            DEFAULT 0 COMMENT '创建人',
-    `create_time`      datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_by`        bigint(20)            DEFAULT 0 COMMENT '更新人',
-    `update_time`      datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `id`                 bigint(20)   NOT NULL COMMENT '主键 ID',
+    `phone_number`       varchar(20)           DEFAULT NULL COMMENT '手机号',
+    `password`           varchar(255)          DEFAULT NULL COMMENT '密码哈希',
+    `nickname`           varchar(64)           DEFAULT NULL COMMENT '昵称',
+    `avatar`             varchar(255)          DEFAULT NULL COMMENT '头像地址',
+    `sex`                tinyint(1)            DEFAULT 0 COMMENT '性别：0-未知，1-男，2-女',
+    `birthday`           date                  DEFAULT NULL COMMENT '生日',
+    `email`              varchar(128)          DEFAULT NULL COMMENT '邮箱',
+    `user_level`         int(11)      NOT NULL DEFAULT 1 COMMENT '用户等级，默认 1 级',
+    `points`             bigint(20)   NOT NULL DEFAULT 0 COMMENT '会员积分',
+    `member_type`        tinyint(1)   NOT NULL DEFAULT 0 COMMENT '会员类型：0-普通会员，1-VIP会员',
+    `real_name_status`   tinyint(1)   NOT NULL DEFAULT 0 COMMENT '实名状态：0-未认证，1-认证中，2-已认证，3-认证失败',
+    `phone_bound`        tinyint(1)   NOT NULL DEFAULT 0 COMMENT '手机号是否已绑定：1-是，0-否',
+    `register_source`    varchar(64)           DEFAULT NULL COMMENT '注册来源，例如 PHONE_REGISTER、WECHAT_MINI',
+    `register_device`    varchar(64)           DEFAULT NULL COMMENT '注册设备标识',
+    `risk_level`         int(11)      NOT NULL DEFAULT 0 COMMENT '风险等级，数值越大风险越高',
+    `blacklist_flag`     tinyint(1)   NOT NULL DEFAULT 0 COMMENT '是否加入黑名单：1-是，0-否',
+    `profile_extra`      text                  DEFAULT NULL COMMENT '扩展资料，建议存储 JSON 字符串',
+    `status`             tinyint(1)   NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常，2-冻结，3-注销中，4-已注销',
+    `status_reason`      varchar(255)          DEFAULT NULL COMMENT '状态原因',
+    `status_expire_time` datetime              DEFAULT NULL COMMENT '状态到期时间，例如冻结结束时间',
+    `cancel_time`        datetime              DEFAULT NULL COMMENT '注销完成时间',
+    `disabled_time`      datetime              DEFAULT NULL COMMENT '禁用时间',
+    `register_ip`        varchar(128)          DEFAULT NULL COMMENT '注册 IP',
+    `last_login_time`    datetime              DEFAULT NULL COMMENT '最后登录时间',
+    `last_login_ip`      varchar(128)          DEFAULT NULL COMMENT '最后登录 IP',
+    `del_flag`           bigint(20)   NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    `create_by`          bigint(20)            DEFAULT 0 COMMENT '创建人',
+    `create_time`        datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`          bigint(20)            DEFAULT 0 COMMENT '更新人',
+    `update_time`        datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_member_phone_del` (`phone_number`, `del_flag`),
-    KEY `idx_status_del` (`status`, `del_flag`)
+    KEY `idx_status_del` (`status`, `del_flag`),
+    KEY `idx_member_create_time` (`create_time`),
+    KEY `idx_member_last_login_time` (`last_login_time`),
+    KEY `idx_member_phone_bound_del` (`phone_bound`, `del_flag`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT ='会员表';
@@ -177,6 +189,34 @@ CREATE TABLE `t_member_social`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_0900_ai_ci COMMENT ='会员第三方账号绑定表';
+
+DROP TABLE IF EXISTS `t_member_manage_record`;
+CREATE TABLE `t_member_manage_record`
+(
+    `id`            bigint(20)   NOT NULL COMMENT '主键 ID',
+    `member_id`     bigint(20)   NOT NULL COMMENT '会员 ID',
+    `action_type`   tinyint(1)   NOT NULL COMMENT '管理动作：1-启用，2-禁用，3-冻结，4-解冻，5-强制下线，6-注销，7-恢复，8-加入黑名单，9-移出黑名单',
+    `before_status` tinyint(1)            DEFAULT NULL COMMENT '变更前状态：0-禁用，1-正常，2-冻结，3-注销中，4-已注销',
+    `after_status`  tinyint(1)            DEFAULT NULL COMMENT '变更后状态：0-禁用，1-正常，2-冻结，3-注销中，4-已注销',
+    `reason`        varchar(255) NOT NULL COMMENT '处理原因',
+    `remark`        varchar(255)          DEFAULT NULL COMMENT '补充备注',
+    `expire_time`   datetime              DEFAULT NULL COMMENT '状态到期时间',
+    `operator_id`   bigint(20)            DEFAULT NULL COMMENT '操作人 ID',
+    `operator_name` varchar(64)           DEFAULT NULL COMMENT '操作人名称',
+    `approve_by`    bigint(20)            DEFAULT NULL COMMENT '审批人 ID',
+    `approve_time`  datetime              DEFAULT NULL COMMENT '审批时间',
+    `del_flag`      bigint(20)   NOT NULL DEFAULT 0 COMMENT '逻辑删除标记',
+    `create_by`     bigint(20)            DEFAULT NULL COMMENT '创建人',
+    `create_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_by`     bigint(20)            DEFAULT NULL COMMENT '更新人',
+    `update_time`   datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_member_record_member_time` (`member_id`, `create_time`),
+    KEY `idx_member_record_action_time` (`action_type`, `create_time`),
+    KEY `idx_member_record_operator_time` (`operator_id`, `create_time`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_0900_ai_ci COMMENT ='会员后台管理记录表';
 
 DROP TABLE IF EXISTS `t_auth_role`;
 CREATE TABLE `t_auth_role`

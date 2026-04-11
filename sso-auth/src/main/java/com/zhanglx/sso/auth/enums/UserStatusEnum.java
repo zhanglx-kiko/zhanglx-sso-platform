@@ -10,28 +10,62 @@ import lombok.RequiredArgsConstructor;
 import java.util.Objects;
 
 /**
- * 用户状态枚举枚举。
+ * 用户状态枚举。
  */
 @Getter
 @RequiredArgsConstructor
 public enum UserStatusEnum implements IIntegerBaseEnum<String> {
 
     DISABLED(0, "禁用"),
-    NORMAL(1, "正常");
+    NORMAL(1, "正常"),
+    FROZEN(2, "冻结"),
+    CANCELLING(3, "注销中"),
+    CANCELLED(4, "已注销");
 
     /**
-     * 验证码。
+     * 枚举编码。
      */
     @EnumValue
     @JsonValue
     private final Integer code;
     /**
-     * 说明。
+     * 枚举说明。
      */
     private final String description;
 
     public static UserStatusEnum fromCode(Integer code) {
         return IBaseEnum.fromCode(code, UserStatusEnum.class);
+    }
+
+    public static UserStatusEnum normalize(UserStatusEnum status) {
+        return status == null ? NORMAL : status;
+    }
+
+    public boolean isNormal() {
+        return this == NORMAL;
+    }
+
+    public boolean isDisabled() {
+        return this == DISABLED;
+    }
+
+    public boolean isFrozen() {
+        return this == FROZEN;
+    }
+
+    public boolean isCancelling() {
+        return this == CANCELLING;
+    }
+
+    public boolean isCancelled() {
+        return this == CANCELLED;
+    }
+
+    /**
+     * 当前状态是否允许继续登录。
+     */
+    public boolean canLogin() {
+        return this == NORMAL;
     }
 
     public boolean matches(Object value) {

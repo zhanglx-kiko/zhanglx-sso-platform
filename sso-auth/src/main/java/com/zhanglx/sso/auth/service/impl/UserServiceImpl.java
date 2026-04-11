@@ -260,6 +260,9 @@ public class UserServiceImpl implements UserService {
     public void updateStatus(Long userId, UserStatusEnum status) {
         AssertUtils.notNull(userId, UserErrorCode.USER_INFO_NOT_FOUND);
         AssertUtils.notNull(status, AuthManageErrorCode.USER_STATUS_REQUIRED);
+        AssertUtils.isTrue(UserStatusEnum.NORMAL.matches(status) || UserStatusEnum.DISABLED.matches(status),
+                AuthManageErrorCode.USER_STATUS_UNSUPPORTED,
+                status.name());
         if (UserStatusEnum.DISABLED.matches(status)) {
             authOperationGuard.checkDisableUserNotSelf(userId);
         }

@@ -66,6 +66,7 @@ public enum AuthManageErrorCode implements ErrorCode {
     USER_ID_REQUIRED(ResultCode.BAD_REQUEST.getCode(), "user.id.cannot.be.blank"),
     USER_IDS_EMPTY(ResultCode.BAD_REQUEST.getCode(), "user.ids.cannot.be.empty"),
     USER_STATUS_REQUIRED(ResultCode.BAD_REQUEST.getCode(), "user.status.cannot.be.blank"),
+    USER_STATUS_UNSUPPORTED(ResultCode.BAD_REQUEST.getCode(), "user.status.unsupported"),
     USER_PHONE_ALREADY_EXISTS(ResultCode.CONFLICT.getCode(), "user.phone.already.exists"),
     USER_DEPT_NOT_FOUND(ResultCode.NOT_FOUND.getCode(), "user.dept.not.found"),
     USER_DEPT_DISABLED(ResultCode.CONFLICT.getCode(), "user.dept.disabled"),

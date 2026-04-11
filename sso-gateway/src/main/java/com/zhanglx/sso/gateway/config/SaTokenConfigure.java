@@ -16,10 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 作者：Zhang L X
- * 创建时间：2026/2/10 20:22
- * 类名：SaTokenConfigure
- * 说明：网关全局鉴权配置。
+ * 网关 Sa-Token 鉴权配置。
  */
 @Slf4j
 @Configuration
@@ -53,8 +50,9 @@ public class SaTokenConfigure {
                         "/swagger-ui/**",
                         "/webjars/**",
                         "/doc.html")
-                // 鉴权逻辑：会员端走 member 体系，其余业务走系统端登录态。
+                // 鉴权逻辑：会员自助链路走 member 体系，会员后台管理链路明确归入系统后台鉴权。
                 .setAuth(obj -> {
+                    SaRouter.match("/apis/v1/auth/s/members/**", r -> StpUtil.checkLogin());
                     SaRouter.match("/apis/v1/auth/m/**", r -> MEMBER_STP_LOGIC.checkLogin());
                     SaRouter.match("/apis/v1/user/m/**", r -> MEMBER_STP_LOGIC.checkLogin());
                     SaRouter.match("/**")

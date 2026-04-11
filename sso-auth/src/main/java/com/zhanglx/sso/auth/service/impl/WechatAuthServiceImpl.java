@@ -8,8 +8,12 @@ import com.zhanglx.sso.auth.domain.po.MemberSocialPO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.properties.WechatProperties;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.enums.MemberTypeEnum;
+import com.zhanglx.sso.auth.enums.RealNameStatusEnum;
 import com.zhanglx.sso.auth.enums.SocialIdentityTypeEnum;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
+import com.zhanglx.sso.auth.exception.MemberErrorCode;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.exception.WechatErrorCode;
 import com.zhanglx.sso.auth.mapper.MemberSocialMapper;
@@ -33,14 +37,14 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import tools.jackson.databind.JsonNode;
 
 /**
- * WechatAuth服务实现。
+ * WechatAuth 服务实现。
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WechatAuthServiceImpl implements WechatAuthService {
     /**
-     * wechatProperties。
+     * 微信配置。
      */
     private final WechatProperties wechatProperties;
     /**
@@ -116,6 +120,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             memberUserPO = memberUserMapper.selectById(socialPO.getMemberId());
             if (memberUserPO == null) {
                 memberUserPO = buildDefaultMember();
+                memberUserPO.setNickname(buildWechatNickname(openId));
                 memberUserMapper.insert(memberUserPO);
 
                 memberSocialMapper.update(
@@ -128,9 +133,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
             }
         }
 
-        if (UserStatusEnum.DISABLED.matches(memberUserPO.getStatus())) {
-            throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
-        }
+        assertMemberCanLogin(memberUserPO);
 
         StpMemberUtil.login(memberUserPO.getId());
         String displayName = resolveDisplayName(memberUserPO);
@@ -182,6 +185,7 @@ public class WechatAuthServiceImpl implements WechatAuthService {
      */
     private MemberUserPO createWechatMember(String openId, String unionId) {
         MemberUserPO memberUserPO = buildDefaultMember();
+        memberUserPO.setNickname(buildWechatNickname(openId));
         memberUserMapper.insert(memberUserPO);
 
         MemberSocialPO memberSocialPO = MemberSocialPO.builder()
@@ -194,6 +198,23 @@ public class WechatAuthServiceImpl implements WechatAuthService {
 
         log.info("Created member WeChat account, memberId={}", memberUserPO.getId());
         return memberUserPO;
+    }
+
+    /**
+     * 统一校验会员状态是否允许登录。
+     */
+    private void assertMemberCanLogin(MemberUserPO memberUserPO) {
+        UserStatusEnum status = UserStatusEnum.normalize(memberUserPO.getStatus());
+        if (status.isNormal()) {
+            return;
+        }
+        if (status.isDisabled()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_DISABLED);
+        }
+        if (status.isFrozen()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_FROZEN);
+        }
+        throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_CANCELLED);
     }
 
     /**
@@ -231,13 +252,29 @@ public class WechatAuthServiceImpl implements WechatAuthService {
     private MemberUserPO buildDefaultMember() {
         MemberUserPO memberUserPO = MemberUserPO.builder()
                 .status(UserStatusEnum.NORMAL)
+                .phoneBound(YesNoEnum.NO)
+                .memberType(MemberTypeEnum.NORMAL)
+                .realNameStatus(RealNameStatusEnum.UNVERIFIED)
+                .registerSource("WECHAT_MINI")
+                .registerDevice("WECHAT_MINI")
+                .riskLevel(0)
+                .blacklistFlag(YesNoEnum.NO)
+                .registerIp(resolveCurrentClientIp())
                 .build();
         memberUserPO.setUserLevel(1);
         memberUserPO.setPoints(0L);
-        memberUserPO.setMemberType(0);
-        memberUserPO.setRealNameStatus(0);
-        memberUserPO.setRegisterIp(resolveCurrentClientIp());
         return memberUserPO;
+    }
+
+    /**
+     * 构建微信默认昵称，避免新账号落地后出现完全不可识别的匿名用户。
+     */
+    private String buildWechatNickname(String openId) {
+        if (!StringUtils.hasText(openId)) {
+            return "微信会员";
+        }
+        String suffix = openId.length() <= 6 ? openId : openId.substring(openId.length() - 6);
+        return "微信会员" + suffix;
     }
 
     /**

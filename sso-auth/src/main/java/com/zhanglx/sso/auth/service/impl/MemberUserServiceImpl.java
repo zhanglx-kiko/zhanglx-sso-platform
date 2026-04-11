@@ -5,6 +5,8 @@ import com.zhanglx.sso.auth.domain.dto.MemberBindPhoneDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
+import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.auth.exception.MemberErrorCode;
 import com.zhanglx.sso.auth.mapper.MemberSocialMapper;
 import com.zhanglx.sso.auth.mapper.MemberUserMapper;
@@ -28,7 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.time.LocalDateTime;
 
 /**
- * MemberUser服务实现。
+ * MemberUser 服务实现。
  */
 @Service
 @RequiredArgsConstructor
@@ -64,21 +66,44 @@ public class MemberUserServiceImpl implements MemberUserService {
             throw new BusinessException(MemberErrorCode.MEMBER_PHONE_UPDATE_REQUIRES_VERIFICATION);
         }
 
-        memberUserPO.setNickname(updateDTO.getNickname());
-        memberUserPO.setAvatar(updateDTO.getAvatar());
-        memberUserPO.setSex(updateDTO.getSex());
-        memberUserPO.setBirthday(updateDTO.getBirthday());
-        memberUserPO.setEmail(updateDTO.getEmail());
-        memberUserPO.setProfileExtra(updateDTO.getProfileExtra());
-        MemberUserPO updatePO = new MemberUserPO();
-        updatePO.setId(memberId);
-        updatePO.setNickname(updateDTO.getNickname());
-        updatePO.setAvatar(updateDTO.getAvatar());
-        updatePO.setSex(updateDTO.getSex());
-        updatePO.setBirthday(updateDTO.getBirthday());
-        updatePO.setEmail(updateDTO.getEmail());
-        updatePO.setProfileExtra(updateDTO.getProfileExtra());
-        memberUserMapper.updateById(updatePO);
+        LambdaUpdateWrapper<MemberUserPO> updateWrapper = new LambdaUpdateWrapper<MemberUserPO>()
+                .eq(MemberUserPO::getId, memberId);
+        boolean needUpdate = false;
+
+        if (updateDTO.getNickname() != null) {
+            memberUserPO.setNickname(updateDTO.getNickname());
+            updateWrapper.set(MemberUserPO::getNickname, updateDTO.getNickname());
+            needUpdate = true;
+        }
+        if (updateDTO.getAvatar() != null) {
+            memberUserPO.setAvatar(updateDTO.getAvatar());
+            updateWrapper.set(MemberUserPO::getAvatar, updateDTO.getAvatar());
+            needUpdate = true;
+        }
+        if (updateDTO.getSex() != null) {
+            memberUserPO.setSex(updateDTO.getSex());
+            updateWrapper.set(MemberUserPO::getSex, updateDTO.getSex());
+            needUpdate = true;
+        }
+        if (updateDTO.getBirthday() != null) {
+            memberUserPO.setBirthday(updateDTO.getBirthday());
+            updateWrapper.set(MemberUserPO::getBirthday, updateDTO.getBirthday());
+            needUpdate = true;
+        }
+        if (updateDTO.getEmail() != null) {
+            memberUserPO.setEmail(updateDTO.getEmail());
+            updateWrapper.set(MemberUserPO::getEmail, updateDTO.getEmail());
+            needUpdate = true;
+        }
+        if (updateDTO.getProfileExtra() != null) {
+            memberUserPO.setProfileExtra(updateDTO.getProfileExtra());
+            updateWrapper.set(MemberUserPO::getProfileExtra, updateDTO.getProfileExtra());
+            needUpdate = true;
+        }
+
+        if (needUpdate) {
+            memberUserMapper.update(null, updateWrapper);
+        }
         return IMemberUserMapper.INSTANCE.toInfoVO(memberUserPO);
     }
 
@@ -107,8 +132,10 @@ public class MemberUserServiceImpl implements MemberUserService {
                 new LambdaUpdateWrapper<MemberUserPO>()
                         .eq(MemberUserPO::getId, memberId)
                         .set(MemberUserPO::getPhoneNumber, bindPhoneDTO.getPhoneNumber())
+                        .set(MemberUserPO::getPhoneBound, YesNoEnum.YES)
         );
         memberUserPO.setPhoneNumber(bindPhoneDTO.getPhoneNumber());
+        memberUserPO.setPhoneBound(YesNoEnum.YES);
         return IMemberUserMapper.INSTANCE.toInfoVO(memberUserPO);
     }
 
@@ -116,6 +143,15 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Transactional(rollbackFor = Exception.class)
     public void cancelCurrentMember(Long memberId) {
         MemberUserPO memberUserPO = getById(memberId);
+        memberUserMapper.update(
+                null,
+                new LambdaUpdateWrapper<MemberUserPO>()
+                        .eq(MemberUserPO::getId, memberUserPO.getId())
+                        .set(MemberUserPO::getStatus, UserStatusEnum.CANCELLED)
+                        .set(MemberUserPO::getStatusReason, "会员主动注销")
+                        .set(MemberUserPO::getStatusExpireTime, null)
+                        .set(MemberUserPO::getCancelTime, LocalDateTime.now())
+        );
         memberSocialMapper.deleteByMemberId(memberId);
         memberUserMapper.deleteByIdWithFill(memberUserPO.getId());
         StpMemberUtil.logout(memberId);

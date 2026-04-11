@@ -2,10 +2,17 @@ package com.zhanglx.sso.auth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.config.Argon2PasswordEncoder;
-import com.zhanglx.sso.auth.domain.dto.*;
+import com.zhanglx.sso.auth.domain.dto.MemberForgotPasswordDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberLoginDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberRegisterDTO;
+import com.zhanglx.sso.auth.domain.dto.MemberVerificationCodeSendDTO;
+import com.zhanglx.sso.auth.domain.dto.UserPasswordDTO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
+import com.zhanglx.sso.auth.enums.MemberTypeEnum;
+import com.zhanglx.sso.auth.enums.RealNameStatusEnum;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
+import com.zhanglx.sso.auth.enums.YesNoEnum;
 import com.zhanglx.sso.auth.exception.MemberErrorCode;
 import com.zhanglx.sso.auth.exception.UserErrorCode;
 import com.zhanglx.sso.auth.mapper.MemberUserMapper;
@@ -27,7 +34,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
- * MemberAuth服务实现。
+ * MemberAuth 服务实现。
  */
 @Slf4j
 @Service
@@ -76,9 +83,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
             throw new BusinessException(UserErrorCode.USER_PASSWORD_ERROR);
         }
 
-        if (UserStatusEnum.DISABLED.matches(memberUserPO.getStatus())) {
-            throw new BusinessException(UserErrorCode.USER_ACCOUNT_DISABLED);
-        }
+        assertMemberCanLogin(memberUserPO);
 
         StpMemberUtil.login(memberUserPO.getId(), memberLoginDTO.getDevice());
         String displayName = resolveDisplayName(memberUserPO);
@@ -112,7 +117,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
                 null
         );
 
-        MemberUserPO memberUserPO = buildDefaultMember();
+        MemberUserPO memberUserPO = buildDefaultMember("PHONE_REGISTER", memberRegisterDTO.getDevice(), YesNoEnum.YES);
         memberUserPO.setPhoneNumber(memberRegisterDTO.getPhoneNumber());
         memberUserPO.setPassword(argon2PasswordEncoder.encodeAsyncWithTimeout(memberRegisterDTO.getPassword()));
         memberUserPO.setNickname(maskPhoneNickname(memberRegisterDTO.getPhoneNumber()));
@@ -236,6 +241,23 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     /**
+     * 统一校验会员状态是否允许登录。
+     */
+    private void assertMemberCanLogin(MemberUserPO memberUserPO) {
+        UserStatusEnum status = UserStatusEnum.normalize(memberUserPO.getStatus());
+        if (status.isNormal()) {
+            return;
+        }
+        if (status.isDisabled()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_DISABLED);
+        }
+        if (status.isFrozen()) {
+            throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_FROZEN);
+        }
+        throw new BusinessException(MemberErrorCode.MEMBER_ACCOUNT_CANCELLED);
+    }
+
+    /**
      * 组装返回对象。
      */
     private LoginVO assembleLoginVO(MemberUserPO memberUserPO) {
@@ -277,15 +299,20 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     /**
      * 构建默认会员对象。
      */
-    private MemberUserPO buildDefaultMember() {
+    private MemberUserPO buildDefaultMember(String registerSource, String registerDevice, YesNoEnum phoneBound) {
         MemberUserPO memberUserPO = MemberUserPO.builder()
                 .status(UserStatusEnum.NORMAL)
+                .phoneBound(phoneBound)
+                .memberType(MemberTypeEnum.NORMAL)
+                .realNameStatus(RealNameStatusEnum.UNVERIFIED)
+                .registerSource(registerSource)
+                .registerDevice(StringUtils.hasText(registerDevice) ? registerDevice.trim() : "UNKNOWN")
+                .riskLevel(0)
+                .blacklistFlag(YesNoEnum.NO)
+                .registerIp(resolveCurrentClientIp())
                 .build();
         memberUserPO.setUserLevel(1);
         memberUserPO.setPoints(0L);
-        memberUserPO.setMemberType(0);
-        memberUserPO.setRealNameStatus(0);
-        memberUserPO.setRegisterIp(resolveCurrentClientIp());
         return memberUserPO;
     }
 
