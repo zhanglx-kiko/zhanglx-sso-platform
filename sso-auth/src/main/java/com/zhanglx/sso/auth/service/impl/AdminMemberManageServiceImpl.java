@@ -51,6 +51,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminMemberManageServiceImpl implements AdminMemberManageService {
 
+    private static final String MEMBER_PERMISSION_SOCIAL_LIST = "member:social:list";
+    private static final String MEMBER_PERMISSION_LOGIN_LOG_LIST = "member:login-log:list";
+    private static final String MEMBER_PERMISSION_MANAGE_RECORD_LIST = "member:manage-record:list";
     private static final List<SocialIdentityTypeEnum> WECHAT_IDENTITY_TYPES = List.of(
             SocialIdentityTypeEnum.WECHAT_OPEN,
             SocialIdentityTypeEnum.WX_MINI
@@ -100,10 +103,17 @@ public class AdminMemberManageServiceImpl implements AdminMemberManageService {
     @Override
     public AdminMemberDetailVO getDetail(Long memberId) {
         MemberUserPO memberUserPO = getMemberById(memberId);
-        List<MemberSocialBindingVO> socialBindings = querySocialBindings(memberId);
-        List<MemberManageRecordVO> manageRecordSummary = listLatestManageRecords(memberId, DETAIL_SUMMARY_SIZE);
-        List<MemberLoginAuditVO> loginAuditSummary = listLatestLoginAudits(memberId, DETAIL_SUMMARY_SIZE);
-        return toDetailVO(memberUserPO, socialBindings, manageRecordSummary, loginAuditSummary);
+        boolean wechatBound = hasWechatBound(memberId);
+        List<MemberSocialBindingVO> socialBindings = hasAdminPermission(MEMBER_PERMISSION_SOCIAL_LIST)
+                ? querySocialBindings(memberId)
+                : Collections.emptyList();
+        List<MemberManageRecordVO> manageRecordSummary = hasAdminPermission(MEMBER_PERMISSION_MANAGE_RECORD_LIST)
+                ? listLatestManageRecords(memberId, DETAIL_SUMMARY_SIZE)
+                : Collections.emptyList();
+        List<MemberLoginAuditVO> loginAuditSummary = hasAdminPermission(MEMBER_PERMISSION_LOGIN_LOG_LIST)
+                ? listLatestLoginAudits(memberId, DETAIL_SUMMARY_SIZE)
+                : Collections.emptyList();
+        return toDetailVO(memberUserPO, wechatBound, socialBindings, manageRecordSummary, loginAuditSummary);
     }
 
     @Override
@@ -353,6 +363,14 @@ public class AdminMemberManageServiceImpl implements AdminMemberManageService {
     }
 
     /**
+     * 会员详情里的“是否绑定微信”属于基础资料展示，单独做一次存在性判断，
+     * 避免详情接口为了这个布尔值把社交绑定明细一起带回去。
+     */
+    private boolean hasWechatBound(Long memberId) {
+        return !listWechatBoundMemberIds(List.of(memberId)).isEmpty();
+    }
+
+    /**
      * 查询最近的管理记录摘要。
      */
     private List<MemberManageRecordVO> listLatestManageRecords(Long memberId, int limit) {
@@ -453,6 +471,7 @@ public class AdminMemberManageServiceImpl implements AdminMemberManageService {
      * 转换后台会员详情对象。
      */
     private AdminMemberDetailVO toDetailVO(MemberUserPO memberUserPO,
+                                           boolean wechatBound,
                                            List<MemberSocialBindingVO> socialBindings,
                                            List<MemberManageRecordVO> manageRecordSummary,
                                            List<MemberLoginAuditVO> loginAuditSummary) {
@@ -479,7 +498,7 @@ public class AdminMemberManageServiceImpl implements AdminMemberManageService {
                 .lastLoginTime(memberUserPO.getLastLoginTime())
                 .lastLoginIp(memberUserPO.getLastLoginIp())
                 .profileExtra(memberUserPO.getProfileExtra())
-                .wechatBound(socialBindings != null && !socialBindings.isEmpty())
+                .wechatBound(wechatBound)
                 .statusReason(memberUserPO.getStatusReason())
                 .statusExpireTime(memberUserPO.getStatusExpireTime())
                 .cancelled(currentStatus.isCancelled() || currentStatus.isCancelling() || memberUserPO.getCancelTime() != null)
@@ -579,6 +598,13 @@ public class AdminMemberManageServiceImpl implements AdminMemberManageService {
      */
     private String trim(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    /**
+     * 详情接口会按后台账号已有权限裁剪返回字段，避免“查看详情”顺带越权拿到审计或社交明细。
+     */
+    private boolean hasAdminPermission(String permission) {
+        return StpUtil.isLogin() && StpUtil.hasPermission(permission);
     }
 
     private record OperatorSnapshot(Long operatorId, String operatorName) {

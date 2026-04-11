@@ -1,10 +1,11 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListPermissions">
     <AuthSearchSection :model="queryForm">
         <template #toolbar>
           <el-button plain @click="toggleExpand">{{ expandAll ? '收起树' : '展开树' }}</el-button>
-          <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-          <el-button type="primary" @click="openCreateDialog()">新增顶级节点</el-button>
+          <el-button v-permission="'permission:remove'" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button v-permission="'permission:add'" type="primary" @click="openCreateDialog()">新增顶级节点</el-button>
         </template>
         <el-form-item label="权限名称 / 标识">
           <el-input
@@ -53,6 +54,7 @@
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
             <el-switch
+              v-permission="'permission:status'"
               v-model="row.status"
               :active-value="1"
               :inactive-value="0"
@@ -67,10 +69,10 @@
         <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
             <el-space :size="10" wrap>
-              <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" @click="openCreateDialog(row)">新增下级</el-button>
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button v-permission="'permission:view'" link type="primary" @click="openDetailDrawer(row)">详情</el-button>
+              <el-button v-permission="'permission:add'" link type="primary" @click="openCreateDialog(row)">新增下级</el-button>
+              <el-button v-permission="{ all: ['permission:view', 'permission:edit'] }" link type="primary" @click="openEditDialog(row)">编辑</el-button>
+              <el-button v-permission="'permission:remove'" link type="danger" @click="handleDelete(row)">删除</el-button>
             </el-space>
           </template>
         </el-table-column>
@@ -175,12 +177,16 @@
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无权限列表查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { PERMISSION_TYPE_OPTIONS, STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -214,6 +220,8 @@ interface PermissionFormModel {
 }
 
 const formRef = ref<FormInstance>()
+const permissionStore = usePermissionStore()
+const canListPermissions = computed(() => permissionStore.hasPermission('permission:list'))
 
 const loading = ref(false)
 const permissionTree = ref<PermissionDTO[]>([])
@@ -302,6 +310,13 @@ const resetFormDialog = () => {
 }
 
 const loadPermissionTree = async () => {
+  if (!canListPermissions.value) {
+    permissionTree.value = []
+    selectedIds.value = []
+    parentTreeOptions.value = []
+    return
+  }
+
   loading.value = true
 
   try {
@@ -312,6 +327,7 @@ const loadPermissionTree = async () => {
 }
 
 const resetQuery = () => {
+  if (!canListPermissions.value) return
   queryForm.searchKey = ''
   loadPermissionTree()
 }
@@ -495,6 +511,11 @@ const handleBatchDelete = async () => {
 }
 
 onMounted(async () => {
+  if (!canListPermissions.value) {
+    permissionTree.value = []
+    parentTreeOptions.value = []
+    return
+  }
   queryForm.searchKey = ''
   formModel.displayNo = 0
   await loadPermissionTree()

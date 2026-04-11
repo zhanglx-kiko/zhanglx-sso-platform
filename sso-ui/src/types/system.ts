@@ -158,6 +158,119 @@ export interface ConfigQueryDTO extends PageQuery {
   configType?: number
 }
 
+export interface AdminMemberQueryDTO extends PageQuery {
+  memberId?: string
+  phoneNumber?: string
+  nickname?: string
+  email?: string
+  status?: number
+  realNameStatus?: number
+  memberType?: number
+  userLevel?: number
+  phoneBound?: number
+  hasWechatBind?: number
+  registerStartTime?: string
+  registerEndTime?: string
+  lastLoginStartTime?: string
+  lastLoginEndTime?: string
+  registerIp?: string
+  lastLoginIp?: string
+}
+
+export interface AdminMemberStatusUpdateDTO {
+  reason: string
+  expireTime?: string
+  remark?: string
+}
+
+export interface AdminMemberForceLogoutDTO {
+  reason: string
+  remark?: string
+}
+
+export interface AdminMemberListVO extends BaseEntity {
+  phoneNumber?: string
+  nickname?: string
+  avatar?: string | null
+  status?: number
+  realNameStatus?: number
+  memberType?: number
+  userLevel?: number
+  points?: number
+  phoneBound?: boolean
+  wechatBound?: boolean
+  lastLoginTime?: string
+  registerIp?: string
+  lastLoginIp?: string
+}
+
+export interface MemberSocialBindingVO extends BaseEntity {
+  memberId: string
+  identityType?: string
+  identifier?: string
+  unionId?: string
+}
+
+export interface MemberLoginAuditVO extends BaseEntity {
+  userId?: string
+  username?: string
+  displayName?: string
+  eventType?: string
+  loginResult?: string
+  failReason?: string
+  loginIp?: string
+  deviceType?: string
+  clientType?: string
+  loginTime?: string
+  logoutTime?: string
+}
+
+export interface MemberManageRecordVO extends BaseEntity {
+  memberId: string
+  actionType?: number
+  beforeStatus?: number
+  afterStatus?: number
+  reason?: string
+  remark?: string
+  expireTime?: string
+  operatorId?: string
+  operatorName?: string
+  approveBy?: string
+  approveTime?: string
+}
+
+export interface AdminMemberDetailVO extends BaseEntity {
+  phoneNumber?: string
+  nickname?: string
+  avatar?: string | null
+  sex?: number
+  birthday?: string | null
+  email?: string
+  phoneBound?: boolean
+  userLevel?: number
+  points?: number
+  memberType?: number
+  realNameStatus?: number
+  status?: number
+  registerIp?: string
+  lastLoginTime?: string
+  lastLoginIp?: string
+  profileExtra?: string
+  wechatBound?: boolean
+  statusReason?: string
+  statusExpireTime?: string
+  cancelled?: boolean
+  cancelTime?: string
+  disabledTime?: string
+  registerSource?: string
+  registerDevice?: string
+  riskLevel?: number
+  blacklistFlag?: number
+  socialBindings?: MemberSocialBindingVO[]
+  manageRecordSummary?: MemberManageRecordVO[]
+  loginAuditSummary?: MemberLoginAuditVO[]
+}
+
 export interface DictTypeDTO extends BaseEntity {
   dictName: string
   dictType: string

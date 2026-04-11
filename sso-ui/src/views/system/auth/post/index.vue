@@ -1,10 +1,11 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListPosts">
     <AuthSearchSection :model="queryForm">
         <template #toolbar>
           <el-button plain @click="loadPosts">刷新列表</el-button>
-          <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-          <el-button type="primary" @click="openCreateDialog">新增岗位</el-button>
+          <el-button v-permission="'post:remove'" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button v-permission="'post:add'" type="primary" @click="openCreateDialog">新增岗位</el-button>
         </template>
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="岗位编码 / 岗位名称" clearable @keyup.enter="handleSearch" />
@@ -44,6 +45,7 @@
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
             <el-switch
+              v-permission="'post:status'"
               v-model="row.status"
               :active-value="1"
               :inactive-value="0"
@@ -58,9 +60,9 @@
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-space :size="10">
-              <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button v-permission="'post:view'" link type="primary" @click="openDetailDrawer(row)">详情</el-button>
+              <el-button v-permission="{ all: ['post:view', 'post:edit'] }" link type="primary" @click="openEditDialog(row)">编辑</el-button>
+              <el-button v-permission="'post:remove'" link type="danger" @click="handleDelete(row)">删除</el-button>
             </el-space>
           </template>
         </el-table-column>
@@ -129,12 +131,16 @@
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无岗位列表查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { DEFAULT_BATCH_PAGE_SIZE, DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -161,6 +167,8 @@ interface PostFormModel {
 }
 
 const formRef = ref<FormInstance>()
+const permissionStore = usePermissionStore()
+const canListPosts = computed(() => permissionStore.hasPermission('post:list'))
 
 const loading = ref(false)
 const total = ref(0)
@@ -246,6 +254,13 @@ const resetFormDialog = () => {
 }
 
 const loadPosts = async () => {
+  if (!canListPosts.value) {
+    postList.value = []
+    total.value = 0
+    selectedIds.value = []
+    return
+  }
+
   loading.value = true
 
   try {
@@ -258,11 +273,13 @@ const loadPosts = async () => {
 }
 
 const handleSearch = () => {
+  if (!canListPosts.value) return
   queryForm.pageNum = 1
   loadPosts()
 }
 
 const resetQuery = () => {
+  if (!canListPosts.value) return
   queryForm.searchKey = ''
   queryForm.postCode = ''
   queryForm.postName = ''
@@ -402,6 +419,11 @@ const handleBatchDelete = async () => {
 }
 
 onMounted(async () => {
+  if (!canListPosts.value) {
+    postList.value = []
+    total.value = 0
+    return
+  }
   await loadPosts()
 })
 </script>

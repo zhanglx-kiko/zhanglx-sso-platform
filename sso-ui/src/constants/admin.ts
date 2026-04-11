@@ -1,4 +1,4 @@
-﻿import type { SelectOption } from '@/types/common'
+import type { SelectOption } from '@/types/common'
 
 export const DEFAULT_PAGE_SIZE = 10
 export const DEFAULT_BATCH_PAGE_SIZE = 200
@@ -50,3 +50,47 @@ export const YES_NO_OPTIONS: SelectOption<number>[] = [
   { label: '是', value: 1 },
 ]
 
+export const MEMBER_STATUS_OPTIONS: SelectOption<number>[] = [
+  { label: '禁用', value: 0 },
+  { label: '正常', value: 1 },
+  { label: '冻结', value: 2 },
+  { label: '注销中', value: 3 },
+  { label: '已注销', value: 4 },
+]
+
+export const MEMBER_REAL_NAME_STATUS_OPTIONS: SelectOption<number>[] = [
+  { label: '未认证', value: 0 },
+  { label: '认证中', value: 1 },
+  { label: '已认证', value: 2 },
+  { label: '认证失败', value: 3 },
+]
+
+export const MEMBER_TYPE_OPTIONS: SelectOption<number>[] = [
+  { label: '普通会员', value: 0 },
+  { label: 'VIP会员', value: 1 },
+]
+
+export const MEMBER_MANAGE_ACTION_OPTIONS: SelectOption<number>[] = [
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 2 },
+  { label: '冻结', value: 3 },
+  { label: '解冻', value: 4 },
+  { label: '强制下线', value: 5 },
+  { label: '注销', value: 6 },
+  { label: '恢复', value: 7 },
+  { label: '加入黑名单', value: 8 },
+  { label: '移出黑名单', value: 9 },
+]
+
+export const MEMBER_PERMISSION_KEYS = {
+  LIST: 'member:list',
+  VIEW: 'member:view',
+  SOCIAL_LIST: 'member:social:list',
+  LOGIN_LOG_LIST: 'member:login-log:list',
+  MANAGE_RECORD_LIST: 'member:manage-record:list',
+  DISABLE: 'member:disable',
+  ENABLE: 'member:enable',
+  FREEZE: 'member:freeze',
+  UNFREEZE: 'member:unfreeze',
+  FORCE_LOGOUT: 'member:force-logout',
+} as const

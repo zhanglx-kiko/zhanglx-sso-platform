@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-shell">
     <AuthSearchSection :model="queryForm">
       <el-form-item label="用户标识">
@@ -97,7 +97,7 @@
         </el-table-column>
         <el-table-column label="操作" width="88" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openDetail(row)">详情</el-button>
+            <el-button v-permission="'login-log:view'" link type="primary" @click="openDetail(row)">详情</el-button>
           </template>
         </el-table-column>
 

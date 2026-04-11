@@ -60,6 +60,26 @@ export const usePermissionStore = defineStore('permission', () => {
   }
 
   /**
+   * 兼容旧数据里“会员管理”仍然是空路由模块的情况，前端在运行时补齐菜单页面信息。
+   * 这样老环境即使还没手工执行菜单修正 SQL，也能先把页面挂出来。
+   */
+  const normalizeLegacyPermissions = (flatList: ApiPermission[]): ApiPermission[] => {
+    return flatList.map((item) => {
+      if (item.identification !== 'system:auth:member') {
+        return item
+      }
+
+      return {
+        ...item,
+        type: 1,
+        path: item.path || '/system/auth/member',
+        comPath: item.comPath || 'system/auth/member/index',
+        iconStr: item.iconStr || 'Avatar',
+      }
+    })
+  }
+
+  /**
    * 1. 从后端获取当前登录用户的扁平权限数据，并处理成树形结构
    */
   const fetchPermissions = async (): Promise<ApiPermission[]> => {
@@ -72,9 +92,11 @@ export const usePermissionStore = defineStore('permission', () => {
         return []
       }
 
-      const allFlatList = await getPermissionsByIdentificationApi({ username })
+      const rawFlatList = await getPermissionsByIdentificationApi({ username })
 
-      if (!allFlatList || allFlatList.length === 0) return []
+      if (!rawFlatList || rawFlatList.length === 0) return []
+
+      const allFlatList = normalizeLegacyPermissions(rawFlatList)
 
       const btnPerms = extractButtonPermissions(allFlatList)
       setPermissions(btnPerms)
@@ -255,6 +277,20 @@ export const usePermissionStore = defineStore('permission', () => {
     return permissions.value
   }
 
+  /**
+   * 判断当前账号是否拥有指定按钮权限，便于页面做按钮级显隐控制。
+   */
+  const hasPermission = (permission: string): boolean => {
+    return !!permission && permissions.value.includes(permission)
+  }
+
+  /**
+   * 判断当前账号是否命中任一按钮权限，适合“更多操作”这种聚合入口。
+   */
+  const hasAnyPermission = (perms: string[]): boolean => {
+    return perms.some((permission) => hasPermission(permission))
+  }
+
   // ============== State 变更方法 ==============
 
   const setMenuList = (menus: AppMenu[]) => {
@@ -290,6 +326,8 @@ export const usePermissionStore = defineStore('permission', () => {
     generateRoutes,
     appMenuToMenuItem,
     extractPermissions,
+    hasPermission,
+    hasAnyPermission,
     setMenuList,
     setDynamicRoutes,
     setPermissions,

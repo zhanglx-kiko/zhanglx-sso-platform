@@ -1,9 +1,10 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListDepts">
     <AuthSearchSection :model="queryForm">
         <template #toolbar>
           <el-button plain @click="toggleExpand">{{ expandAll ? '收起树' : '展开树' }}</el-button>
-          <el-button type="primary" @click="openCreateDialog()">新增根部门</el-button>
+          <el-button v-permission="'dept:add'" type="primary" @click="openCreateDialog()">新增根部门</el-button>
         </template>
         <el-form-item label="部门名称">
           <el-input v-model="queryForm.deptName" placeholder="请输入部门名称" clearable @keyup.enter="loadDeptTree" />
@@ -40,6 +41,7 @@
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
             <el-switch
+              v-permission="'dept:status'"
               v-model="row.status"
               :active-value="1"
               :inactive-value="0"
@@ -54,10 +56,10 @@
         <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
             <el-space :size="10" wrap>
-              <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" @click="openCreateDialog(row)">新增下级</el-button>
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button v-permission="'dept:view'" link type="primary" @click="openDetailDrawer(row)">详情</el-button>
+              <el-button v-permission="'dept:add'" link type="primary" @click="openCreateDialog(row)">新增下级</el-button>
+              <el-button v-permission="{ all: ['dept:view', 'dept:edit'] }" link type="primary" @click="openEditDialog(row)">编辑</el-button>
+              <el-button v-permission="'dept:remove'" link type="danger" @click="handleDelete(row)">删除</el-button>
             </el-space>
           </template>
         </el-table-column>
@@ -122,12 +124,16 @@
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无部门列表查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -153,6 +159,8 @@ interface DeptFormModel {
 }
 
 const formRef = ref<FormInstance>()
+const permissionStore = usePermissionStore()
+const canListDepts = computed(() => permissionStore.hasPermission('dept:list'))
 
 const loading = ref(false)
 const deptTree = ref<DeptDTO[]>([])
@@ -243,6 +251,12 @@ const resetFormDialog = () => {
 }
 
 const loadDeptTree = async () => {
+  if (!canListDepts.value) {
+    deptTree.value = []
+    parentTreeOptions.value = []
+    return
+  }
+
   loading.value = true
 
   try {
@@ -256,6 +270,7 @@ const loadDeptTree = async () => {
 }
 
 const resetQuery = () => {
+  if (!canListDepts.value) return
   queryForm.deptName = ''
   queryForm.status = undefined
   loadDeptTree()
@@ -378,6 +393,11 @@ const handleDelete = async (row: DeptDTO) => {
 }
 
 onMounted(async () => {
+  if (!canListDepts.value) {
+    deptTree.value = []
+    parentTreeOptions.value = []
+    return
+  }
   await loadDeptTree()
   parentTreeOptions.value = cloneTree(deptTree.value)
 })

@@ -1,4 +1,4 @@
-﻿import {
+import {
   RouterView,
   createRouter,
   createWebHistory,
@@ -78,6 +78,12 @@ export const layoutRoute: RouteRecordRaw = {
       name: 'AppMgr',
       component: () => import('@/views/system/auth/app/index.vue'),
       meta: { title: '应用管理', requiresAuth: true },
+    },
+    {
+      path: 'system/auth/member',
+      name: 'MemberMgr',
+      component: () => import('@/views/system/auth/member/index.vue'),
+      meta: { title: '会员管理', requiresAuth: true },
     },
     {
       path: 'system/auth/log',
@@ -163,6 +169,13 @@ export const fallbackMenus: MenuItem[] = [
             path: '/system/auth/app',
             icon: 'Grid',
             title: '应用管理',
+          },
+          {
+            id: 'system-member',
+            name: 'MemberMgr',
+            path: '/system/auth/member',
+            icon: 'Avatar',
+            title: '会员管理',
           },
           {
             id: 'system-log',
@@ -314,6 +327,12 @@ const initFallbackRoutes = (): MenuItem[] => {
               name: 'AppMgr',
               component: () => import('@/views/system/auth/app/index.vue'),
               meta: { title: '应用管理', requiresAuth: true },
+            },
+            {
+              path: 'member',
+              name: 'MemberMgr',
+              component: () => import('@/views/system/auth/member/index.vue'),
+              meta: { title: '会员管理', requiresAuth: true },
             },
             {
               path: 'log',

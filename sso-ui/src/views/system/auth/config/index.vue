@@ -1,10 +1,11 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListConfigs">
     <AuthSearchSection :model="queryForm">
         <template #toolbar>
           <el-button plain @click="loadConfigs">刷新列表</el-button>
-          <el-button plain @click="handleRefreshRuntimeCache">刷新运行时缓存</el-button>
-          <el-button type="primary" @click="openCreateDialog">新增参数</el-button>
+          <el-button v-permission="'config:edit'" plain @click="handleRefreshRuntimeCache">刷新运行时缓存</el-button>
+          <el-button v-permission="'config:add'" type="primary" @click="openCreateDialog">新增参数</el-button>
         </template>
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="参数名称 / 参数键" clearable @keyup.enter="handleSearch" />
@@ -81,9 +82,9 @@
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-space :size="10">
-              <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" :disabled="isBuiltInConfig(row)" @click="openEditDialog(row)">编辑</el-button>
-              <el-button link type="danger" :disabled="row.configType === 1" @click="handleDelete(row)">删除</el-button>
+              <el-button v-permission="'config:view'" link type="primary" @click="openDetailDrawer(row)">详情</el-button>
+              <el-button v-permission="{ all: ['config:view', 'config:edit'] }" link type="primary" :disabled="isBuiltInConfig(row)" @click="openEditDialog(row)">编辑</el-button>
+              <el-button v-permission="'config:remove'" link type="danger" :disabled="row.configType === 1" @click="handleDelete(row)">删除</el-button>
             </el-space>
           </template>
         </el-table-column>
@@ -173,12 +174,16 @@
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无参数列表查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { CONFIG_TYPE_OPTIONS, DEFAULT_PAGE_SIZE, STATUS_OPTIONS, YES_NO_OPTIONS } from '@/constants/admin'
 import {
@@ -208,6 +213,8 @@ interface ConfigFormModel {
 }
 
 const formRef = ref<FormInstance>()
+const permissionStore = usePermissionStore()
+const canListConfigs = computed(() => permissionStore.hasPermission('config:list'))
 
 const loading = ref(false)
 const total = ref(0)
@@ -271,6 +278,12 @@ const resetFormDialog = () => {
 }
 
 const loadConfigs = async () => {
+  if (!canListConfigs.value) {
+    configList.value = []
+    total.value = 0
+    return
+  }
+
   loading.value = true
 
   try {
@@ -283,11 +296,13 @@ const loadConfigs = async () => {
 }
 
 const handleSearch = () => {
+  if (!canListConfigs.value) return
   queryForm.pageNum = 1
   loadConfigs()
 }
 
 const resetQuery = () => {
+  if (!canListConfigs.value) return
   queryForm.searchKey = ''
   queryForm.configName = ''
   queryForm.configKey = ''
@@ -420,6 +435,11 @@ const handleRefreshRuntimeCache = async () => {
 }
 
 onMounted(async () => {
+  if (!canListConfigs.value) {
+    configList.value = []
+    total.value = 0
+    return
+  }
   await loadConfigs()
 })
 </script>

@@ -1,10 +1,11 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListApps">
     <AuthSearchSection :model="queryForm">
         <template #toolbar>
           <el-button plain @click="loadApps">刷新列表</el-button>
-          <el-button :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
-          <el-button type="primary" @click="openCreateDialog">新增应用</el-button>
+          <el-button v-permission="'app:remove'" :disabled="!selectedIds.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button v-permission="'app:add'" type="primary" @click="openCreateDialog">新增应用</el-button>
         </template>
         <el-form-item label="关键字">
           <el-input v-model="queryForm.searchKey" placeholder="编码 / 名称" clearable @keyup.enter="handleSearch" />
@@ -58,6 +59,7 @@
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
             <el-switch
+              v-permission="'app:status'"
               v-model="row.status"
               :active-value="1"
               :inactive-value="0"
@@ -73,9 +75,9 @@
         <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-space :size="10">
-              <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-              <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button v-permission="'app:view'" link type="primary" @click="openDetailDrawer(row)">详情</el-button>
+              <el-button v-permission="{ all: ['app:view', 'app:edit'] }" link type="primary" @click="openEditDialog(row)">编辑</el-button>
+              <el-button v-permission="'app:remove'" link type="danger" @click="handleDelete(row)">删除</el-button>
             </el-space>
           </template>
         </el-table-column>
@@ -152,12 +154,16 @@
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无应用列表查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { APP_USER_TYPE_OPTIONS, DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -185,6 +191,8 @@ interface AppFormModel {
 }
 
 const formRef = ref<FormInstance>()
+const permissionStore = usePermissionStore()
+const canListApps = computed(() => permissionStore.hasPermission('app:list'))
 
 const loading = ref(false)
 const total = ref(0)
@@ -242,6 +250,13 @@ const resetFormDialog = () => {
 }
 
 const loadApps = async () => {
+  if (!canListApps.value) {
+    appList.value = []
+    total.value = 0
+    selectedIds.value = []
+    return
+  }
+
   loading.value = true
 
   try {
@@ -254,11 +269,13 @@ const loadApps = async () => {
 }
 
 const handleSearch = () => {
+  if (!canListApps.value) return
   queryForm.pageNum = 1
   loadApps()
 }
 
 const resetQuery = () => {
+  if (!canListApps.value) return
   queryForm.searchKey = ''
   queryForm.appCode = ''
   queryForm.appName = ''
@@ -399,6 +416,11 @@ const handleBatchDelete = async () => {
 }
 
 onMounted(async () => {
+  if (!canListApps.value) {
+    appList.value = []
+    total.value = 0
+    return
+  }
   await loadApps()
 })
 </script>

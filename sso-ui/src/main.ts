@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 
 import App from './App.vue'
+import { setupPermissionDirective } from '@/directives/permission'
 import router from './router'
 import { hasHandledGlobalError } from '@/stores/globalError'
 import { setupAuthSessionMonitor } from '@/utils/authMonitor'
@@ -29,6 +30,7 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 setupElementPlus(app)
+setupPermissionDirective(app)
 setupAuthSessionMonitor()
 
 app.mount('#app')

@@ -1,12 +1,13 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListUsers">
     <AuthSearchSection :model="queryForm">
         <template #toolbar>
           <el-button plain @click="loadUsers">刷新列表</el-button>
-          <el-button :disabled="!selectedUserIds.length" @click="handleBatchDelete">
+          <el-button v-permission="'user:batch-remove'" :disabled="!selectedUserIds.length" @click="handleBatchDelete">
             批量删除
           </el-button>
-          <el-button type="primary" @click="openCreateDialog">新增用户</el-button>
+          <el-button v-permission="'user:add'" type="primary" @click="openCreateDialog">新增用户</el-button>
         </template>
         <el-form-item label="关键字">
           <el-input
@@ -78,6 +79,7 @@
         <el-table-column label="状态" width="110" align="center">
           <template #default="{ row }">
             <el-switch
+              v-permission="'user:status'"
               v-model="row.status"
               :active-value="1"
               :inactive-value="0"
@@ -92,20 +94,39 @@
         <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <el-space :size="10" wrap>
-              <el-button link type="primary" @click="openDetailDrawer(row)">详情</el-button>
-              <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-              <el-dropdown @command="handleRowCommand($event, row)">
+              <el-button v-permission="'user:view'" link type="primary" @click="openDetailDrawer(row)">详情</el-button>
+              <el-button
+                v-permission="{ all: ['user:view', 'user:edit'] }"
+                link
+                type="primary"
+                @click="openEditDialog(row)"
+              >
+                编辑
+              </el-button>
+              <el-dropdown
+                v-permission="{ any: ['user:assign-app', 'user:assign-post', 'role:bind-user', 'user:reset', 'user:remove'] }"
+                @command="handleRowCommand($event, row)"
+              >
                 <el-button link type="primary">
                   更多
                   <el-icon class="el-icon--right"><ArrowDown /></el-icon>
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="apps">绑定应用</el-dropdown-item>
-                    <el-dropdown-item command="posts">绑定岗位</el-dropdown-item>
-                    <el-dropdown-item command="roles">绑定角色</el-dropdown-item>
-                    <el-dropdown-item command="reset">重置密码</el-dropdown-item>
-                    <el-dropdown-item command="delete" divided>删除用户</el-dropdown-item>
+                    <el-dropdown-item v-permission="{ all: ['user:assign-app', 'app:list'] }" command="apps">
+                      绑定应用
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="{ all: ['user:assign-post', 'post:list'] }" command="posts">
+                      绑定岗位
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      v-permission="{ all: ['role:bind-user', 'role:list', 'role:view'] }"
+                      command="roles"
+                    >
+                      绑定角色
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="'user:reset'" command="reset">重置密码</el-dropdown-item>
+                    <el-dropdown-item v-permission="'user:remove'" command="delete" divided>删除用户</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -253,7 +274,12 @@
 
       <template #footer>
         <el-button @click="formDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="formDialog.submitting" @click="submitForm">
+        <el-button
+          v-permission="formDialog.mode === 'create' ? 'user:add' : { all: ['user:view', 'user:edit'] }"
+          type="primary"
+          :loading="formDialog.submitting"
+          @click="submitForm"
+        >
           {{ formDialog.mode === 'create' ? '创建用户' : '保存修改' }}
         </el-button>
       </template>
@@ -278,7 +304,12 @@
 
       <template #footer>
         <el-button @click="appDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="appDialog.saving" @click="submitAppBindings">
+        <el-button
+          v-permission="{ all: ['user:assign-app', 'app:list'] }"
+          type="primary"
+          :loading="appDialog.saving"
+          @click="submitAppBindings"
+        >
           保存应用绑定
         </el-button>
       </template>
@@ -303,7 +334,12 @@
 
       <template #footer>
         <el-button @click="postDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="postDialog.saving" @click="submitPostBindings">
+        <el-button
+          v-permission="{ all: ['user:assign-post', 'post:list'] }"
+          type="primary"
+          :loading="postDialog.saving"
+          @click="submitPostBindings"
+        >
           保存岗位绑定
         </el-button>
       </template>
@@ -330,18 +366,27 @@
 
       <template #footer>
         <el-button @click="roleDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="roleDialog.saving" @click="submitRoleBindings">
+        <el-button
+          v-permission="{ all: ['role:bind-user', 'role:list', 'role:view'] }"
+          type="primary"
+          :loading="roleDialog.saving"
+          @click="submitRoleBindings"
+        >
           保存角色绑定
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无用户列表查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import {
   ALLOW_CONCURRENT_OPTIONS,
@@ -402,7 +447,9 @@ interface UserFormModel extends UserCreateDTO {
 }
 
 const userStore = useUserStore()
+const permissionStore = usePermissionStore()
 const formRef = ref<FormInstance>()
+const canListUsers = computed(() => permissionStore.hasPermission('user:list'))
 
 const isCurrentSessionUser = (payload?: { id?: string | null; username?: string | null }): boolean => {
   return userStore.isCurrentUser(payload)
@@ -547,6 +594,11 @@ const resetRoleDialog = () => {
 }
 
 const loadDeptTree = async () => {
+  if (!canListUsers.value) {
+    deptTree.value = []
+    return
+  }
+
   try {
     deptTree.value = await getDeptTreeApi()
   } catch (error) {
@@ -555,6 +607,13 @@ const loadDeptTree = async () => {
 }
 
 const loadUsers = async () => {
+  if (!canListUsers.value) {
+    userList.value = []
+    total.value = 0
+    selectedUserIds.value = []
+    return
+  }
+
   loading.value = true
   try {
     const page = toPageResult(await getUserPageApi(queryForm))
@@ -566,11 +625,13 @@ const loadUsers = async () => {
 }
 
 const handleSearch = () => {
+  if (!canListUsers.value) return
   queryForm.pageNum = 1
   loadUsers()
 }
 
 const resetQuery = () => {
+  if (!canListUsers.value) return
   queryForm.searchKey = ''
   queryForm.username = ''
   queryForm.deptId = ''
@@ -986,6 +1047,12 @@ const handleRowCommand = async (command: RowCommand, row: UserDTO) => {
 }
 
 onMounted(async () => {
+  if (!canListUsers.value) {
+    deptTree.value = []
+    userList.value = []
+    total.value = 0
+    return
+  }
   await Promise.all([loadDeptTree(), loadUsers()])
 })
 </script>

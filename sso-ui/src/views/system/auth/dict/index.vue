@@ -1,9 +1,12 @@
-﻿<template>
+<template>
   <div class="page-shell">
+    <template v-if="canListDictTypes">
     <AuthSearchSection :model="typeQuery">
         <template #toolbar>
           <el-button plain @click="reloadAll">刷新数据</el-button>
-          <el-button type="primary" @click="openTypeDialog('create')">新增字典类型</el-button>
+          <el-button v-permission="'dict:type:add'" type="primary" @click="openTypeDialog('create')">
+            新增字典类型
+          </el-button>
         </template>
         <el-form-item label="关键字">
           <el-input v-model="typeQuery.searchKey" placeholder="名称 / 类型编码" clearable @keyup.enter="handleTypeSearch" />
@@ -48,6 +51,7 @@
           <el-table-column label="状态" width="100" align="center">
             <template #default="{ row }">
               <el-switch
+                v-permission="'dict:type:status'"
                 v-model="row.status"
                 :active-value="1"
                 :inactive-value="0"
@@ -60,12 +64,21 @@
             </template>
           </el-table-column>
           <el-table-column label="操作" width="150" fixed="right">
-            <template #default="{ row }">
-              <el-space :size="8">
-                <el-button link type="primary" @click.stop="openTypeDialog('edit', row)">编辑</el-button>
-                <el-button link type="danger" @click.stop="handleDeleteType(row)">删除</el-button>
-              </el-space>
-            </template>
+              <template #default="{ row }">
+                <el-space :size="8">
+                  <el-button
+                    v-permission="{ all: ['dict:type:view', 'dict:type:edit'] }"
+                    link
+                    type="primary"
+                    @click.stop="openTypeDialog('edit', row)"
+                  >
+                    编辑
+                  </el-button>
+                  <el-button v-permission="'dict:type:remove'" link type="danger" @click.stop="handleDeleteType(row)">
+                    删除
+                  </el-button>
+                </el-space>
+              </template>
           </el-table-column>
         </el-table>
 
@@ -91,9 +104,17 @@
           <div>
             <h2 class="panel-title">字典数据</h2>
           </div>
-          <el-button type="primary" :disabled="!selectedType" @click="openDataDialog('create')">新增数据</el-button>
+          <el-button
+            v-permission="'dict:data:add'"
+            type="primary"
+            :disabled="!selectedType || !canListDictData"
+            @click="openDataDialog('create')"
+          >
+            新增数据
+          </el-button>
         </div>
 
+        <template v-if="canListDictData">
         <AuthSearchForm :model="dataQuery" compact>
           <el-form-item label="关键字">
             <el-input
@@ -143,6 +164,7 @@
             <el-table-column label="状态" width="100" align="center">
               <template #default="{ row }">
                 <el-switch
+                  v-permission="'dict:data:status'"
                   v-model="row.status"
                   :active-value="1"
                   :inactive-value="0"
@@ -158,8 +180,17 @@
             <el-table-column label="操作" width="150" fixed="right">
               <template #default="{ row }">
                 <el-space :size="8">
-                  <el-button link type="primary" @click="openDataDialog('edit', row)">编辑</el-button>
-                  <el-button link type="danger" @click="handleDeleteData(row)">删除</el-button>
+                  <el-button
+                    v-permission="{ all: ['dict:data:view', 'dict:data:edit'] }"
+                    link
+                    type="primary"
+                    @click="openDataDialog('edit', row)"
+                  >
+                    编辑
+                  </el-button>
+                  <el-button v-permission="'dict:data:remove'" link type="danger" @click="handleDeleteData(row)">
+                    删除
+                  </el-button>
                 </el-space>
               </template>
             </el-table-column>
@@ -178,6 +209,8 @@
             />
           </div>
         </template>
+        </template>
+        <el-empty v-else description="当前账号暂无字典数据查看权限" />
       </section>
     </div>
 
@@ -206,7 +239,12 @@
 
       <template #footer>
         <el-button @click="typeDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="typeDialog.submitting" @click="submitTypeForm">
+        <el-button
+          v-permission="typeDialog.mode === 'create' ? 'dict:type:add' : { all: ['dict:type:view', 'dict:type:edit'] }"
+          type="primary"
+          :loading="typeDialog.submitting"
+          @click="submitTypeForm"
+        >
           {{ typeDialog.mode === 'create' ? '创建类型' : '保存类型' }}
         </el-button>
       </template>
@@ -243,18 +281,27 @@
 
       <template #footer>
         <el-button @click="dataDialog.visible = false">取消</el-button>
-        <el-button type="primary" :loading="dataDialog.submitting" @click="submitDataForm">
+        <el-button
+          v-permission="dataDialog.mode === 'create' ? 'dict:data:add' : { all: ['dict:data:view', 'dict:data:edit'] }"
+          type="primary"
+          :loading="dataDialog.submitting"
+          @click="submitDataForm"
+        >
           {{ dataDialog.mode === 'create' ? '创建数据' : '保存数据' }}
         </el-button>
       </template>
     </el-dialog>
+    </template>
+    <AuthNoPermissionPanel v-else description="当前账号暂无字典类型查看权限" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import { usePermissionStore } from '@/stores/permission'
 import AuthSearchForm from '@/views/system/auth/components/AuthSearchForm.vue'
+import AuthNoPermissionPanel from '@/views/system/auth/components/AuthNoPermissionPanel.vue'
 import AuthSearchSection from '@/views/system/auth/components/AuthSearchSection.vue'
 import { DEFAULT_PAGE_SIZE, STATUS_OPTIONS } from '@/constants/admin'
 import {
@@ -298,6 +345,9 @@ interface DictDataFormModel {
 
 const typeFormRef = ref<FormInstance>()
 const dataFormRef = ref<FormInstance>()
+const permissionStore = usePermissionStore()
+const canListDictTypes = computed(() => permissionStore.hasPermission('dict:type:list'))
+const canListDictData = computed(() => permissionStore.hasPermission('dict:data:list'))
 
 const typeLoading = ref(false)
 const dataLoading = ref(false)
@@ -407,6 +457,16 @@ const resetDataDialog = () => {
 }
 
 const loadTypePage = async () => {
+  if (!canListDictTypes.value) {
+    typeList.value = []
+    typeTotal.value = 0
+    selectedType.value = null
+    dataList.value = []
+    dataTotal.value = 0
+    dataQuery.dictType = ''
+    return
+  }
+
   typeLoading.value = true
 
   try {
@@ -436,7 +496,7 @@ const loadTypePage = async () => {
 }
 
 const loadDataPage = async () => {
-  if (!selectedType.value) {
+  if (!canListDictData.value || !selectedType.value) {
     dataList.value = []
     dataTotal.value = 0
     return
@@ -459,15 +519,18 @@ const loadDataPage = async () => {
 }
 
 const reloadAll = async () => {
+  if (!canListDictTypes.value) return
   await loadTypePage()
 }
 
 const handleTypeSearch = () => {
+  if (!canListDictTypes.value) return
   typeQuery.pageNum = 1
   loadTypePage()
 }
 
 const resetTypeQuery = () => {
+  if (!canListDictTypes.value) return
   typeQuery.searchKey = ''
   typeQuery.dictName = ''
   typeQuery.dictType = ''
@@ -476,11 +539,13 @@ const resetTypeQuery = () => {
 }
 
 const handleDataSearch = () => {
+  if (!canListDictData.value) return
   dataQuery.pageNum = 1
   loadDataPage()
 }
 
 const resetDataQuery = () => {
+  if (!canListDictData.value) return
   dataQuery.searchKey = ''
   dataQuery.dictLabel = ''
   dataQuery.dictValue = ''
@@ -494,6 +559,11 @@ const handleTypeCurrentChange = (row?: DictTypeDTO) => {
   selectedType.value = row
   dataQuery.dictType = row.dictType
   dataQuery.pageNum = 1
+  if (!canListDictData.value) {
+    dataList.value = []
+    dataTotal.value = 0
+    return
+  }
   loadDataPage()
 }
 
@@ -695,6 +765,14 @@ const handleDeleteData = async (row: DictDataDTO) => {
 }
 
 onMounted(async () => {
+  if (!canListDictTypes.value) {
+    typeList.value = []
+    typeTotal.value = 0
+    selectedType.value = null
+    dataList.value = []
+    dataTotal.value = 0
+    return
+  }
   await loadTypePage()
 })
 </script>
