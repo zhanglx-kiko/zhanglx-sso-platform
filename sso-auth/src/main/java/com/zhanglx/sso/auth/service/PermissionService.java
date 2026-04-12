@@ -81,6 +81,14 @@ public interface PermissionService {
     List<PermissionDTO> selPermission(String searchKey);
 
     /**
+     * 查询当前登录用户拥有的权限列表
+     *
+     * @param userId 当前登录用户 ID
+     * @return 当前用户拥有的全部权限
+     */
+    List<PermissionVO> selPermissionByUserId(Long userId);
+
+    /**
      * 根据用户名以及权限标识查询权限项列表
      * <p>
      * 业务逻辑：

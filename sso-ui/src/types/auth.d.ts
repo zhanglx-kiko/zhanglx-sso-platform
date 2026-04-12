@@ -40,6 +40,12 @@ export interface SmsVerificationCodeSendVO {
   resendIntervalSeconds: number
 }
 
+export interface AuthSessionStatusVO {
+  loggedIn: boolean
+  systemLoggedIn: boolean
+  memberLoggedIn: boolean
+}
+
 export interface MemberLoginDTO {
   phoneNumber: string
   password: string

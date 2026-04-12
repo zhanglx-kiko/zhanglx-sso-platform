@@ -53,12 +53,12 @@ public class SaTokenConfigure {
                         "/doc.html")
                 // 鉴权逻辑：会员自助链路走 member 体系，会员后台管理链路明确归入系统后台鉴权。
                 .setAuth(obj -> {
-                    SaRouter.match("/apis/v1/**/internal/**", r -> SaSameUtil.checkCurrentRequestToken());
+                    SaRouter.match("/apis/v1/*/internal/**", r -> SaSameUtil.checkCurrentRequestToken());
                     SaRouter.match("/apis/v1/auth/s/members/**", r -> StpUtil.checkLogin());
                     SaRouter.match("/apis/v1/auth/m/**", r -> MEMBER_STP_LOGIC.checkLogin());
                     SaRouter.match("/apis/v1/user/m/**", r -> MEMBER_STP_LOGIC.checkLogin());
                     SaRouter.match("/**")
-                            .notMatch("/apis/v1/**/internal/**", "/apis/v1/auth/m/**", "/apis/v1/user/m/**")
+                            .notMatch("/apis/v1/*/internal/**", "/apis/v1/auth/m/**", "/apis/v1/user/m/**")
                             .check(r -> StpUtil.checkLogin());
                 })
                 // 统一把 Sa-Token 异常转成稳定结果，并把关键细节打进日志。

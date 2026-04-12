@@ -151,19 +151,19 @@ service.interceptors.response.use(
 
     if (res.code === BIZ_CODE.TOKEN_EXPIRED) {
       const message = extractErrorMessage(res, '登录已过期，请重新登录')
-      handleTokenExpired(message, isLoggingOut)
+      handleTokenExpired(message, isLoggingOut())
       return Promise.reject(createHandledError(message))
     }
 
     if (res.code === BIZ_CODE.UNAUTHORIZED && isTokenExpiredError(res.msg || '')) {
       const message = extractErrorMessage(res, '登录状态已失效，请重新登录')
-      handleTokenExpired(message, isLoggingOut)
+      handleTokenExpired(message, isLoggingOut())
       return Promise.reject(createHandledError(message))
     }
 
     if (isTokenExpiredError(res.msg || '')) {
       const message = extractErrorMessage(res, '登录状态已失效，请重新登录')
-      handleTokenExpired(message, isLoggingOut)
+      handleTokenExpired(message, isLoggingOut())
       return Promise.reject(createHandledError(message))
     }
 
@@ -200,12 +200,12 @@ service.interceptors.response.use(
     const errorMessage = extractErrorMessage(error, '网络异常，请稍后重试')
 
     if (status === HTTP_STATUS.UNAUTHORIZED && isTokenExpiredError(errorMessage)) {
-      handleTokenExpired(errorMessage, isLoggingOut)
+      handleTokenExpired(errorMessage, isLoggingOut())
       return Promise.reject(markGlobalErrorHandled(error))
     }
 
     if (isTokenExpiredError(errorMessage)) {
-      handleTokenExpired(errorMessage, isLoggingOut)
+      handleTokenExpired(errorMessage, isLoggingOut())
       return Promise.reject(markGlobalErrorHandled(error))
     }
 

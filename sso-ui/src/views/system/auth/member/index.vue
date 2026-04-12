@@ -553,6 +553,7 @@ import {
 } from '@/api/member'
 import { showGlobalError } from '@/stores/globalError'
 import { usePermissionStore } from '@/stores/permission'
+import { useUserStore } from '@/stores/user'
 import { toPageResult } from '@/utils/admin'
 import type {
   AdminMemberDetailVO,
@@ -592,6 +593,7 @@ const MEMBER_TYPE_LABEL_MAP = Object.fromEntries(
 const MEMBER_MANAGE_ACTION_LABEL_MAP = Object.fromEntries(
   MEMBER_MANAGE_ACTION_OPTIONS.map((item) => [item.value, item.label]),
 ) as Record<number, string>
+const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 
 const loading = ref(false)
@@ -686,7 +688,9 @@ const showExpireTimeField = computed(() => {
   return actionDialog.command === 'disable' || actionDialog.command === 'freeze'
 })
 
-const canListMember = computed(() => permissionStore.hasPermission(MEMBER_PERMISSION_KEYS.LIST))
+const canListMember = computed(() => {
+  return !userStore.hasSession() || permissionStore.hasPermission(MEMBER_PERMISSION_KEYS.LIST)
+})
 const canViewMember = computed(() => permissionStore.hasPermission(MEMBER_PERMISSION_KEYS.VIEW))
 const canViewSocialBindings = computed(() =>
   permissionStore.hasPermission(MEMBER_PERMISSION_KEYS.SOCIAL_LIST),

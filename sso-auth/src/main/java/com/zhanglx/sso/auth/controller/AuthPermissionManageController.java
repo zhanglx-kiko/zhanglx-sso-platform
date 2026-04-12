@@ -1,6 +1,8 @@
 package com.zhanglx.sso.auth.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.stp.StpUtil;
 import com.zhanglx.sso.auth.domain.dto.EnableStatusUpdateDTO;
 import com.zhanglx.sso.auth.domain.dto.PermissionDTO;
 import com.zhanglx.sso.auth.domain.dto.PermissionQueryDTO;
@@ -95,6 +97,14 @@ public class AuthPermissionManageController {
             @RequestParam(required = false, defaultValue = "") String searchKey
     ) {
         return permissionService.selPermission(searchKey);
+    }
+
+    @Operation(summary = "查询当前登录用户权限")
+    @GetMapping("/current")
+    @RequestRateLimit(limit = 30, windowSeconds = 60, dimensions = {RateLimitDimension.USER_ID, RateLimitDimension.URI})
+    @SaCheckLogin
+    public List<PermissionVO> current() {
+        return permissionService.selPermissionByUserId(StpUtil.getLoginIdAsLong());
     }
 
     @Operation(summary = "按标识查询权限")

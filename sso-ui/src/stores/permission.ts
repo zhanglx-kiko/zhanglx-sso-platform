@@ -2,9 +2,9 @@ import { h, resolveComponent } from 'vue'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { RouterView, type RouteRecordRaw } from 'vue-router'
-import { getPermissionsByIdentificationApi } from '@/api/permission'
-import { useUserStore } from '@/stores/user'
+import { getCurrentPermissionsApi } from '@/api/permission'
 import type { ApiPermission, AppMenu, MenuItem } from '@/types/menu'
+import { resolvePermissionBootstrapFailure } from '@/utils/authFailure'
 
 // 使用 Vite 提供的 import.meta.glob 批量静态导入所有视图组件
 const viewModules = import.meta.glob('../views/**/*.vue')
@@ -84,15 +84,7 @@ export const usePermissionStore = defineStore('permission', () => {
    */
   const fetchPermissions = async (): Promise<ApiPermission[]> => {
     try {
-      const userStore = useUserStore()
-      const username = userStore.userInfo?.username
-
-      if (!username) {
-        console.error('未获取到当前登录用户的 username，无法拉取菜单权限')
-        return []
-      }
-
-      const rawFlatList = await getPermissionsByIdentificationApi({ username })
+      const rawFlatList = await getCurrentPermissionsApi()
 
       if (!rawFlatList || rawFlatList.length === 0) return []
 
@@ -103,8 +95,11 @@ export const usePermissionStore = defineStore('permission', () => {
 
       return listToTree(allFlatList)
     } catch (error) {
+      if (resolvePermissionBootstrapFailure(error).matched) {
+        throw error
+      }
       console.error('获取用户权限菜单失败:', error)
-      return []
+      throw error
     }
   }
 

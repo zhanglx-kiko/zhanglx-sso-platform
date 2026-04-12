@@ -34,6 +34,10 @@ export const updatePermissionStatusApi = (permissionId: string, data: StatusPayl
   return request.patch<unknown, void>(`/apis/v1/auth/s/permissions/${permissionId}/status`, data)
 }
 
+export const getCurrentPermissionsApi = () => {
+  return request.get<unknown, PermissionVO[]>('/apis/v1/auth/s/permissions/current')
+}
+
 export const getPermissionsByIdentificationApi = (data: PermissionQueryDTO) => {
   return request.post<unknown, PermissionVO[]>('/apis/v1/auth/s/permissions/by-identification', data)
 }

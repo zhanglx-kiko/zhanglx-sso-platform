@@ -369,6 +369,22 @@ public class PermissionServiceImpl implements PermissionService {
         return treeBuilder.buildTree(results, TreeFilterStrategy.NO_FILTER, TreeCycleStrategy.BREAK_AND_CONTINUE);
     }
 
+    @Override
+    public List<PermissionVO> selPermissionByUserId(Long userId) {
+        AssertUtils.notNull(userId, AuthManageErrorCode.USER_ID_REQUIRED);
+
+        List<PermissionPO> results = permissionMapper.selectByUserWithIdentityAndType(
+                userId,
+                Lists.newArrayList(),
+                Lists.newArrayList());
+
+        if (CollectionUtils.isNotEmpty(results)) {
+            return IPermissionMapper.INSTANCE.toVOList(results);
+        }
+
+        return Lists.newArrayList();
+    }
+
     /**
      * 为搜索结果补齐祖先节点。
      *

@@ -13,6 +13,8 @@ import 'nprogress/nprogress.css'
 import type { MenuItem } from '@/types/menu'
 import { ROUTE_WHITE_LIST } from '@/constants'
 import { logoutAndRedirect, registerAuthRouter } from '@/utils/auth'
+import { resolvePermissionBootstrapFailure } from '@/utils/authFailure'
+import { probeAuthSessionStatus } from '@/utils/authSessionProbe'
 
 NProgress.configure({ showSpinner: false })
 
@@ -258,6 +260,22 @@ const initDynamicRoutes = async (): Promise<MenuItem[]> => {
 
     return menuItems
   } catch (error) {
+    const bootstrapFailure = resolvePermissionBootstrapFailure(error)
+    if (bootstrapFailure.matched) {
+      await logoutAndRedirect({
+        message: bootstrapFailure.message,
+      })
+      return []
+    }
+
+    const sessionStatus = await probeAuthSessionStatus()
+    if (sessionStatus && !sessionStatus.systemLoggedIn) {
+      await logoutAndRedirect({
+        message: '登录状态已失效，请重新登录',
+      })
+      return []
+    }
+
     if (!userStore.hasSession()) {
       return []
     }

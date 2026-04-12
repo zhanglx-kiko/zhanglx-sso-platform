@@ -3,6 +3,8 @@ import { AUTH_EVENT_STORAGE_KEY } from '@/constants'
 import { usePermissionStore } from '@/stores/permission'
 import { useUserStore } from '@/stores/user'
 import { isLogoutInProgress, isWhiteListPath, logoutAndRedirect } from '@/utils/auth'
+import { resolvePermissionBootstrapFailure } from '@/utils/authFailure'
+import { probeAuthSessionStatus } from '@/utils/authSessionProbe'
 
 const SESSION_VALIDATION_INTERVAL_MS = 1500
 
@@ -56,6 +58,24 @@ export const validateActiveSession = async (force = false): Promise<void> => {
   validationPromise = (async () => {
     try {
       await usePermissionStore().fetchPermissions()
+    } catch (error) {
+      const bootstrapFailure = resolvePermissionBootstrapFailure(error)
+      if (bootstrapFailure.matched) {
+        await logoutAndRedirect({
+          message: bootstrapFailure.message,
+        })
+        return
+      }
+
+      const sessionStatus = await probeAuthSessionStatus()
+      if (sessionStatus && !sessionStatus.systemLoggedIn) {
+        await logoutAndRedirect({
+          message: '登录状态已失效，请重新登录',
+        })
+        return
+      }
+
+      console.error('validate active session failed:', error)
     } finally {
       lastValidationAt = Date.now()
       validationPromise = null

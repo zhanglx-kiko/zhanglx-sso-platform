@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 import type {
+  AuthSessionStatusVO,
   ForgotPasswordDTO,
   ForgotPasswordVerificationCodeSendDTO,
   ForgotPasswordVerificationCodeVerifyDTO,
@@ -11,6 +12,10 @@ import type {
 
 export const loginApi = (data: LoginDTO) => {
   return request.post<unknown, LoginVO>('/apis/v1/auth/s/login', data)
+}
+
+export const getAuthSessionStatusApi = () => {
+  return request.get<unknown, AuthSessionStatusVO>('/apis/v1/auth/isLogin')
 }
 
 export const logoutApi = () => {

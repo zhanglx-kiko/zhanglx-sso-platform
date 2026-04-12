@@ -18,6 +18,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePermissionStore } from '@/stores/permission'
+import { useUserStore } from '@/stores/user'
 import LoginLogPane from './components/LoginLogPane.vue'
 import OperationLogPane from './components/OperationLogPane.vue'
 
@@ -25,10 +26,15 @@ type LogTabKey = 'login' | 'operation'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const permissionStore = usePermissionStore()
 
-const canViewLoginLogs = computed(() => permissionStore.hasPermission('login-log:list'))
-const canViewOperationLogs = computed(() => permissionStore.hasPermission('operation-log:list'))
+const canViewLoginLogs = computed(() => {
+  return !userStore.hasSession() || permissionStore.hasPermission('login-log:list')
+})
+const canViewOperationLogs = computed(() => {
+  return !userStore.hasSession() || permissionStore.hasPermission('operation-log:list')
+})
 const availableTabs = computed(() => {
   const tabs: LogTabKey[] = []
   if (canViewLoginLogs.value) {
