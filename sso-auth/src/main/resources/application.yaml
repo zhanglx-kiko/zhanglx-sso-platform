@@ -133,7 +133,6 @@ security:
     # Salt 长度（默认64字节）
     salt-length: 32
 
-
 # SpringDoc / Knife4j 配置
 springdoc:
   # get请求多参数时不需要添加额外的@ParameterObject和@Parameter注解

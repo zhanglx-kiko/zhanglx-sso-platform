@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.domain.dto.UserDTO;
 import com.zhanglx.sso.auth.domain.po.MemberSocialPO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
-import com.zhanglx.sso.auth.domain.properties.WechatProperties;
 import com.zhanglx.sso.auth.domain.vo.LoginVO;
 import com.zhanglx.sso.auth.enums.MemberTypeEnum;
 import com.zhanglx.sso.auth.enums.RealNameStatusEnum;
@@ -21,6 +20,7 @@ import com.zhanglx.sso.auth.mapper.MemberUserMapper;
 import com.zhanglx.sso.auth.service.MemberUserService;
 import com.zhanglx.sso.auth.service.UserService;
 import com.zhanglx.sso.auth.service.WechatAuthService;
+import com.zhanglx.sso.auth.service.runtime.AuthWechatConfigService;
 import com.zhanglx.sso.auth.service.support.AuthLoginAuditSupport;
 import com.zhanglx.sso.core.exception.BusinessException;
 import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
@@ -44,13 +44,13 @@ import tools.jackson.databind.JsonNode;
 @RequiredArgsConstructor
 public class WechatAuthServiceImpl implements WechatAuthService {
     /**
-     * 微信配置。
-     */
-    private final WechatProperties wechatProperties;
-    /**
      * 用户服务。
      */
     private final UserService userService;
+    /**
+     * 微信运行时配置服务。
+     */
+    private final AuthWechatConfigService authWechatConfigService;
     /**
      * 会员用户服务。
      */
@@ -153,18 +153,12 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         if (!StringUtils.hasText(code)) {
             throw new BusinessException(WechatErrorCode.WECHAT_CODE_REQUIRED);
         }
-        if (!StringUtils.hasText(wechatProperties.getAppId()) || !StringUtils.hasText(wechatProperties.getSecret())) {
-            log.error(
-                    "WeChat miniapp login configuration is missing, appIdConfigured={}, secretConfigured={}",
-                    StringUtils.hasText(wechatProperties.getAppId()),
-                    StringUtils.hasText(wechatProperties.getSecret())
-            );
-            throw new BusinessException(WechatErrorCode.WECHAT_MINIAPP_CONFIG_MISSING);
-        }
+        String appId = authWechatConfigService.getMiniappAppId();
+        String secret = authWechatConfigService.getMiniappSecret();
 
         String url = String.format(
                 "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
-                wechatProperties.getAppId(), wechatProperties.getSecret(), code
+                appId, secret, code
         );
 
         try {

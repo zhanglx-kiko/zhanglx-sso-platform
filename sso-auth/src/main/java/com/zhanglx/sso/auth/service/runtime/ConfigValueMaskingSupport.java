@@ -32,6 +32,7 @@ public class ConfigValueMaskingSupport {
         }
         return YesNoEnum.YES.matches(configPO.getSensitiveFlag())
                 || SystemConfigKeys.SECURITY_ARGON2_PEPPER.equals(configPO.getConfigKey())
+                || SystemConfigKeys.WECHAT_MINIAPP_SECRET.equals(configPO.getConfigKey())
                 || sensitiveDataMasker.isSensitiveKey(configPO.getConfigKey());
     }
 

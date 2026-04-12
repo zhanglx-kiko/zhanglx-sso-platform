@@ -1,8 +1,10 @@
 package com.zhanglx.sso.auth.domain.properties;
 
-import lombok.*;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * 作者：Zhang L X
@@ -12,11 +14,10 @@ import org.springframework.context.annotation.Configuration;
  */
 @Data
 @Builder
-@Configuration
 @NoArgsConstructor
 @EqualsAndHashCode
 @AllArgsConstructor
-@ConfigurationProperties(prefix = "wechat.miniapp")
+@Deprecated(forRemoval = false)
 public class WechatProperties {
 
     /**

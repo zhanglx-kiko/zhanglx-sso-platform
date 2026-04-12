@@ -34,6 +34,12 @@ public final class SystemConfigKeys {
     public static final String SMS_ALIYUN_SIGN_NAME = "sms.aliyun.sign-name";
 
     /**
+     * 微信小程序配置。
+     */
+    public static final String WECHAT_MINIAPP_APP_ID = "wechat.miniapp.app-id";
+    public static final String WECHAT_MINIAPP_SECRET = "wechat.miniapp.secret";
+
+    /**
      * 安全配置。
      */
     public static final String SECURITY_ARGON2_PEPPER = "security.argon2.pepper";
