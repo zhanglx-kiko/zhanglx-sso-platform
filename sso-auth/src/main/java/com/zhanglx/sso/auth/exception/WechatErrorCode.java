@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 public enum WechatErrorCode implements ErrorCode {
 
     WECHAT_CODE_REQUIRED(ResultCode.BAD_REQUEST.getCode(), "wechat.code.cannot.be.blank"),
+    WECHAT_MINIAPP_CONFIG_MISSING(ResultCode.INTERNAL_SERVER_ERROR.getCode(), "wechat.miniapp.config.missing"),
     WECHAT_LOGIN_FAILED(ResultCode.BAD_REQUEST.getCode(), "wechat.login.failed"),
     WECHAT_SERVICE_ERROR(ResultCode.BAD_GATEWAY.getCode(), "technical.wechat.service.error");
 

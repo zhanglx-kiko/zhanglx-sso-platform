@@ -93,8 +93,12 @@ export function request<T, TData extends RequestPayload = WechatMiniprogram.IAny
           resolve(envelope.data)
           return
         }
-        if (response.statusCode === 401 || response.statusCode === 403 || envelope.code === 401 || envelope.code === 403) {
+        if (response.statusCode === 401 || envelope.code === 401) {
           reject(rejectWithSessionError(envelope.msg || '登录状态已失效'))
+          return
+        }
+        if (response.statusCode === 403 || envelope.code === 403) {
+          reject(new Error(envelope.msg || '当前账号暂无操作权限'))
           return
         }
         reject(new Error(envelope.msg || '请求失败，请稍后重试'))
@@ -136,8 +140,12 @@ export function uploadFile<T>({
           resolve(envelope.data)
           return
         }
-        if (response.statusCode === 401 || response.statusCode === 403 || envelope.code === 401 || envelope.code === 403) {
+        if (response.statusCode === 401 || envelope.code === 401) {
           reject(rejectWithSessionError(envelope.msg || '登录状态已失效'))
+          return
+        }
+        if (response.statusCode === 403 || envelope.code === 403) {
+          reject(new Error(envelope.msg || '当前账号暂无操作权限'))
           return
         }
         reject(new Error(envelope.msg || '上传失败，请稍后重试'))

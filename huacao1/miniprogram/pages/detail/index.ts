@@ -1,5 +1,6 @@
 import type { MemberInfo, PlantDetail } from '../../types/api'
 import { formatDateTime, formatLocation, formatPrice, sameId } from '../../utils/format'
+import { promptMemberLogin } from '../../utils/login'
 import { getPlantDetail } from '../../utils/plant-service'
 
 Page({
@@ -69,7 +70,9 @@ Page({
         url: '/pages/mine-publish/index',
       })
     } catch (error) {
-      this.showToast((error as Error).message)
+      await promptMemberLogin({
+        message: (error as Error).message,
+      })
     }
   },
 
@@ -80,7 +83,9 @@ Page({
         url: '/pages/publish/index',
       })
     } catch (error) {
-      this.showToast((error as Error).message)
+      await promptMemberLogin({
+        message: (error as Error).message,
+      })
     }
   },
 

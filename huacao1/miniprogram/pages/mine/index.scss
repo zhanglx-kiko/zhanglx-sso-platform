@@ -109,3 +109,70 @@
   font-size: 42rpx;
   line-height: 1;
 }
+
+.login-card {
+  margin-top: 22rpx;
+  padding: 34rpx 30rpx;
+}
+
+.login-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132rpx;
+  height: 48rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  color: #2d4a31;
+  font-size: 22rpx;
+  font-weight: 600;
+  background: rgba(224, 236, 220, 0.92);
+}
+
+.login-title {
+  margin-top: 22rpx;
+  color: #1f261e;
+  font-size: 36rpx;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.login-desc {
+  margin-top: 16rpx;
+  color: #67705f;
+  font-size: 25rpx;
+  line-height: 1.8;
+}
+
+.login-tip {
+  margin-top: 18rpx;
+  padding: 20rpx 22rpx;
+  border-radius: 20rpx;
+  color: #7d4a28;
+  font-size: 24rpx;
+  line-height: 1.7;
+  background: rgba(251, 242, 232, 0.96);
+}
+
+.login-button {
+  margin-top: 28rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  border: none;
+  border-radius: 999rpx;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 600;
+  background: linear-gradient(135deg, #335339 0%, #496c4e 100%);
+}
+
+.login-button::after {
+  border: none;
+}
+
+.login-link {
+  margin-top: 24rpx;
+  color: #48604a;
+  font-size: 24rpx;
+  text-align: center;
+}

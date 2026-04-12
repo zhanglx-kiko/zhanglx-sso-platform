@@ -153,6 +153,14 @@ public class WechatAuthServiceImpl implements WechatAuthService {
         if (!StringUtils.hasText(code)) {
             throw new BusinessException(WechatErrorCode.WECHAT_CODE_REQUIRED);
         }
+        if (!StringUtils.hasText(wechatProperties.getAppId()) || !StringUtils.hasText(wechatProperties.getSecret())) {
+            log.error(
+                    "WeChat miniapp login configuration is missing, appIdConfigured={}, secretConfigured={}",
+                    StringUtils.hasText(wechatProperties.getAppId()),
+                    StringUtils.hasText(wechatProperties.getSecret())
+            );
+            throw new BusinessException(WechatErrorCode.WECHAT_MINIAPP_CONFIG_MISSING);
+        }
 
         String url = String.format(
                 "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",

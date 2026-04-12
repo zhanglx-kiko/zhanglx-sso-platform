@@ -1,5 +1,6 @@
 import type { PlantCategory, PlantFormData, PublishStatus } from '../../types/api'
 import { COMMON_UNITS, MAX_UPLOAD_IMAGE_COUNT } from '../../utils/config'
+import { promptMemberLogin } from '../../utils/login'
 import { buildPlantPayload, createEmptyPlantForm, ensureCoverImage, normalizePriceInput, validatePlantForm } from '../../utils/plant-form'
 import { createPlantItem, listPlantCategories, uploadPlantImages } from '../../utils/plant-service'
 
@@ -23,6 +24,18 @@ Page({
     })
     try {
       await getApp<IAppOption>().ensureMemberSession()
+    } catch (error) {
+      await promptMemberLogin({
+        message: (error as Error).message,
+        replace: true,
+      })
+      this.setData({
+        loading: false,
+      })
+      return
+    }
+
+    try {
       const categories = await listPlantCategories()
       this.setData({
         categories,

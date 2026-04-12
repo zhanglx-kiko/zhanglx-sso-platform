@@ -1,17 +1,24 @@
 import type { MemberInfo, PlantMineSummary } from '../../types/api'
-import { getStoredMemberInfo } from '../../utils/session'
 import { getMyPlantSummary } from '../../utils/plant-service'
+import { getStoredMemberInfo } from '../../utils/session'
+
+function createEmptySummary(): PlantMineSummary {
+  return {
+    totalCount: 0,
+    publishedCount: 0,
+    draftCount: 0,
+    offShelfCount: 0,
+  }
+}
 
 Page({
   data: {
     loading: true,
+    loggingIn: false,
+    needsLogin: false,
+    loginErrorMessage: '',
     memberInfo: (getStoredMemberInfo() || null) as MemberInfo | null,
-    summary: {
-      totalCount: 0,
-      publishedCount: 0,
-      draftCount: 0,
-      offShelfCount: 0,
-    } as PlantMineSummary,
+    summary: createEmptySummary() as PlantMineSummary,
   },
 
   onShow() {
@@ -25,23 +32,55 @@ Page({
   async bootstrap(forceRefresh = false) {
     this.setData({
       loading: true,
+      ...(forceRefresh ? { loggingIn: true } : {}),
     })
+    const app = getApp<IAppOption>()
     try {
-      const app = getApp<IAppOption>()
       const session = await app.ensureMemberSession(forceRefresh)
       const memberInfo = (session?.memberInfo || app.globalData.memberInfo || null) as MemberInfo | null
-      const summary = await getMyPlantSummary()
-      this.setData({
-        memberInfo,
-        summary,
-      })
+      try {
+        const summary = await getMyPlantSummary()
+        this.setData({
+          memberInfo,
+          summary,
+          needsLogin: false,
+          loginErrorMessage: '',
+        })
+      } catch (error) {
+        this.setData({
+          memberInfo,
+          summary: createEmptySummary(),
+          needsLogin: false,
+          loginErrorMessage: '',
+        })
+        this.showToast((error as Error).message)
+      }
     } catch (error) {
-      this.showToast((error as Error).message)
+      this.setData({
+        memberInfo: null,
+        summary: createEmptySummary(),
+        needsLogin: true,
+        loginErrorMessage: (error as Error).message || '请先完成微信登录',
+      })
     } finally {
       this.setData({
         loading: false,
+        loggingIn: false,
       })
       wx.stopPullDownRefresh()
+    }
+  },
+
+  async handleWechatLogin() {
+    if (this.data.loggingIn) {
+      return
+    }
+    await this.bootstrap(true)
+    if (!this.data.needsLogin) {
+      wx.showToast({
+        title: '登录成功',
+        icon: 'success',
+      })
     }
   },
 

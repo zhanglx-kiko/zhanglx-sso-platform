@@ -1,5 +1,6 @@
 import type { PlantCard, PlantCategory } from '../../types/api'
 import { splitWaterfall } from '../../utils/format'
+import { promptMemberLogin } from '../../utils/login'
 import { listPlantCategories, pagePlantItems } from '../../utils/plant-service'
 
 Page({
@@ -138,7 +139,9 @@ Page({
         url: '/pages/publish/index',
       })
     } catch (error) {
-      this.showToast((error as Error).message)
+      await promptMemberLogin({
+        message: (error as Error).message,
+      })
     }
   },
 
@@ -149,7 +152,9 @@ Page({
         url: '/pages/mine-publish/index',
       })
     } catch (error) {
-      this.showToast((error as Error).message)
+      await promptMemberLogin({
+        message: (error as Error).message,
+      })
     }
   },
 

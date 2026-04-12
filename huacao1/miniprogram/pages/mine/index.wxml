@@ -1,7 +1,7 @@
 <navigation-bar title="我的" color="#1f261e" background="rgba(247,245,239,0.95)"></navigation-bar>
 
 <view class="page-shell">
-  <view class="profile-card section-card">
+  <view wx:if="{{!loading && !needsLogin}}" class="profile-card section-card">
     <image wx:if="{{memberInfo && memberInfo.avatar}}" class="profile-avatar" src="{{memberInfo.avatar}}" mode="aspectFill"></image>
     <view wx:else class="profile-avatar profile-avatar--placeholder">园</view>
     <view class="profile-main">
@@ -13,7 +13,7 @@
     </view>
   </view>
 
-  <view class="summary-grid">
+  <view wx:if="{{!loading && !needsLogin}}" class="summary-grid">
     <view class="summary-card section-card">
       <text class="summary-value">{{summary.totalCount}}</text>
       <text class="summary-label">全部发布</text>
@@ -37,7 +37,16 @@
     <text>会员资料与发布概览正在更新。</text>
   </view>
 
-  <view wx:else class="menu-card section-card">
+  <view wx:elif="{{needsLogin}}" class="login-card section-card">
+    <view class="login-badge">微信登录</view>
+    <view class="login-title">登录后即可发布和管理花草苗木内容</view>
+    <view class="login-desc">小程序会通过微信安全登录，并自动同步当前会员资料。</view>
+    <view wx:if="{{loginErrorMessage}}" class="login-tip">{{loginErrorMessage}}</view>
+    <button class="login-button" loading="{{loggingIn}}" bindtap="handleWechatLogin">微信一键登录</button>
+    <view class="login-link" bindtap="goHome">先去逛逛</view>
+  </view>
+
+  <view wx:elif="{{!needsLogin}}" class="menu-card section-card">
     <view class="menu-item" bindtap="goMyPublish">
       <view>
         <view class="menu-title">我的发布管理</view>

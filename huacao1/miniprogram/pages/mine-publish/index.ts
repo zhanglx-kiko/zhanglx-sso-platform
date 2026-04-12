@@ -1,4 +1,5 @@
 import type { PlantCard, PlantMineSummary, PublishStatus } from '../../types/api'
+import { promptMemberLogin } from '../../utils/login'
 import { deletePlantItem, getMyPlantSummary, pageMyPlantItems, updatePlantPublishStatus } from '../../utils/plant-service'
 
 type StatusFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'OFF_SHELF'
@@ -45,7 +46,20 @@ Page({
     this.setData({
       loading: true,
     })
-    await Promise.all([this.loadSummary(), this.loadList(true)])
+    try {
+      await getApp<IAppOption>().ensureMemberSession()
+      await Promise.all([this.loadSummary(), this.loadList(true)])
+    } catch (error) {
+      await promptMemberLogin({
+        message: (error as Error).message,
+        replace: true,
+      })
+      this.setData({
+        loading: false,
+        loadingMore: false,
+      })
+      wx.stopPullDownRefresh()
+    }
   },
 
   async loadSummary() {
