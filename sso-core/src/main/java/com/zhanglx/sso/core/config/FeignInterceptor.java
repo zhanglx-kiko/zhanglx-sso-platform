@@ -4,6 +4,7 @@ import cn.dev33.satoken.same.SaSameUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import com.zhanglx.sso.common.trace.TraceConstants;
 import com.zhanglx.sso.core.trace.TraceContextHolder;
+import com.zhanglx.sso.core.utils.satoken.StpMemberUtil;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +39,8 @@ public class FeignInterceptor implements RequestInterceptor {
         try {
             if (StpUtil.isLogin()) {
                 template.header(StpUtil.getTokenName(), StpUtil.getTokenValue());
+            } else if (StpMemberUtil.isLogin()) {
+                template.header(StpMemberUtil.getStpLogic().getTokenName(), StpMemberUtil.getTokenValue());
             }
         } catch (Exception e) {
             // 在极少数非 Web 环境且未配置上下文透传的情况下，忽略异常，避免阻断内部定时任务等逻辑

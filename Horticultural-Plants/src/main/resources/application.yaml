@@ -130,6 +130,8 @@ knife4j:
     footer-custom-content: Apache 2.0 | Copyright (c) 2026 ZhangLX
 
 sso:
+  remote:
+    auth-base-url: http://localhost:21900
   log:
     operation:
       enable-operation-log: false

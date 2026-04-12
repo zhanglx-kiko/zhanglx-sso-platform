@@ -1,6 +1,5 @@
 package com.zhanglx.sso.horticulturalplants.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,7 +10,6 @@ import com.zhanglx.sso.horticulturalplants.domain.dto.PlantItemSaveDTO;
 import com.zhanglx.sso.horticulturalplants.domain.po.PlantCategoryPO;
 import com.zhanglx.sso.horticulturalplants.domain.po.PlantItemImagePO;
 import com.zhanglx.sso.horticulturalplants.domain.po.PlantItemPO;
-import com.zhanglx.sso.horticulturalplants.domain.po.PlantMemberUserPO;
 import com.zhanglx.sso.horticulturalplants.domain.vo.PlantCategoryVO;
 import com.zhanglx.sso.horticulturalplants.domain.vo.PlantItemCardVO;
 import com.zhanglx.sso.horticulturalplants.domain.vo.PlantItemDetailVO;
@@ -25,8 +23,9 @@ import com.zhanglx.sso.horticulturalplants.exception.PlantErrorCode;
 import com.zhanglx.sso.horticulturalplants.mapper.PlantCategoryMapper;
 import com.zhanglx.sso.horticulturalplants.mapper.PlantItemImageMapper;
 import com.zhanglx.sso.horticulturalplants.mapper.PlantItemMapper;
-import com.zhanglx.sso.horticulturalplants.mapper.PlantMemberUserMapper;
+import com.zhanglx.sso.horticulturalplants.remote.auth.AuthMemberBasicVO;
 import com.zhanglx.sso.horticulturalplants.service.PlantItemService;
+import com.zhanglx.sso.horticulturalplants.service.support.PlantMemberRemoteService;
 import com.zhanglx.sso.mybatis.query.LambdaQueryWrapperX;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,7 +50,7 @@ public class PlantItemServiceImpl implements PlantItemService {
     private final PlantCategoryMapper plantCategoryMapper;
     private final PlantItemMapper plantItemMapper;
     private final PlantItemImageMapper plantItemImageMapper;
-    private final PlantMemberUserMapper plantMemberUserMapper;
+    private final PlantMemberRemoteService plantMemberRemoteService;
 
     @Override
     public List<PlantCategoryVO> listCategories() {
@@ -238,9 +237,10 @@ public class PlantItemServiceImpl implements PlantItemService {
 
     private void ensureCurrentMemberAvailable(Long memberId) {
         AssertUtils.notNull(memberId, PlantErrorCode.PLANT_MEMBER_NOT_FOUND);
-        PlantMemberUserPO memberUserPO = plantMemberUserMapper.selectById(memberId);
-        AssertUtils.notNull(memberUserPO, PlantErrorCode.PLANT_MEMBER_NOT_FOUND);
-        AssertUtils.isTrue(Objects.equals(memberUserPO.getStatus(), MEMBER_STATUS_NORMAL), PlantErrorCode.PLANT_MEMBER_STATUS_INVALID);
+        AuthMemberBasicVO member = plantMemberRemoteService.getCurrentMemberBasic();
+        AssertUtils.notNull(member, PlantErrorCode.PLANT_MEMBER_NOT_FOUND);
+        AssertUtils.isTrue(Objects.equals(memberId, member.getId()), PlantErrorCode.PLANT_MEMBER_NOT_FOUND);
+        AssertUtils.isTrue(Objects.equals(member.getStatus(), MEMBER_STATUS_NORMAL), PlantErrorCode.PLANT_MEMBER_STATUS_INVALID);
     }
 
     private void assertOwner(PlantItemPO itemPO, Long memberId) {
@@ -298,8 +298,11 @@ public class PlantItemServiceImpl implements PlantItemService {
                 .orderByDesc(PlantItemImagePO::getCreateTime));
     }
 
-    private PlantMemberUserPO queryPublisher(Long publisherUserId) {
-        return publisherUserId == null ? null : plantMemberUserMapper.selectById(publisherUserId);
+    private AuthMemberBasicVO queryPublisher(Long publisherUserId) {
+        if (publisherUserId == null) {
+            return null;
+        }
+        return plantMemberRemoteService.queryMemberBasicMap(List.of(publisherUserId)).get(publisherUserId);
     }
 
     private Page<PlantItemCardVO> buildPage(Page<PlantItemPO> source, List<PlantItemCardVO> records) {
@@ -315,22 +318,14 @@ public class PlantItemServiceImpl implements PlantItemService {
         if (CollectionUtils.isEmpty(records)) {
             return Collections.emptyList();
         }
-        Map<Long, PlantMemberUserPO> publisherMap = queryPublisherMap(records.stream().map(PlantItemPO::getPublisherUserId).toList());
+        Map<Long, AuthMemberBasicVO> publisherMap = queryPublisherMap(records.stream().map(PlantItemPO::getPublisherUserId).toList());
         return records.stream()
                 .map(itemPO -> toCardVO(itemPO, publisherMap.get(itemPO.getPublisherUserId())))
                 .toList();
     }
 
-    private Map<Long, PlantMemberUserPO> queryPublisherMap(Collection<Long> memberIds) {
-        List<Long> normalizedIds = memberIds == null ? List.of() : memberIds.stream().filter(Objects::nonNull).distinct().toList();
-        if (normalizedIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        Map<Long, PlantMemberUserPO> result = new HashMap<>();
-        plantMemberUserMapper.selectList(new LambdaQueryWrapper<PlantMemberUserPO>()
-                        .in(PlantMemberUserPO::getId, normalizedIds))
-                .forEach(member -> result.put(member.getId(), member));
-        return result;
+    private Map<Long, AuthMemberBasicVO> queryPublisherMap(Collection<Long> memberIds) {
+        return new HashMap<>(plantMemberRemoteService.queryMemberBasicMap(memberIds));
     }
 
     private long countMyItems(Long memberId, PlantItemPublishStatusEnum status) {
@@ -353,7 +348,7 @@ public class PlantItemServiceImpl implements PlantItemService {
                 .build();
     }
 
-    private PlantItemCardVO toCardVO(PlantItemPO itemPO, PlantMemberUserPO publisher) {
+    private PlantItemCardVO toCardVO(PlantItemPO itemPO, AuthMemberBasicVO publisher) {
         return PlantItemCardVO.builder()
                 .id(itemPO.getId())
                 .createBy(itemPO.getCreateBy())
@@ -376,7 +371,7 @@ public class PlantItemServiceImpl implements PlantItemService {
                 .build();
     }
 
-    private PlantItemDetailVO toDetailVO(PlantItemPO itemPO, List<PlantItemImagePO> images, PlantMemberUserPO publisher) {
+    private PlantItemDetailVO toDetailVO(PlantItemPO itemPO, List<PlantItemImagePO> images, AuthMemberBasicVO publisher) {
         return PlantItemDetailVO.builder()
                 .id(itemPO.getId())
                 .createBy(itemPO.getCreateBy())
@@ -409,7 +404,7 @@ public class PlantItemServiceImpl implements PlantItemService {
                 .build();
     }
 
-    private PlantPublisherVO toPublisherVO(PlantMemberUserPO publisher) {
+    private PlantPublisherVO toPublisherVO(AuthMemberBasicVO publisher) {
         if (publisher == null) {
             return null;
         }
@@ -420,9 +415,9 @@ public class PlantItemServiceImpl implements PlantItemService {
                 .build();
     }
 
-    private String resolvePublisherName(PlantMemberUserPO publisher) {
+    private String resolvePublisherName(AuthMemberBasicVO publisher) {
         if (publisher == null) {
-            return "匿名发布者";
+            return "\u533f\u540d\u53d1\u5e03\u8005";
         }
         if (StringUtils.hasText(publisher.getNickname())) {
             return publisher.getNickname();
@@ -434,9 +429,8 @@ public class PlantItemServiceImpl implements PlantItemService {
             }
             return phoneNumber;
         }
-        return "园艺发布者";
+        return "\u56ed\u827a\u53d1\u5e03\u8005";
     }
-
     private String trim(String text) {
         return StringUtils.hasText(text) ? text.trim() : null;
     }

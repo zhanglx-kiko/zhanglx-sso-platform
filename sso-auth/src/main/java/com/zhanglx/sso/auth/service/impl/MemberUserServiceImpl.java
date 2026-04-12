@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhanglx.sso.auth.domain.dto.MemberBindPhoneDTO;
 import com.zhanglx.sso.auth.domain.dto.MemberUpdateDTO;
 import com.zhanglx.sso.auth.domain.po.MemberUserPO;
+import com.zhanglx.sso.auth.domain.vo.MemberBasicVO;
 import com.zhanglx.sso.auth.domain.vo.MemberInfoVO;
 import com.zhanglx.sso.auth.enums.UserStatusEnum;
 import com.zhanglx.sso.auth.enums.YesNoEnum;
@@ -27,6 +28,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Collections;
+import java.util.List;
 import java.time.LocalDateTime;
 
 /**
@@ -55,6 +58,27 @@ public class MemberUserServiceImpl implements MemberUserService {
     @Override
     public MemberInfoVO getCurrentMemberInfo(Long memberId) {
         return IMemberUserMapper.INSTANCE.toInfoVO(getById(memberId));
+    }
+
+    @Override
+    public MemberBasicVO getCurrentMemberBasicInfo(Long memberId) {
+        return toMemberBasicVO(getById(memberId));
+    }
+
+    @Override
+    public List<MemberBasicVO> listMemberBasicInfo(List<Long> memberIds) {
+        List<Long> normalizedIds = memberIds == null ? List.of() : memberIds.stream()
+                .filter(id -> id != null && id > 0)
+                .distinct()
+                .toList();
+        if (normalizedIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return memberUserMapper.selectList(new LambdaQueryWrapperX<MemberUserPO>()
+                        .in(MemberUserPO::getId, normalizedIds))
+                .stream()
+                .map(this::toMemberBasicVO)
+                .toList();
     }
 
     @Override
@@ -202,5 +226,18 @@ public class MemberUserServiceImpl implements MemberUserService {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes == null ? null : attributes.getRequest();
         return requestIdentityAccessor.resolveClientIp(request);
+    }
+
+    private MemberBasicVO toMemberBasicVO(MemberUserPO memberUserPO) {
+        return MemberBasicVO.builder()
+                .id(memberUserPO.getId())
+                .phoneNumber(memberUserPO.getPhoneNumber())
+                .nickname(memberUserPO.getNickname())
+                .avatar(memberUserPO.getAvatar())
+                .phoneBound(YesNoEnum.YES.matches(memberUserPO.getPhoneBound()))
+                .memberType(memberUserPO.getMemberType() == null ? null : memberUserPO.getMemberType().getCode())
+                .realNameStatus(memberUserPO.getRealNameStatus() == null ? null : memberUserPO.getRealNameStatus().getCode())
+                .status(memberUserPO.getStatus() == null ? null : memberUserPO.getStatus().getCode())
+                .build();
     }
 }
