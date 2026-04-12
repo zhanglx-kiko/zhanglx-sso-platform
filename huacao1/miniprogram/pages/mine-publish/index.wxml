@@ -1,0 +1,67 @@
+<navigation-bar title="我的发布管理" color="#1f261e" background="rgba(247,245,239,0.95)">
+  <view slot="right" class="nav-action" bindtap="goPublish">新建</view>
+</navigation-bar>
+
+<view class="page-shell manage-shell">
+  <view class="summary-strip section-card">
+    <view class="summary-chip">
+      <text class="summary-chip__value">{{summary.totalCount}}</text>
+      <text class="summary-chip__label">全部</text>
+    </view>
+    <view class="summary-chip">
+      <text class="summary-chip__value">{{summary.publishedCount}}</text>
+      <text class="summary-chip__label">上架</text>
+    </view>
+    <view class="summary-chip">
+      <text class="summary-chip__value">{{summary.draftCount}}</text>
+      <text class="summary-chip__label">草稿</text>
+    </view>
+    <view class="summary-chip">
+      <text class="summary-chip__value">{{summary.offShelfCount}}</text>
+      <text class="summary-chip__label">下架</text>
+    </view>
+  </view>
+
+  <scroll-view class="status-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+    <view class="status-list">
+      <view
+        wx:for="{{statusTabs}}"
+        wx:key="value"
+        class="status-pill {{activeStatus === item.value ? 'status-pill--active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onSelectStatus"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="page-state section-card">
+    <text class="page-state__title">正在加载我的发布</text>
+    <text>你的花草苗木内容与管理动作正在同步中。</text>
+  </view>
+
+  <view wx:elif="{{!items.length}}" class="page-state section-card">
+    <text class="page-state__title">还没有发布内容</text>
+    <text>先上传一组图片和建议零售价，马上开始你的第一条内容。</text>
+    <view class="page-empty-action">
+      <view class="primary-button" bindtap="goPublish">去发布</view>
+    </view>
+  </view>
+
+  <view wx:else class="manage-list">
+    <view wx:for="{{items}}" wx:key="id" class="manage-item">
+      <plant-card item="{{item}}" showStatus="{{true}}" showPublisher="{{false}}" bind:tapcard="openDetail"></plant-card>
+      <view class="manage-actions section-card">
+        <view class="manage-action" data-id="{{item.id}}" bindtap="editItem">编辑</view>
+        <view class="manage-action" data-id="{{item.id}}" data-status="{{item.publishStatus}}" bindtap="togglePublishStatus">
+          {{item.publishStatus === 1 ? '下架' : '上架'}}
+        </view>
+        <view class="manage-action manage-action--danger" data-id="{{item.id}}" bindtap="deleteItem">删除</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loadingMore}}" class="footer-tip">正在加载更多...</view>
+  <view wx:elif="{{!hasMore && items.length}}" class="footer-tip">没有更多内容了</view>
+</view>

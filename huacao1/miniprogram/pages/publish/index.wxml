@@ -1,0 +1,122 @@
+<navigation-bar title="发布花草苗木" color="#1f261e" background="rgba(247,245,239,0.95)"></navigation-bar>
+
+<view class="page-shell editor-shell">
+  <view wx:if="{{loading}}" class="page-state section-card">
+    <text class="page-state__title">正在准备发布表单</text>
+    <text>分类、登录态和上传能力正在同步中。</text>
+  </view>
+
+  <block wx:else>
+    <view class="editor-card section-card">
+      <view class="section-title">基础信息</view>
+      <view class="field-block">
+        <view class="field-label">花草苗木名称</view>
+        <input class="field-input" placeholder="例如：山茶花精品盆栽" value="{{form.title}}" data-field="title" bindinput="onFieldInput" />
+      </view>
+
+      <view class="field-block">
+        <view class="field-label">分类</view>
+        <view class="chip-group">
+          <view
+            wx:for="{{categories}}"
+            wx:key="id"
+            class="chip {{form.categoryId === item.id ? 'chip--active' : ''}}"
+            data-id="{{item.id}}"
+            bindtap="onSelectCategory"
+          >
+            {{item.categoryName}}
+          </view>
+        </view>
+      </view>
+
+      <view class="field-row">
+        <view class="field-block field-block--grow">
+          <view class="field-label">建议零售价</view>
+          <input class="field-input" type="digit" placeholder="请输入价格" value="{{form.suggestedRetailPrice}}" data-field="suggestedRetailPrice" bindinput="onFieldInput" />
+        </view>
+        <view class="field-block field-block--grow">
+          <view class="field-label">价格单位</view>
+          <view class="chip-group chip-group--compact">
+            <view
+              wx:for="{{unitOptions}}"
+              wx:key="*this"
+              class="chip chip--compact {{form.unit === item ? 'chip--active' : ''}}"
+              data-unit="{{item}}"
+              bindtap="onSelectUnit"
+            >
+              {{item}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="field-row">
+        <view class="field-block field-block--grow">
+          <view class="field-label">省份</view>
+          <input class="field-input" placeholder="如：浙江省" value="{{form.province}}" data-field="province" bindinput="onFieldInput" />
+        </view>
+        <view class="field-block field-block--grow">
+          <view class="field-label">城市</view>
+          <input class="field-input" placeholder="如：杭州市" value="{{form.city}}" data-field="city" bindinput="onFieldInput" />
+        </view>
+      </view>
+
+      <view class="field-block">
+        <view class="field-label">区县</view>
+        <input class="field-input" placeholder="如：余杭区" value="{{form.area}}" data-field="area" bindinput="onFieldInput" />
+      </view>
+    </view>
+
+    <view class="editor-card section-card">
+      <view class="section-title">内容描述</view>
+      <view class="field-block">
+        <view class="field-label">简要描述</view>
+        <textarea
+          class="field-textarea field-textarea--short"
+          placeholder="一句话概括商品亮点、品相和适售场景"
+          maxlength="200"
+          value="{{form.shortDescription}}"
+          data-field="shortDescription"
+          bindinput="onFieldInput"
+        />
+      </view>
+
+      <view class="field-block">
+        <view class="field-label">详细描述</view>
+        <textarea
+          class="field-textarea"
+          placeholder="补充规格、养护建议、零售建议和适用场景"
+          maxlength="5000"
+          value="{{form.detailDescription}}"
+          data-field="detailDescription"
+          bindinput="onFieldInput"
+        />
+      </view>
+    </view>
+
+    <view class="editor-card section-card">
+      <view class="section-title">图片与封面</view>
+      <view class="upload-tip">支持最多 9 张图片，默认取第一张为封面，也可以手动切换。</view>
+      <view class="image-grid">
+        <view wx:for="{{form.images}}" wx:key="url" class="image-card">
+          <image class="image-card__img" src="{{item.url}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.url}}"></image>
+          <view class="image-card__toolbar">
+            <view class="image-card__tag {{form.coverImageUrl === item.url ? 'image-card__tag--active' : ''}}" data-url="{{item.url}}" bindtap="selectCover">
+              {{form.coverImageUrl === item.url ? '当前封面' : '设为封面'}}
+            </view>
+            <view class="image-card__remove" data-url="{{item.url}}" bindtap="removeImage">删除</view>
+          </view>
+        </view>
+        <view wx:if="{{form.images.length < 9}}" class="upload-card" bindtap="chooseImages">
+          <view class="upload-card__plus">+</view>
+          <view class="upload-card__text">{{uploading ? '上传中...' : '上传图片'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="action-bar section-card">
+      <view class="ghost-button action-bar__btn" bindtap="submitDraft">{{submitting ? '提交中...' : '存为草稿'}}</view>
+      <view class="primary-button action-bar__btn" bindtap="submitPublish">{{submitting ? '提交中...' : '立即发布'}}</view>
+    </view>
+  </block>
+</view>

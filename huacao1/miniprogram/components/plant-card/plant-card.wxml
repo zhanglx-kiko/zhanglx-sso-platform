@@ -1,0 +1,29 @@
+<view class="plant-card section-card" bindtap="handleTap">
+  <view class="card-cover-wrap">
+    <image class="card-cover" src="{{item.coverImageUrl}}" mode="aspectFill" lazy-load></image>
+    <view class="card-chip">{{item.categoryName}}</view>
+    <view wx:if="{{showStatus}}" class="card-status card-status--{{item.publishStatus === 0 ? 'draft' : item.publishStatus === 2 ? 'off' : 'on'}}">
+      {{item.publishStatus === 0 ? '草稿' : item.publishStatus === 2 ? '下架' : '上架'}}
+    </view>
+  </view>
+
+  <view class="card-body">
+    <view class="card-price-row">
+      <text class="card-price">¥{{item.suggestedRetailPrice}}</text>
+      <text class="card-unit">/{{item.unit}}</text>
+    </view>
+    <view class="card-title">{{item.title}}</view>
+    <view class="card-desc">{{item.shortDescription}}</view>
+    <view class="card-meta">
+      <view class="card-meta__left">
+        <text class="card-meta__location">{{item.city || item.province || '全国可售'}}</text>
+        <text class="card-meta__dot"></text>
+        <text>{{item.viewCount}} 浏览</text>
+      </view>
+      <view wx:if="{{showPublisher}}" class="card-publisher">
+        <image wx:if="{{item.publisherAvatar}}" class="card-publisher__avatar" src="{{item.publisherAvatar}}" mode="aspectFill"></image>
+        <text class="card-publisher__name">{{item.publisherName || '园艺发布者'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

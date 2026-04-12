@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="山茶花盆栽">
+  <rect width="720" height="720" fill="#f3ebde"/>
+  <path d="M0 480c120-80 250-120 390-106 120 12 220 52 330 126v220H0z" fill="#dfe8d5"/>
+  <ellipse cx="360" cy="612" rx="180" ry="28" fill="#c9cfbe"/>
+  <path d="M290 380c20-150 44-236 72-236 26 0 50 86 70 236" fill="none" stroke="#476a42" stroke-width="16" stroke-linecap="round"/>
+  <path d="M360 254c-92-88-180-84-218 32 82 18 150-10 206-68" fill="#6d945a"/>
+  <path d="M370 236c78-104 170-126 236-18-72 44-146 40-216 24" fill="#84aa65"/>
+  <path d="M326 338c-94-50-166-30-188 78 76 10 136-18 182-60" fill="#73995b"/>
+  <path d="M392 326c84-52 154-44 194 46-64 20-122 8-180-42" fill="#93b66d"/>
+  <g transform="translate(360 284)">
+    <circle r="60" fill="#f9e6b3"/>
+    <circle cx="-36" cy="-14" r="42" fill="#d06b79"/>
+    <circle cx="38" cy="-18" r="40" fill="#cc5f72"/>
+    <circle cx="-20" cy="34" r="40" fill="#b94d62"/>
+    <circle cx="26" cy="28" r="38" fill="#e4868c"/>
+  </g>
+  <path d="M248 560h224l-30 76H278z" fill="#b66d45"/>
+  <rect x="222" y="522" width="276" height="48" rx="20" fill="#c77a52"/>
+</svg>

@@ -39,8 +39,16 @@ spring:
             pool:
               max-connections: 200
           routes:
-            - id: sso-auth-route
+            - id: horticultural-plants-route
               order: 1
+              uri: http://localhost:22000
+              predicates:
+                - Path=/apis/v1/horticultural-plants/**
+                - Method=GET,POST,DELETE,PUT,PATCH
+              filters:
+                - PreserveHostHeader
+            - id: sso-auth-route
+              order: 2
               uri: http://localhost:21900
               predicates:
                 - Path=/apis/v1/**,/oauth2/**

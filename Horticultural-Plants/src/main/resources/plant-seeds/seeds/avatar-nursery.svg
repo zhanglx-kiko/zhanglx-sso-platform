@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="苗圃头像">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#efe6d8"/>
+      <stop offset="100%" stop-color="#ced7c4"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="64" fill="url(#bg)"/>
+  <circle cx="160" cy="112" r="50" fill="#f7f1e3"/>
+  <path d="M78 278c20-48 54-76 82-76 29 0 63 28 82 76" fill="#4d6440"/>
+  <path d="M112 86c22-37 74-45 115-16-18 24-48 35-87 33" fill="#799f5f"/>
+  <path d="M86 92c28-18 58-16 88 7-24 16-49 22-74 17" fill="#9dc187"/>
+  <rect x="128" y="150" width="64" height="18" rx="9" fill="#d7ae78"/>
+  <circle cx="142" cy="112" r="5" fill="#233021"/>
+  <circle cx="178" cy="112" r="5" fill="#233021"/>
+</svg>

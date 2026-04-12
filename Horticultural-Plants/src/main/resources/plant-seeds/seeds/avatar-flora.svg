@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="花植头像">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f3eddc"/>
+      <stop offset="100%" stop-color="#d5e4cf"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="64" fill="url(#bg)"/>
+  <circle cx="160" cy="118" r="54" fill="#f9f5ea"/>
+  <path d="M76 278c18-54 54-82 84-82s66 28 84 82" fill="#3f5f42"/>
+  <path d="M160 70c15-32 46-48 82-40-2 31-20 55-55 68" fill="#6fa164"/>
+  <path d="M156 68c-20-26-50-35-82-26 6 31 28 51 66 60" fill="#8dbd7e"/>
+  <circle cx="140" cy="114" r="6" fill="#263325"/>
+  <circle cx="180" cy="114" r="6" fill="#263325"/>
+  <path d="M139 144c14 10 28 10 42 0" fill="none" stroke="#263325" stroke-width="6" stroke-linecap="round"/>
+</svg>

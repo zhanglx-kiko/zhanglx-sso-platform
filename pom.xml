@@ -13,6 +13,7 @@
         <module>sso-common</module>
         <module>sso-core</module>
         <module>sso-auth</module>
+        <module>Horticultural-Plants</module>
         <module>sso-gateway</module>
         <module>sso-web</module>
         <module>sso-mybatis</module>

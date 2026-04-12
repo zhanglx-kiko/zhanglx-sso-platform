@@ -1,0 +1,117 @@
+.nav-action {
+  padding: 0 8rpx;
+  color: #27412c;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.manage-shell {
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12rpx;
+  padding: 18rpx;
+}
+
+.summary-chip {
+  padding: 20rpx 16rpx;
+  border-radius: 22rpx;
+  background: rgba(245, 247, 241, 0.9);
+  text-align: center;
+}
+
+.summary-chip__value {
+  display: block;
+  color: #1f261e;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.summary-chip__label {
+  display: block;
+  margin-top: 8rpx;
+  color: #75806f;
+  font-size: 22rpx;
+}
+
+.status-scroll {
+  margin-top: 20rpx;
+  white-space: nowrap;
+}
+
+.status-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 14rpx;
+  padding-right: 12rpx;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 64rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  color: #566153;
+  font-size: 24rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1rpx solid rgba(60, 83, 54, 0.08);
+}
+
+.status-pill--active {
+  color: #f8f3e7;
+  background: linear-gradient(135deg, #2d4731 0%, #4c6c4a 100%);
+  border-color: transparent;
+}
+
+.page-empty-action {
+  margin-top: 26rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.manage-list {
+  margin-top: 22rpx;
+}
+
+.manage-item + .manage-item {
+  margin-top: 20rpx;
+}
+
+.manage-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rpx;
+  margin-top: 12rpx;
+  padding: 14rpx;
+}
+
+.manage-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 72rpx;
+  border-radius: 999rpx;
+  color: #29442d;
+  font-size: 24rpx;
+  font-weight: 600;
+  background: rgba(244, 247, 240, 0.92);
+}
+
+.manage-action--danger {
+  color: #9e534c;
+  background: rgba(252, 241, 239, 0.94);
+}
+
+.footer-tip {
+  padding: 28rpx 0 16rpx;
+  color: #788173;
+  font-size: 24rpx;
+  text-align: center;
+}

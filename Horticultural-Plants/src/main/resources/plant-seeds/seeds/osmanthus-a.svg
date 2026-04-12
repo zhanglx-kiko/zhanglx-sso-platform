@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="桂花树苗">
+  <rect width="720" height="720" fill="#efe7d9"/>
+  <path d="M0 506c116-62 240-98 372-98s254 34 348 88v224H0z" fill="#dde3d1"/>
+  <path d="M362 188c16 116 18 222 2 350" fill="none" stroke="#7c5b3b" stroke-width="18" stroke-linecap="round"/>
+  <path d="M360 274c-92-58-162-54-208 22 62 28 132 20 194-10" fill="#719756"/>
+  <path d="M380 256c84-92 170-110 232-34-48 52-122 76-206 62" fill="#87ab62"/>
+  <path d="M354 362c-112-56-194-30-226 62 90 18 168-2 224-48" fill="#5f8748"/>
+  <path d="M388 340c104-48 188-32 238 52-82 30-162 20-224-26" fill="#95b56d"/>
+  <g fill="#e8c061">
+    <circle cx="304" cy="290" r="10"/>
+    <circle cx="332" cy="318" r="12"/>
+    <circle cx="386" cy="278" r="11"/>
+    <circle cx="414" cy="330" r="10"/>
+    <circle cx="278" cy="378" r="11"/>
+    <circle cx="428" cy="396" r="12"/>
+  </g>
+  <path d="M314 562h96v88h-96z" fill="#90704b"/>
+</svg>

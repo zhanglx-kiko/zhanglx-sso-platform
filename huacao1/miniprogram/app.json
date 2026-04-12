@@ -1,11 +1,17 @@
 {
   "pages": [
-    "pages/index/index",
-    "pages/logs/logs"
+    "pages/home/index",
+    "pages/detail/index",
+    "pages/publish/index",
+    "pages/edit/index",
+    "pages/mine/index",
+    "pages/mine-publish/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationStyle": "custom"
+    "navigationStyle": "custom",
+    "backgroundColor": "#f7f5ef",
+    "backgroundTextStyle": "dark"
   },
   "style": "v2",
   "rendererOptions": {

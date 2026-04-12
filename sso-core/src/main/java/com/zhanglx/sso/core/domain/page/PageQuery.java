@@ -3,6 +3,7 @@ package com.zhanglx.sso.core.domain.page;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -37,14 +38,16 @@ public class PageQuery implements Serializable {
      * pageNum。
      */
     @Min(value = 1, message = "页码必须大于0")
-    private final Integer pageNum = PAGE_NUM;
+    @Builder.Default
+    private Integer pageNum = PAGE_NUM;
 
     /**
      * 分页大小。
      */
     @Min(value = 1, message = "每页大小必须大于0")
     @Max(value = 100, message = "每页大小不能超过100")
-    private final Integer pageSize = PAGE_SIZE;
+    @Builder.Default
+    private Integer pageSize = PAGE_SIZE;
 
     /**
      * 排序条件

@@ -1,0 +1,139 @@
+.plant-card {
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+
+.card-cover-wrap {
+  position: relative;
+  height: 320rpx;
+  overflow: hidden;
+}
+
+.card-cover {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: linear-gradient(135deg, #eef2e6 0%, #f4efe3 100%);
+}
+
+.card-chip {
+  position: absolute;
+  left: 20rpx;
+  top: 20rpx;
+  display: inline-flex;
+  align-items: center;
+  height: 48rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  color: #28412c;
+  font-size: 22rpx;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1rpx solid rgba(31, 38, 30, 0.08);
+}
+
+.card-status {
+  position: absolute;
+  right: 20rpx;
+  top: 20rpx;
+  display: inline-flex;
+  align-items: center;
+  height: 48rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.card-status--on {
+  color: #29452d;
+  background: rgba(219, 236, 214, 0.88);
+}
+
+.card-status--draft {
+  color: #8a651c;
+  background: rgba(248, 233, 199, 0.9);
+}
+
+.card-status--off {
+  color: #9a554e;
+  background: rgba(250, 228, 224, 0.92);
+}
+
+.card-body {
+  padding: 24rpx 22rpx 22rpx;
+}
+
+.card-price-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6rpx;
+}
+
+.card-price {
+  color: #a56728;
+  font-size: 38rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card-unit {
+  color: #806a51;
+  font-size: 22rpx;
+  margin-bottom: 2rpx;
+}
+
+.card-title {
+  margin-top: 16rpx;
+  color: #1f261e;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.card-desc {
+  margin-top: 10rpx;
+  color: #5f665a;
+  font-size: 24rpx;
+  line-height: 1.65;
+}
+
+.card-meta {
+  margin-top: 18rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.card-meta__left {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #788173;
+  font-size: 22rpx;
+}
+
+.card-meta__dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: rgba(76, 108, 74, 0.3);
+}
+
+.card-publisher {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.card-publisher__avatar {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: #e3e9dd;
+}
+
+.card-publisher__name {
+  color: #495345;
+  font-size: 22rpx;
+}

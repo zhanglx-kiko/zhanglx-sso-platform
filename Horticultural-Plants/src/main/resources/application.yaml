@@ -1,0 +1,219 @@
+server:
+  port: 22000
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: horticultural-plants
+  main:
+    allow-bean-definition-overriding: true
+  threads:
+    virtual:
+      enabled: true
+  messages:
+    basename: i18n/common,i18n/horticultural-messages,i18n/sso-messages
+    encoding: UTF-8
+  cache:
+    type: redis
+  data:
+    redis:
+      host: 192.168.3.131
+      port: 6379
+      database: 0
+      password: P@ssw0rd!23
+      timeout: 5s
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 1s
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.3.131:3306/horticultural_plants?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&tinyInt1isBit=false&transformedBitIsBoolean=false
+    username: root
+    password: P@ssw0rd!23
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      pool-name: HorticulturalPlantsHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 5000
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 60MB
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+
+flyway:
+  enabled: false
+  baseline-on-migrate: true
+  baseline-version: 0
+  locations: classpath:db/migration
+  encoding: UTF-8
+  validate-on-migrate: true
+  clean-disabled: false
+  table: flyway_schema_history
+
+logging:
+  level:
+    root: INFO
+    com.zhanglx.sso: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+    org.mybatis: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+mybatis-plus:
+  type-aliases-package: com.zhanglx.sso.horticulturalplants.domain.po
+  configuration:
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: FULL
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      insert-strategy: NOT_NULL
+      update-strategy: NOT_NULL
+      logic-delete-field: delFlag
+      logic-not-delete-value: 0L
+
+sa-token:
+  token-name: token
+  timeout: 2592000
+  active-timeout: 1800
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-read-cookie: true
+  is-read-header: true
+  same-token:
+    secret-key: pRZS!2k$F9aG7dJ53h8
+    timeout: 300
+
+springdoc:
+  default-flat-param-object: true
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: "花草苗木服务"
+      paths-to-match: "/**"
+      packages-to-scan: "com.zhanglx.sso.horticulturalplants.controller"
+
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+    enable-swagger-models: true
+    enable-dynamic-parameter: false
+    enable-document-manage: true
+    swagger-model-name: 实体类列表
+    enable-footer: true
+    enable-footer-custom: true
+    footer-custom-content: Apache 2.0 | Copyright (c) 2026 ZhangLX
+
+sso:
+  log:
+    operation:
+      enable-operation-log: false
+      app-code: horticultural-plants
+      app-name: 花草苗木建议零售价
+      platform-code: miniapp
+      platform-name: 微信小程序
+      source-system: horticultural-plants
+      request-body-max-length: 2048
+      response-summary-max-length: 2048
+      error-message-max-length: 1024
+      exception-stack-max-length: 4096
+      request-query-max-length: 1024
+      user-agent-max-length: 512
+      ext-max-entries: 16
+      ext-key-max-length: 64
+      ext-value-max-length: 256
+      collection-preview-size: 10
+      bean-property-preview-size: 20
+      search-default-days: 7
+      search-max-window: 10000
+  client-ip:
+    forwarded-for-header: X-Forwarded-For
+    real-ip-header: X-Real-IP
+    tenant-header: X-Tenant-Id
+    trusted-proxies:
+      - 127.0.0.1/32
+      - ::1/128
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+  repeat-submit:
+    enabled: true
+    default-window-seconds: 5
+    key-prefix: sso:repeat-submit
+    default-message-key: repeat.submit
+    local-fallback-enabled: true
+  rate-limit:
+    enabled: true
+    default-limit: 60
+    default-window-seconds: 60
+    key-prefix: sso:rate-limit
+    default-message-key: request.rate.limit.exceeded
+    local-fallback-enabled: true
+    write-response-headers: true
+    whitelist-ips:
+      - 127.0.0.1
+      - ::1
+    whitelist-paths:
+      - /actuator/health
+      - /swagger-ui.html
+      - /doc.html
+      - /v3/api-docs
+      - /apis/v1/horticultural-plants/public/assets/**
+  xss:
+    enabled: true
+    global-enabled: true
+    log-hit: false
+    mode: RELAXED
+    whitelist-paths:
+      - /apis/v1/horticultural-plants/public/assets/**
+    whitelist-fields:
+      - token
+      - authorization
+    search-fields:
+      - searchKey
+      - keyword
+      - query
+      - q
+    rich-text-fields:
+      - detailDescription
+    sanitize-header-names:
+      - User-Agent
+      - Referer
+      - X-Requested-With
+    ignored-content-types:
+      - application/octet-stream
+      - multipart/form-data
+      - image/*
+      - audio/*
+      - video/*
+
+horticultural:
+  plants:
+    storage:
+      base-path: ./storage/member-plant-assets/
+      public-url-prefix: /apis/v1/horticultural-plants/public/assets/

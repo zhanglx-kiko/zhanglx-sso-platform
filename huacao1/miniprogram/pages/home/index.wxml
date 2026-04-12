@@ -1,0 +1,85 @@
+<navigation-bar title="花草苗木建议零售价" back="{{false}}" color="#1f261e" background="rgba(247,245,239,0.95)">
+  <view slot="right" class="nav-action" bindtap="goMine">我的</view>
+</navigation-bar>
+
+<view class="page-shell">
+  <view class="hero section-card">
+    <text class="hero-kicker">Garden Pricing Feed</text>
+    <view class="hero-title">花草苗木建议零售价一站式内容流</view>
+    <view class="hero-desc">
+      多图展示、建议价格、详情浏览和我的发布管理都已经接到同一套 C 端会员能力里，适合门店、苗圃与园艺零售场景直接落地。
+    </view>
+    <view class="hero-actions">
+      <view class="primary-button" bindtap="goPublish">我要发布</view>
+      <view class="ghost-button" bindtap="goMyPublish">我的管理</view>
+    </view>
+    <view class="hero-metrics">
+      <view class="metric">
+        <text class="metric-value">{{categories.length}}</text>
+        <text class="metric-label">在营分类</text>
+      </view>
+      <view class="metric">
+        <text class="metric-value">{{items.length}}</text>
+        <text class="metric-label">本页内容</text>
+      </view>
+      <view class="metric">
+        <text class="metric-value">9</text>
+        <text class="metric-label">最多图片</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="toolbar section-card">
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="搜索花草苗木名称、描述或城市"
+        value="{{searchDraft}}"
+        confirm-type="search"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
+      <view wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">清空</view>
+    </view>
+
+    <scroll-view class="category-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="category-list">
+        <view class="category-pill {{activeCategoryId === '' ? 'category-pill--active' : ''}}" data-id="" bindtap="onSelectCategory">
+          全部
+        </view>
+        <view
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="category-pill {{activeCategoryId === item.id ? 'category-pill--active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSelectCategory"
+        >
+          {{item.categoryName}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view wx:if="{{loading}}" class="page-state section-card">
+    <text class="page-state__title">正在加载市场内容</text>
+    <text>已为你拉取建议零售价内容流，请稍候片刻。</text>
+  </view>
+
+  <view wx:elif="{{!leftItems.length && !rightItems.length}}" class="page-state section-card">
+    <text class="page-state__title">还没有匹配内容</text>
+    <text>可以试试切换分类、清空搜索词，或者直接发布你的第一条花草苗木内容。</text>
+  </view>
+
+  <view wx:else class="feed">
+    <view class="feed-column">
+      <plant-card wx:for="{{leftItems}}" wx:key="id" item="{{item}}" bind:tapcard="openDetail"></plant-card>
+    </view>
+    <view class="feed-column">
+      <plant-card wx:for="{{rightItems}}" wx:key="id" item="{{item}}" bind:tapcard="openDetail"></plant-card>
+    </view>
+  </view>
+
+  <view wx:if="{{loadingMore}}" class="footer-tip">正在加载更多内容...</view>
+  <view wx:elif="{{!hasMore && items.length}}" class="footer-tip">已经滑到底了</view>
+</view>

@@ -1,8 +1,16 @@
 /// <reference path="./types/index.d.ts" />
 
-interface IAppOption {
+interface IAppOption extends WechatMiniprogram.IAnyObject {
   globalData: {
-    userInfo?: WechatMiniprogram.UserInfo,
+    apiBaseUrl: string,
+    tokenName?: string,
+    tokenValue?: string,
+    memberInfo?: WechatMiniprogram.IAnyObject,
+    ready: boolean,
   }
-  userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
+  loginPromise?: Promise<any> | null,
+  ensureMemberSession: (forceRefresh?: boolean) => Promise<any>,
+  refreshCurrentMember: () => Promise<any>,
+  clearMemberSession: () => void,
+  applySession: (session: any) => void,
 }

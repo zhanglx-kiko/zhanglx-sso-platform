@@ -100,6 +100,12 @@ Component({
         })
       }
       this.triggerEvent('back', { delta: data.delta }, {})
+    },
+    home() {
+      wx.reLaunch({
+        url: '/pages/home/index',
+      })
+      this.triggerEvent('home', {}, {})
     }
   },
 })

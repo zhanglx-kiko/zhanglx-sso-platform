@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" role="img" aria-label="蕨类盆栽">
+  <rect width="720" height="720" fill="#eef0e3"/>
+  <path d="M0 520c126-72 262-104 398-90 122 12 226 44 322 100v190H0z" fill="#d8dfcd"/>
+  <path d="M362 552c-14-150 8-254 0-354" fill="none" stroke="#4f6942" stroke-width="14" stroke-linecap="round"/>
+  <path d="M350 348c-84-114-174-136-248-54 74 54 158 74 232 68" fill="#6c8b59"/>
+  <path d="M372 338c76-130 162-168 252-94-56 74-136 112-224 118" fill="#85a26a"/>
+  <path d="M336 434c-116-60-214-56-274 22 98 42 190 48 262 22" fill="#5e7a4d"/>
+  <path d="M394 426c108-78 208-86 286-14-86 58-178 76-262 38" fill="#91ac72"/>
+  <path d="M288 560h144l-26 76h-92z" fill="#b06d4c"/>
+  <rect x="258" y="526" width="204" height="46" rx="20" fill="#be7652"/>
+</svg>

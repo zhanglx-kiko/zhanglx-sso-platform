@@ -1,0 +1,62 @@
+<navigation-bar title="{{item ? item.title : '花草详情'}}" color="#1f261e" background="rgba(247,245,239,0.95)">
+  <view wx:if="{{isMine}}" slot="right" class="nav-action" bindtap="goEdit">编辑</view>
+</navigation-bar>
+
+<view class="page-shell detail-shell">
+  <view wx:if="{{loading}}" class="page-state section-card">
+    <text class="page-state__title">正在加载详情</text>
+    <text>多图、建议零售价和发布信息正在同步中。</text>
+  </view>
+
+  <block wx:elif="{{item}}">
+    <swiper class="hero-swiper section-card" indicator-dots="{{previewUrls.length > 1}}" circular="{{previewUrls.length > 1}}">
+      <swiper-item wx:for="{{previewUrls}}" wx:key="*this">
+        <image class="hero-swiper__image" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}"></image>
+      </swiper-item>
+    </swiper>
+
+    <view class="info-card section-card">
+      <view class="info-top">
+        <view class="info-chip">{{item.categoryName}}</view>
+        <view class="info-views">{{item.viewCount}} 浏览</view>
+      </view>
+      <view class="info-title">{{item.title}}</view>
+      <view class="info-price">{{formattedPrice}}</view>
+      <view class="info-short">{{item.shortDescription}}</view>
+      <view class="info-meta">
+        <view class="meta-pill">{{locationText}}</view>
+        <view class="meta-pill">{{publishTime}}</view>
+        <view class="meta-pill">{{item.publishStatus === 0 ? '草稿' : item.publishStatus === 2 ? '下架' : '上架'}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{item.publisher}}" class="publisher-card section-card">
+      <image wx:if="{{item.publisher.avatar}}" class="publisher-avatar" src="{{item.publisher.avatar}}" mode="aspectFill"></image>
+      <view class="publisher-main">
+        <view class="publisher-label">发布人</view>
+        <view class="publisher-name">{{item.publisher.nickname}}</view>
+      </view>
+    </view>
+
+    <view class="detail-card section-card">
+      <view class="section-title">详细描述</view>
+      <view class="detail-text">{{item.detailDescription}}</view>
+    </view>
+
+    <view class="gallery-card section-card">
+      <view class="section-title">图集浏览</view>
+      <view class="gallery-list">
+        <view wx:for="{{item.imageList}}" wx:key="imageUrl" class="gallery-item">
+          <image class="gallery-image" src="{{item.imageUrl}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.imageUrl}}"></image>
+          <view wx:if="{{item.cover}}" class="gallery-cover-badge">封面</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="action-bar section-card">
+      <view class="ghost-button action-bar__btn" bindtap="goMyPublish">我的发布</view>
+      <view wx:if="{{isMine}}" class="primary-button action-bar__btn" bindtap="goEdit">编辑内容</view>
+      <view wx:else class="primary-button action-bar__btn" bindtap="goPublish">发布我的内容</view>
+    </view>
+  </block>
+</view>

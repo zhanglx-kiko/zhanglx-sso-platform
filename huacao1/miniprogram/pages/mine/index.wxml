@@ -1,0 +1,70 @@
+<navigation-bar title="我的" color="#1f261e" background="rgba(247,245,239,0.95)"></navigation-bar>
+
+<view class="page-shell">
+  <view class="profile-card section-card">
+    <image wx:if="{{memberInfo && memberInfo.avatar}}" class="profile-avatar" src="{{memberInfo.avatar}}" mode="aspectFill"></image>
+    <view wx:else class="profile-avatar profile-avatar--placeholder">园</view>
+    <view class="profile-main">
+      <view class="profile-name">{{memberInfo && memberInfo.nickname ? memberInfo.nickname : '微信会员'}}</view>
+      <view class="profile-sub">
+        {{memberInfo && memberInfo.phoneNumber ? memberInfo.phoneNumber : '已接入当前 C 端会员体系'}}
+      </view>
+      <view class="profile-tag">普通用户与发布用户共用同一账号体系</view>
+    </view>
+  </view>
+
+  <view class="summary-grid">
+    <view class="summary-card section-card">
+      <text class="summary-value">{{summary.totalCount}}</text>
+      <text class="summary-label">全部发布</text>
+    </view>
+    <view class="summary-card section-card">
+      <text class="summary-value">{{summary.publishedCount}}</text>
+      <text class="summary-label">已上架</text>
+    </view>
+    <view class="summary-card section-card">
+      <text class="summary-value">{{summary.draftCount}}</text>
+      <text class="summary-label">草稿</text>
+    </view>
+    <view class="summary-card section-card">
+      <text class="summary-value">{{summary.offShelfCount}}</text>
+      <text class="summary-label">下架</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="page-state section-card">
+    <text class="page-state__title">正在同步账户数据</text>
+    <text>会员资料与发布概览正在更新。</text>
+  </view>
+
+  <view wx:else class="menu-card section-card">
+    <view class="menu-item" bindtap="goMyPublish">
+      <view>
+        <view class="menu-title">我的发布管理</view>
+        <view class="menu-desc">查看、编辑、上下架和删除自己发布的花草苗木内容。</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="goPublish">
+      <view>
+        <view class="menu-title">发布新内容</view>
+        <view class="menu-desc">上传多图、设置封面并提交建议零售价内容。</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="syncAccount">
+      <view>
+        <view class="menu-title">重新同步账号</view>
+        <view class="menu-desc">刷新微信登录态和当前会员资料。</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-item" bindtap="goHome">
+      <view>
+        <view class="menu-title">返回市场首页</view>
+        <view class="menu-desc">继续浏览花草苗木建议零售价内容流。</view>
+      </view>
+      <view class="menu-arrow">›</view>
+    </view>
+  </view>
+</view>
